@@ -97,8 +97,44 @@ export class PlotPreviewManager {
         
         /** @type {PlotPreviewElements} */
         this.elements = this.initializeElements();
+        /** @type {boolean} */
+        this.isMobile = window.innerWidth <= 768;
+        /** @type {boolean} */
+        this.mobileSidebarVisible = false;
+        const mobileToggleElement = document.getElementById('mr_mobile_toggle');
+        
+        /** @type {HTMLElement|null} */
+        this.mobileOverlay = null;
+        /** @type {number|null} */
+        this.mobileResizeTimeout = null;
+        /** @type {HTMLElement|null} */
+        this.mobilePortalContainer = null;
+        /** @type {HTMLElement|null} */
+        this.sidebarPlaceholder = null;
+        /** @type {HTMLElement|null} */
+        this.togglePlaceholder = null;
+        /** @type {HTMLElement|null} */
+        this.sidebarOriginalParent = this.elements.sidebar?.parentElement || null;
+        /** @type {Node|null} */
+        this.sidebarNextSibling = this.elements.sidebar?.nextSibling || null;
+        /** @type {HTMLElement|null} */
+        this.toggleOriginalParent = mobileToggleElement ? mobileToggleElement.parentElement : null;
+        /** @type {Node|null} */
+        this.toggleNextSibling = mobileToggleElement ? mobileToggleElement.nextSibling : null;
+        /** @type {(event: KeyboardEvent) => void | null} */
+        this.mobileFocusTrapHandler = null;
+        /** @type {HTMLElement|null} */
+        this.previouslyFocusedElement = null;
+        /** @type {string} */
+        this.originalBodyOverflow = '';
+        /** @type {number|null} */
+        this.mobileHideTimeout = null;
+        
         this.bindEvents();
         this.loadSettings();
+        this.initializeMobileToggle();
+        this.updateMobileAccessibilityState(false);
+        this.updateResponsivePlacement();
     }
 
     /**
@@ -125,6 +161,12 @@ export class PlotPreviewManager {
             closeModalBtn: document.getElementById('mr_close_modal')
         };
 
+        if (elements.sidebar) {
+            elements.sidebar.setAttribute('role', 'complementary');
+            elements.sidebar.setAttribute('aria-modal', 'false');
+            elements.sidebar.setAttribute('aria-label', 'Machinor Roundtable plot preview');
+        }
+ 
         // Validate all elements exist
         for (const [key, element] of Object.entries(elements)) {
             if (!element) {
@@ -141,54 +183,72 @@ export class PlotPreviewManager {
      */
     initializeMobileToggle() {
         const mobileToggle = document.getElementById('mr_mobile_toggle');
-        const desktopToggle = document.getElementById('mr_toggle_sidebar');
-        
         if (!mobileToggle || !this.elements.sidebar) return;
-        
-        // Create overlay element
-        const overlay = document.createElement('div');
-        overlay.className = 'mr-mobile-overlay';
-        document.body.appendChild(overlay);
-        
-        // Mobile toggle button click
-        mobileToggle.addEventListener('click', () => {
-            this.toggleMobileSidebar();
-        });
-        
-        // Desktop toggle button (in header) should also work on mobile
-        if (desktopToggle) {
-            desktopToggle.addEventListener('click', () => {
-                if (this.isMobile) {
-                    this.toggleMobileSidebar();
-                }
-            });
+        if (mobileToggle.dataset.mrInitialized) return;
+
+        mobileToggle.setAttribute('aria-controls', 'mr_plot_sidebar');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        mobileToggle.setAttribute('aria-label', 'Toggle Plot Preview');
+
+        let overlay = document.querySelector('.mr-mobile-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'mr-mobile-overlay mobile-hidden';
+            overlay.setAttribute('role', 'presentation');
+            document.body.appendChild(overlay);
         }
+        this.mobileOverlay = /** @type {HTMLElement} */ (overlay);
+
+        const closeBtn = this.createMobileCloseButton();
+        this.elements.sidebar.querySelector('.mr-sidebar-header')?.appendChild(closeBtn);
+
+        const toggleHandler = () => this.toggleMobileSidebar();
+        const closeHandler = () => this.hideMobileSidebar();
+
+        mobileToggle.addEventListener('click', toggleHandler);
+        overlay.addEventListener('click', closeHandler);
+        closeBtn.addEventListener('click', closeHandler);
+
+        mobileToggle.dataset.mrInitialized = 'true';
+        this.ensurePortalPlaceholders();
+        this.updateResponsivePlacement();
         
-        // Overlay click to close
-        overlay.addEventListener('click', () => {
-            this.hideMobileSidebar();
-        });
-        
-        // Handle window resize
         window.addEventListener('resize', () => {
-            const wasMobile = this.isMobile;
-            this.isMobile = window.innerWidth <= 768;
-            
-            // If switching from mobile to desktop, clean up mobile state
-            if (wasMobile && !this.isMobile && this.mobileSidebarVisible) {
-                this.hideMobileSidebar();
+            if (this.mobileResizeTimeout) {
+                clearTimeout(this.mobileResizeTimeout);
             }
+            
+            this.mobileResizeTimeout = window.setTimeout(() => {
+                const wasMobile = this.isMobile;
+                this.isMobile = window.innerWidth <= 768;
+                
+                if (wasMobile && !this.isMobile && this.mobileSidebarVisible) {
+                    this.hideMobileSidebar(true);
+                }
+                
+                this.updateResponsivePlacement();
+                
+                if (!this.isMobile) {
+                    this.updateMobileAccessibilityState(false);
+                    document.body.style.overflow = '';
+                } else {
+                    this.updateMobileAccessibilityState(this.mobileSidebarVisible);
+                }
+            }, 150);
         });
         
-        // Add touch gesture support
         this.addTouchGestures();
-        
         console.log('[machinor-roundtable] Mobile toggle initialized');
     }
 
-    /**
-     * Toggle mobile sidebar visibility
-     */
+    createMobileCloseButton() {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'mr-mobile-close-btn';
+        closeBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+        closeBtn.setAttribute('aria-label', 'Close Plot Preview');
+        return closeBtn;
+    }
+
     toggleMobileSidebar() {
         if (this.mobileSidebarVisible) {
             this.hideMobileSidebar();
@@ -197,65 +257,110 @@ export class PlotPreviewManager {
         }
     }
 
-    /**
-     * Show mobile sidebar
-     */
     showMobileSidebar() {
+        if (this.mobileSidebarVisible || !this.isMobile || !this.elements.sidebar || !this.mobileOverlay) return;
+
+        this.mobileSidebarVisible = true;
         const mobileToggle = document.getElementById('mr_mobile_toggle');
-        const overlay = document.querySelector('.mr-mobile-overlay');
-        
-        if (!this.elements.sidebar || !overlay) return;
-        
-        // Add mobile classes
-        this.elements.sidebar.classList.add('mobile-active');
-        overlay.classList.add('active');
-        
-        // Trigger animation
-        setTimeout(() => {
-            this.elements.sidebar.classList.add('mobile-visible');
-            this.mobileSidebarVisible = true;
-        }, 10);
-        
-        // Hide floating button when sidebar is open
-        if (mobileToggle) {
-            mobileToggle.style.display = 'none';
-        }
-        
-        // Prevent body scroll
+        this.previouslyFocusedElement = mobileToggle || (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+
+        const portal = this.ensureMobilePortalContainer();
+        portal.style.pointerEvents = 'auto';
+
+        // CRITICAL: Remove collapsed state completely for mobile
+        this.isCollapsed = false; // Update state variable
+        this.elements.sidebar.classList.remove('collapsed');
+        this.elements.sidebar.classList.remove('mobile-hidden');
+        this.elements.sidebar.classList.add('mobile-visible');
+        this.mobileOverlay.classList.remove('mobile-hidden');
+        this.mobileOverlay.classList.add('mobile-visible');
+
+        this.originalBodyOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
-        
-        console.log('[machinor-roundtable] Mobile sidebar shown');
+        mobileToggle?.classList.add('is-active');
+
+        // DEBUG: Log the current state
+        console.log('[machinor-roundtable] Mobile sidebar opening - collapsed state:', this.isCollapsed);
+        console.log('[machinor-roundtable] Sidebar classes:', this.elements.sidebar.className);
+
+        // Force content to be visible and properly rendered
+        if (this.elements.currentPlotText) {
+            console.log('[machinor-roundtable] Current plot text content:', this.elements.currentPlotText.textContent);
+            console.log('[machinor-roundtable] Current plot text display:', window.getComputedStyle(this.elements.currentPlotText).display);
+            
+            // Force visibility and layout
+            this.elements.currentPlotText.style.visibility = 'visible';
+            this.elements.currentPlotText.style.opacity = '1';
+            this.elements.currentPlotText.style.display = 'block';
+        }
+
+        // Ensure all content sections are visible
+        const contentSections = this.elements.sidebar.querySelectorAll('.mr-current-plot, .mr-next-plot, .mr-plot-history');
+        contentSections.forEach(section => {
+            if (section instanceof HTMLElement) {
+                section.style.visibility = 'visible';
+                section.style.opacity = '1';
+                section.style.display = 'block';
+            }
+        });
+
+        // Force the sidebar content container to be visible
+        const contentContainer = this.elements.sidebar.querySelector('.mr-sidebar-content');
+        if (contentContainer instanceof HTMLElement) {
+            contentContainer.style.visibility = 'visible';
+            contentContainer.style.opacity = '1';
+            contentContainer.style.display = 'flex';
+            contentContainer.style.height = 'auto';
+            contentContainer.style.minHeight = '200px'; // Ensure minimum height
+        }
+
+        // Force reflow to ensure proper layout
+        this.elements.sidebar.offsetHeight;
+
+        // If no content is displayed, trigger a generation
+        if (!this.currentPlot && this.plotEngine) {
+            console.log('[machinor-roundtable] No current plot, triggering generation...');
+            this.generateNewPlot();
+        }
+
+        this.updateMobileAccessibilityState(true);
+        this.applyMobileFocusTrap();
+        console.log('[machinor-roundtable] Mobile sidebar shown with content verification');
     }
 
-    /**
-     * Hide mobile sidebar
-     */
-    hideMobileSidebar() {
-        const mobileToggle = document.getElementById('mr_mobile_toggle');
-        const overlay = document.querySelector('.mr-mobile-overlay');
-        
-        if (!this.elements.sidebar || !overlay) return;
-        
-        // Remove visible class to trigger slide-out animation
-        this.elements.sidebar.classList.remove('mobile-visible');
+    hideMobileSidebar(skipAnimation = false) {
+        if (!this.mobileSidebarVisible || !this.elements.sidebar || !this.mobileOverlay) return;
+
         this.mobileSidebarVisible = false;
-        
-        // Remove classes after animation
-        setTimeout(() => {
-            this.elements.sidebar.classList.remove('mobile-active');
-            overlay.classList.remove('active');
-        }, 300);
-        
-        // Show floating button again
-        if (mobileToggle) {
-            mobileToggle.style.display = 'flex';
+        const mobileToggle = document.getElementById('mr_mobile_toggle');
+        const portal = this.ensureMobilePortalContainer();
+
+        this.elements.sidebar.classList.remove('mobile-visible');
+        this.elements.sidebar.classList.add('mobile-hidden');
+        this.mobileOverlay.classList.remove('mobile-visible');
+        this.mobileOverlay.classList.add('mobile-hidden');
+
+        document.body.style.overflow = this.originalBodyOverflow;
+        mobileToggle?.classList.remove('is-active');
+
+        this.updateMobileAccessibilityState(false);
+        this.releaseMobileFocusTrap();
+
+        if (skipAnimation) {
+            portal.style.pointerEvents = 'none';
+        } else {
+            const onTransitionEnd = (event) => {
+                if (event.target === this.elements.sidebar && event.propertyName === 'opacity' && !this.mobileSidebarVisible) {
+                    portal.style.pointerEvents = 'none';
+                    this.elements.sidebar.removeEventListener('transitionend', onTransitionEnd);
+                }
+            };
+            this.elements.sidebar.addEventListener('transitionend', onTransitionEnd);
         }
-        
-        // Restore body scroll
-        document.body.style.overflow = '';
-        
+
         console.log('[machinor-roundtable] Mobile sidebar hidden');
     }
+
 
     /**
      * Add touch gesture support for mobile
@@ -421,6 +526,11 @@ export class PlotPreviewManager {
      * Toggle sidebar collapse/expand
      */
     toggleSidebar() {
+        if (this.isMobile) {
+            this.toggleMobileSidebar();
+            return;
+        }
+        
         this.isCollapsed = !this.isCollapsed;
         
         if (this.elements.sidebar) {
@@ -428,6 +538,7 @@ export class PlotPreviewManager {
         }
         
         this.saveSettings();
+        this.updateMobileAccessibilityState(this.mobileSidebarVisible);
         
         // Update toggle button icon
         if (this.elements.toggleBtn) {
@@ -454,6 +565,15 @@ export class PlotPreviewManager {
         
         if (this.elements.currentPlotText) {
             this.elements.currentPlotText.textContent = plotText;
+            console.log('[machinor-roundtable] Plot text set to:', plotText.substring(0, 50) + '...');
+            
+            // Force visibility on mobile
+            if (this.isMobile && this.mobileSidebarVisible) {
+                this.elements.currentPlotText.style.visibility = 'visible';
+                this.elements.currentPlotText.style.opacity = '1';
+            }
+        } else {
+            console.warn('[machinor-roundtable] currentPlotText element not found');
         }
         
         this.updateStatus(status);
@@ -955,5 +1075,292 @@ export class PlotPreviewManager {
             recentDirectionsCount: this.recentDirections.length,
             autoApproveTimeout: this.autoApproveTimeout
         };
+    }
+
+    /**
+     * Update ARIA state for mobile sidebar controls
+     * @param {boolean} isVisible
+     */
+    updateMobileAccessibilityState(isVisible) {
+        const mobileToggle = document.getElementById('mr_mobile_toggle');
+        const sidebarHidden = this.isMobile ? !isVisible : this.isCollapsed;
+
+        if (this.elements.sidebar) {
+            this.elements.sidebar.setAttribute('aria-hidden', sidebarHidden ? 'true' : 'false');
+            if (this.isMobile) {
+                this.elements.sidebar.setAttribute('role', 'dialog');
+                this.elements.sidebar.setAttribute('aria-modal', isVisible ? 'true' : 'false');
+            } else {
+                this.elements.sidebar.setAttribute('role', 'complementary');
+                this.elements.sidebar.setAttribute('aria-modal', 'false');
+            }
+        }
+
+        if (mobileToggle) {
+            mobileToggle.setAttribute('aria-expanded', isVisible ? 'true' : 'false');
+        }
+
+        if (this.elements.toggleBtn) {
+            const expanded = this.isMobile ? isVisible : !this.isCollapsed;
+            this.elements.toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+
+        if (this.mobileOverlay) {
+            this.mobileOverlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+        }
+
+        document.body.dataset.mrMobileDrawerOpen = isVisible ? 'true' : 'false';
+    }
+
+    /**
+     * Return focusable elements inside the mobile drawer.
+     * @returns {HTMLElement[]}
+     */
+    getMobileFocusableElements() {
+        if (!this.elements.sidebar) {
+            return [];
+        }
+
+        const selector = 'a[href], area[href], button:not([disabled]):not([aria-hidden="true"]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+        const elements = this.elements.sidebar.querySelectorAll(selector);
+        return Array.from(elements)
+            .filter((element) => element instanceof HTMLElement && element.offsetParent !== null)
+            .map((element) => /** @type {HTMLElement} */ (element));
+    }
+
+    /**
+     * Trap keyboard focus inside the mobile drawer while open.
+     */
+    applyMobileFocusTrap() {
+        if (!this.isMobile || !this.mobileSidebarVisible) {
+            return;
+        }
+
+        const focusable = this.getMobileFocusableElements();
+        if (focusable.length > 0) {
+            focusable[0].focus({ preventScroll: true });
+        } else if (this.elements.sidebar) {
+            this.elements.sidebar.setAttribute('tabindex', '-1');
+            this.elements.sidebar.focus({ preventScroll: true });
+        }
+
+        if (this.mobileFocusTrapHandler) {
+            document.removeEventListener('keydown', this.mobileFocusTrapHandler, true);
+        }
+
+        this.mobileFocusTrapHandler = (event) => {
+            if (!this.mobileSidebarVisible) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                this.hideMobileSidebar();
+                return;
+            }
+
+            if (event.key !== 'Tab') {
+                return;
+            }
+
+            const currentFocusable = this.getMobileFocusableElements();
+            if (currentFocusable.length === 0) {
+                event.preventDefault();
+                if (this.elements.sidebar) {
+                    this.elements.sidebar.focus({ preventScroll: true });
+                }
+                return;
+            }
+
+            const first = currentFocusable[0];
+            const last = currentFocusable[currentFocusable.length - 1];
+            const activeElement = document.activeElement;
+
+            // Type guard to ensure activeElement is an HTMLElement
+            const isActiveElementInFocusable = activeElement instanceof HTMLElement && currentFocusable.includes(activeElement);
+            
+            if (event.shiftKey) {
+                if (activeElement === first || !isActiveElementInFocusable) {
+                    event.preventDefault();
+                    last.focus({ preventScroll: true });
+                }
+            } else if (activeElement === last || !isActiveElementInFocusable) {
+                event.preventDefault();
+                first.focus({ preventScroll: true });
+            }
+        };
+
+        document.addEventListener('keydown', this.mobileFocusTrapHandler, true);
+    }
+
+    /**
+     * Release the mobile focus trap and restore focus.
+     */
+    releaseMobileFocusTrap() {
+        if (this.mobileFocusTrapHandler) {
+            document.removeEventListener('keydown', this.mobileFocusTrapHandler, true);
+            this.mobileFocusTrapHandler = null;
+        }
+
+        if (this.elements.sidebar && this.elements.sidebar.getAttribute('tabindex') === '-1') {
+            this.elements.sidebar.removeAttribute('tabindex');
+        }
+
+        const fallbackToggle = document.getElementById('mr_mobile_toggle');
+        const target = this.previouslyFocusedElement && document.body.contains(this.previouslyFocusedElement)
+            ? this.previouslyFocusedElement
+            : fallbackToggle;
+
+        if (target && typeof target.focus === 'function') {
+            target.focus({ preventScroll: true });
+        }
+
+        this.previouslyFocusedElement = null;
+    }
+    
+    /**
+     * Ensure a reusable mobile portal container exists
+     * @returns {HTMLElement|null}
+     */
+    ensureMobilePortalContainer() {
+        if (!this.mobilePortalContainer || !this.mobilePortalContainer.isConnected) {
+            let container = /** @type {HTMLElement|null} */ (document.querySelector('.mr-mobile-portal'));
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'mr-mobile-portal';
+            }
+            
+            if (!container.parentElement) {
+                document.body.appendChild(container);
+            }
+            
+            this.mobilePortalContainer = container;
+        }
+
+        if (this.mobilePortalContainer) {
+            this.mobilePortalContainer.style.pointerEvents = this.mobileSidebarVisible ? 'auto' : 'none';
+            this.mobilePortalContainer.style.transform = 'none';
+
+            if (this.mobileOverlay && this.mobileOverlay.parentElement !== this.mobilePortalContainer) {
+                this.mobilePortalContainer.appendChild(this.mobileOverlay);
+            }
+        }
+        
+        return this.mobilePortalContainer;
+    }
+    
+    /**
+     * Ensure placeholder nodes exist for restoring elements
+     * @param {HTMLElement|null} sidebar
+     * @param {HTMLElement|null} mobileToggle
+     */
+    ensurePortalPlaceholders(sidebar = this.elements.sidebar, mobileToggle = document.getElementById('mr_mobile_toggle')) {
+        if (!sidebar || !mobileToggle) {
+            return;
+        }
+        
+        if (!this.sidebarPlaceholder) {
+            this.sidebarPlaceholder = document.createElement('div');
+            this.sidebarPlaceholder.className = 'mr-portal-placeholder';
+            this.sidebarPlaceholder.style.display = 'none';
+        }
+        
+        if (!this.sidebarPlaceholder.parentElement && this.sidebarOriginalParent) {
+            this.sidebarOriginalParent.insertBefore(this.sidebarPlaceholder, this.sidebarNextSibling || null);
+        }
+        
+        if (!this.togglePlaceholder) {
+            this.togglePlaceholder = document.createElement('div');
+            this.togglePlaceholder.className = 'mr-portal-placeholder';
+            this.togglePlaceholder.style.display = 'none';
+        }
+        
+        if (!this.togglePlaceholder.parentElement && this.toggleOriginalParent) {
+            this.toggleOriginalParent.insertBefore(this.togglePlaceholder, this.toggleNextSibling || null);
+        }
+    }
+    
+    /**
+     * Move sidebar, toggle, and overlay into or out of the mobile portal
+     */
+    updateResponsivePlacement() {
+        const sidebar = this.elements.sidebar;
+        let mobileToggle = /** @type {HTMLElement|null} */ (document.getElementById('mr_mobile_toggle'));
+        const leftSendForm = document.getElementById('leftSendForm');
+        
+        if (!sidebar) {
+            return;
+        }
+        if (!mobileToggle) {
+            mobileToggle = document.createElement('div');
+            mobileToggle.id = 'mr_mobile_toggle';
+            mobileToggle.className = 'mr-mobile-toggle';
+            mobileToggle.innerHTML = '<i class="fa-solid fa-book-atlas"></i>';
+            this.initializeMobileToggle();
+        }
+        
+        this.ensurePortalPlaceholders(sidebar, mobileToggle);
+        
+        if (this.isMobile) {
+            const portal = this.ensureMobilePortalContainer();
+            if (!portal) {
+                return;
+            }
+            
+            portal.style.pointerEvents = this.mobileSidebarVisible ? 'auto' : 'none';
+            portal.style.transform = 'none';
+            
+            if (sidebar.parentElement !== portal) {
+                portal.appendChild(sidebar);
+            }
+            if (leftSendForm && mobileToggle.parentElement !== leftSendForm) {
+                leftSendForm.prepend(mobileToggle);
+            }
+
+            if (this.mobileOverlay) {
+                if (this.mobileSidebarVisible) {
+                    this.mobileOverlay.classList.add('mobile-visible');
+                    this.mobileOverlay.classList.remove('mobile-hidden');
+                } else {
+                    this.mobileOverlay.classList.add('mobile-hidden');
+                    this.mobileOverlay.classList.remove('mobile-visible');
+                }
+            }
+
+            if (this.mobileSidebarVisible) {
+                sidebar.classList.add('mobile-visible');
+                sidebar.classList.remove('mobile-hidden');
+            } else {
+                sidebar.classList.add('mobile-hidden');
+                sidebar.classList.remove('mobile-visible');
+            }
+        } else {
+            if (this.sidebarPlaceholder?.parentElement && sidebar.parentElement !== this.sidebarPlaceholder.parentElement) {
+                this.sidebarPlaceholder.parentElement.insertBefore(sidebar, this.sidebarPlaceholder);
+            } else if (this.sidebarOriginalParent) {
+                this.sidebarOriginalParent.insertBefore(sidebar, this.sidebarNextSibling || null);
+            }
+            
+            sidebar.classList.remove('mobile-visible', 'mobile-hidden');
+            
+            if (this.togglePlaceholder?.parentElement && mobileToggle.parentElement !== this.togglePlaceholder.parentElement) {
+                this.togglePlaceholder.parentElement.insertBefore(mobileToggle, this.togglePlaceholder);
+            } else if (this.toggleOriginalParent) {
+                this.toggleOriginalParent.insertBefore(mobileToggle, this.toggleNextSibling || null);
+            }
+            
+            if (this.mobileOverlay && this.mobileOverlay.parentElement !== document.body) {
+                document.body.appendChild(this.mobileOverlay);
+            }
+            if (this.mobileOverlay) {
+                this.mobileOverlay.classList.add('mobile-hidden');
+                this.mobileOverlay.classList.remove('mobile-visible');
+            }
+            
+            if (this.mobilePortalContainer) {
+                this.mobilePortalContainer.style.pointerEvents = 'none';
+                this.mobilePortalContainer.style.transform = 'none';
+            }
+        }
     }
 }

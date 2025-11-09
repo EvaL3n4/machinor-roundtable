@@ -1,7 +1,7 @@
-<div id="mr_plot_sidebar" class="mr-plot-sidebar collapsed">
+<div id="mr_plot_sidebar" class="mr-plot-sidebar collapsed" role="complementary" aria-hidden="true">
     <div class="mr-sidebar-header">
         <h3>Plot Preview</h3>
-        <button id="mr_toggle_sidebar" class="mr-toggle-btn" title="Toggle Plot Preview">
+        <button id="mr_toggle_sidebar" class="mr-toggle-btn" title="Toggle Plot Preview" aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
             <i class="fa-solid fa-chevron-right"></i>
         </button>
     </div>
@@ -79,8 +79,8 @@
 </div>
 
 <!-- Mobile Floating Toggle Button -->
-<button id="mr_mobile_toggle" class="mr-mobile-toggle" title="Toggle Plot Preview">
-    <i class="fa-solid fa-plot"></i>
+<button id="mr_mobile_toggle" class="mr-mobile-toggle" title="Toggle Plot Preview" aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
+    <i class="fa-solid fa-book-open"></i>
 </button>
 
 <!-- Plot Editor Modal -->
