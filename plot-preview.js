@@ -94,6 +94,8 @@ export class PlotPreviewManager {
         this.isPaused = false;
         /** @type {boolean} */
         this.isManualEntry = false;
+        /** @type {boolean} */
+        this.isGenerating = false;
         
         /** @type {PlotPreviewElements} */
         this.elements = this.initializeElements();
@@ -220,7 +222,7 @@ export class PlotPreviewManager {
             
             this.mobileResizeTimeout = window.setTimeout(() => {
                 const wasMobile = this.isMobile;
-                this.isMobile = window.innerWidth <= 768;
+                this.isMobile = window.innerWidth <= 600;
                 
                 if (wasMobile && !this.isMobile && this.mobileSidebarVisible) {
                     this.hideMobileSidebar(true);
@@ -316,12 +318,6 @@ export class PlotPreviewManager {
 
         // Force reflow to ensure proper layout
         this.elements.sidebar.offsetHeight;
-
-        // If no content is displayed, trigger a generation
-        if (!this.currentPlot && this.plotEngine) {
-            console.log('[machinor-roundtable] No current plot, triggering generation...');
-            this.generateNewPlot();
-        }
 
         this.updateMobileAccessibilityState(true);
         this.applyMobileFocusTrap();
