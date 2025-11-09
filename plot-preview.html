@@ -1,0 +1,98 @@
+<div id="mr_plot_sidebar" class="mr-plot-sidebar collapsed">
+    <div class="mr-sidebar-header">
+        <h3>Plot Preview</h3>
+        <button id="mr_toggle_sidebar" class="mr-toggle-btn" title="Toggle Plot Preview">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+    
+    <div class="mr-sidebar-content">
+        <!-- Current Plot Section -->
+        <div class="mr-current-plot">
+            <div class="mr-plot-header">
+                <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
+                <span class="mr-status-text" id="mr_status_text">Ready</span>
+                <span class="mr-timer" id="mr_approval_timer"></span>
+            </div>
+            
+            <div class="mr-plot-text" id="mr_current_plot_text">
+                No active plot. Click generate to create one.
+            </div>
+            
+            <div class="mr-plot-actions">
+                <button id="mr_edit_plot" class="mr-action-btn" title="Edit Plot">
+                    <i class="fa-solid fa-pen"></i> Edit
+                </button>
+                <button id="mr_skip_plot" class="mr-action-btn" title="Skip Plot">
+                    <i class="fa-solid fa-forward"></i> Skip
+                </button>
+                <button id="mr_pause_plot" class="mr-action-btn" title="Pause Auto-Inject">
+                    <i class="fa-solid fa-pause"></i> Pause
+                </button>
+            </div>
+            
+            <div class="mr-direction-input">
+                <label for="mr_plot_direction">Direction:</label>
+                <input type="text" id="mr_plot_direction" 
+                       placeholder="Make it more romantic, add conflict..."
+                       autocomplete="off">
+                <div class="mr-recent-directions" id="mr_recent_directions"></div>
+            </div>
+        </div>
+
+        <!-- Next Plot Preview -->
+        <div class="mr-next-plot">
+            <h4>Next Plot Preview</h4>
+            <div class="mr-plot-text" id="mr_next_plot_text">
+                Generating next plot suggestion...
+            </div>
+            <button id="mr_regenerate_next" class="mr-action-btn small">
+                <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+            </button>
+        </div>
+
+        <!-- Plot History -->
+        <div class="mr-plot-history">
+            <div class="mr-history-header" id="mr_history_toggle">
+                <h4>Plot History</h4>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="mr-history-content collapsed" id="mr_history_content">
+                <div id="mr_history_list"></div>
+                <div class="mr-history-settings">
+                    <label>Track: 
+                        <input type="number" id="mr_history_limit" 
+                               min="1" max="20" value="5" size="3">
+                        plots
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Plot Entry -->
+        <div class="mr-manual-entry">
+            <button id="mr_manual_plot_btn" class="mr-action-btn full-width">
+                <i class="fa-solid fa-keyboard"></i> Write Custom Plot
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Plot Editor Modal -->
+<div id="mr_plot_editor_modal" class="mr-modal">
+    <div class="mr-modal-content">
+        <div class="mr-modal-header">
+            <h3>Edit Plot</h3>
+            <button id="mr_close_modal" class="mr-close-btn">&times;</button>
+        </div>
+        <div class="mr-modal-body">
+            <textarea id="mr_plot_editor_text" 
+                      placeholder="Enter your plot context here..."
+                      rows="8"></textarea>
+        </div>
+        <div class="mr-modal-footer">
+            <button id="mr_save_plot" class="mr-btn-primary">Save</button>
+            <button id="mr_cancel_edit" class="mr-btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>

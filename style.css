@@ -1,0 +1,89 @@
+/* Machinor Roundtable Extension Styles */
+
+.machinor-roundtable-settings {
+    margin: 10px 0;
+}
+
+.machinor-roundtable-settings .inline-drawer-content {
+    padding: 10px;
+}
+
+.mr-section {
+    margin: 15px 0;
+    padding: 10px;
+    background: var(--SmartThemeBlurTintColor);
+    border-radius: 8px;
+}
+
+.mr-section label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--SmartThemeBodyColor);
+}
+
+.mr-section input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    background: var(--SmartThemeBlurTintColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 4px;
+    color: var(--SmartThemeBodyColor);
+}
+
+.mr-section input[type="number"]:focus {
+    outline: none;
+    border-color: var(--SmartThemeEmColor);
+}
+
+.mr-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mr-toggle input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.mr-toggle label {
+    margin: 0;
+    cursor: pointer;
+}
+
+#mr_manual_trigger {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.mr-status {
+    margin-top: 20px;
+    padding: 10px;
+    background: var(--SmartThemeBlurTintColor);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.mr-status p {
+    margin: 5px 0;
+    color: var(--SmartThemeBodyColor);
+}
+
+.mr-status p:first-child {
+    color: var(--green);
+    font-weight: 500;
+}
+
+#mr_status {
+    color: var(--SmartThemeEmColor);
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mr-section {
+        margin: 10px 0;
+        padding: 8px;
+    }
+}

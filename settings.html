@@ -1,0 +1,147 @@
+<div class="machinor-roundtable-settings">
+    <div class="mr-settings-container">
+        <div class="mr-settings-header">
+            <h3>Machinor Roundtable</h3>
+            <div class="mr-version">v1.0.0</div>
+        </div>
+        
+        <div class="mr-settings-content">
+            <!-- Main Controls -->
+            <div class="mr-settings-section">
+                <h4>Main Controls</h4>
+                
+                <div class="mr-toggle-item">
+                    <input id="mr_enabled" type="checkbox" class="mr-toggle-switch">
+                    <label for="mr_enabled" class="mr-toggle-label">
+                        <span class="mr-label-text">Enable Plot Progression</span>
+                        <span class="mr-label-desc">Activate AI-powered plot injection</span>
+                    </label>
+                </div>
+                
+                <div class="mr-toggle-item">
+                    <input id="mr_debug" type="checkbox" class="mr-toggle-switch">
+                    <label for="mr_debug" class="mr-toggle-label">
+                        <span class="mr-label-text">Debug Mode</span>
+                        <span class="mr-label-desc">Show injected plots in notifications</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Generation Settings -->
+            <div class="mr-settings-section">
+                <h4>Generation Settings</h4>
+                
+                <div class="mr-form-group">
+                    <label for="mr_frequency">Injection Frequency</label>
+                    <div class="mr-input-with-value">
+                        <input type="number" id="mr_frequency" class="mr-input" min="1" max="50" value="7">
+                        <span class="mr-input-suffix">exchanges</span>
+                    </div>
+                    <span class="mr-help-text">How often to inject plot context (lower = more frequent)</span>
+                </div>
+
+                <div class="mr-form-group">
+                    <label for="mr_approval_timeout">Auto-Approve Timeout</label>
+                    <div class="mr-input-with-value">
+                        <input type="number" id="mr_approval_timeout" class="mr-input" min="1" max="30" value="5">
+                        <span class="mr-input-suffix">seconds</span>
+                    </div>
+                    <span class="mr-help-text">Time before auto-injecting generated plots</span>
+                </div>
+
+                <div class="mr-form-group">
+                    <label for="mr_plot_intensity">Plot Intensity</label>
+                    <select id="mr_plot_intensity" class="mr-select">
+                        <option value="subtle">Subtle - Gentle nudges</option>
+                        <option value="moderate" selected>Moderate - Balanced influence</option>
+                        <option value="strong">Strong - Direct guidance</option>
+                        <option value="dramatic">Dramatic - Major plot pushes</option>
+                    </select>
+                    <span class="mr-help-text">How strongly plots influence the narrative</span>
+                </div>
+
+                <div class="mr-form-group">
+                    <label for="mr_plot_style">Plot Style</label>
+                    <select id="mr_plot_style" class="mr-select">
+                        <option value="natural" selected>Natural - Organic character development</option>
+                        <option value="dramatic">Dramatic - High stakes and conflict</option>
+                        <option value="romantic">Romantic - Relationship-focused</option>
+                        <option value="mysterious">Mysterious - Intrigue and secrets</option>
+                        <option value="adventure">Adventure - Action and exploration</option>
+                        <option value="comedy">Comedy - Lighthearted and fun</option>
+                    </select>
+                    <span class="mr-help-text">Overall tone and approach to plot generation</span>
+                </div>
+            </div>
+
+            <!-- Advanced Options -->
+            <div class="mr-settings-section">
+                <h4>Advanced Options</h4>
+                
+                <div class="mr-form-group">
+                    <label for="mr_history_limit">History Limit</label>
+                    <div class="mr-input-with-value">
+                        <input type="number" id="mr_history_limit" class="mr-input" min="1" max="20" value="5">
+                        <span class="mr-input-suffix">plots</span>
+                    </div>
+                    <span class="mr-help-text">Number of recent plots to keep in history</span>
+                </div>
+
+                <div class="mr-form-group">
+                    <label for="mr_max_plot_length">Max Plot Length</label>
+                    <div class="mr-input-with-value">
+                        <input type="number" id="mr_max_plot_length" class="mr-input" min="50" max="500" value="200">
+                        <span class="mr-input-suffix">characters</span>
+                    </div>
+                    <span class="mr-help-text">Maximum length for generated plot contexts</span>
+                </div>
+
+                <div class="mr-toggle-item">
+                    <input id="mr_auto_generate" type="checkbox" class="mr-toggle-switch" checked>
+                    <label for="mr_auto_generate" class="mr-toggle-label">
+                        <span class="mr-label-text">Auto-Generate Plots</span>
+                        <span class="mr-label-desc">Automatically generate plots when needed</span>
+                    </label>
+                </div>
+
+                <div class="mr-toggle-item">
+                    <input id="mr_cache_plots" type="checkbox" class="mr-toggle-switch" checked>
+                    <label for="mr_cache_plots" class="mr-toggle-label">
+                        <span class="mr-label-text">Cache Generated Plots</span>
+                        <span class="mr-label-desc">Reuse similar plots to save API calls</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mr-settings-section">
+                <h4>Quick Actions</h4>
+                <button id="mr_manual_trigger" class="mr-btn-primary full-width">
+                    <i class="fa-solid fa-magic"></i> Generate Plot Now
+                </button>
+                <button id="mr_clear_cache" class="mr-btn-secondary full-width">
+                    <i class="fa-solid fa-broom"></i> Clear Plot Cache
+                </button>
+                <button id="mr_reset_settings" class="mr-btn-secondary full-width">
+                    <i class="fa-solid fa-rotate-left"></i> Reset to Defaults
+                </button>
+            </div>
+
+            <!-- Status Info -->
+            <div class="mr-status-info">
+                <div class="mr-status-item">
+                    <span class="mr-status-label">Status:</span>
+                    <span class="mr-status-value" id="mr_status">Ready</span>
+                </div>
+                <div class="mr-status-item">
+                    <span class="mr-status-label">Plots Generated:</span>
+                    <span class="mr-status-value" id="mr_plot_count">0</span>
+                </div>
+                <div class="mr-status-item">
+                    <span class="mr-status-label">Cache Size:</span>
+                    <span class="mr-status-value" id="mr_cache_size">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

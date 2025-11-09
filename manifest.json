@@ -1,0 +1,11 @@
+{
+  "display_name": "Machinor Roundtable",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
+  "css": "style.css",
+  "author": "Machinor",
+  "version": "1.0.0",
+  "homePage": "https://github.com/machinor/machinor-roundtable"
+}
