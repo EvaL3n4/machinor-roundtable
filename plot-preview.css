@@ -678,22 +678,22 @@
         display: flex;
     }
     
-    /* Mobile overlay sidebar - starts off-screen */
+    /* Mobile overlay sidebar - starts off-screen and vertically centered */
     .mr-plot-sidebar.mobile-active {
         display: flex;
         position: fixed;
-        top: 0;
+        top: 50%;
         left: -100%;
         width: 85%;
         max-width: 380px;
-        height: 100vh;
-        max-height: 100vh;
-        transform: none;
-        border-radius: 0;
-        border: none;
-        border-right: 1px solid var(--mr-border-glass);
+        height: 90vh;
+        max-height: 90vh;
+        transform: translateY(-50%);
+        border-radius: var(--mr-radius-lg);
+        border: 1px solid var(--mr-border-glass);
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 1001;
+        box-shadow: var(--mr-shadow-lg);
     }
     
     /* Slide in animation */
@@ -724,7 +724,7 @@
     /* Adjust content padding for mobile */
     .mr-sidebar-content {
         padding: 16px;
-        max-height: calc(100vh - 80px);
+        max-height: calc(90vh - 80px);
     }
     
     /* Make toggle button in header work for mobile */
