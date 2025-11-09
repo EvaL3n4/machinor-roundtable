@@ -639,3 +639,98 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* Mobile Floating Toggle Button - Hidden on desktop */
+.mr-mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background: var(--mr-accent-gradient);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    transition: var(--mr-transition);
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.mr-mobile-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+/* Mobile Overlay Sidebar */
+@media (max-width: 768px) {
+    /* Hide desktop sidebar completely on mobile */
+    .mr-plot-sidebar {
+        display: none;
+    }
+    
+    /* Show mobile toggle button */
+    .mr-mobile-toggle {
+        display: flex;
+    }
+    
+    /* Mobile overlay sidebar - starts off-screen */
+    .mr-plot-sidebar.mobile-active {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 85%;
+        max-width: 380px;
+        height: 100vh;
+        max-height: 100vh;
+        transform: none;
+        border-radius: 0;
+        border: none;
+        border-right: 1px solid var(--mr-border-glass);
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+    }
+    
+    /* Slide in animation */
+    .mr-plot-sidebar.mobile-active.mobile-visible {
+        left: 0;
+    }
+    
+    /* Overlay backdrop */
+    .mr-mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .mr-mobile-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    /* Adjust content padding for mobile */
+    .mr-sidebar-content {
+        padding: 16px;
+        max-height: calc(100vh - 80px);
+    }
+    
+    /* Make toggle button in header work for mobile */
+    .mr-plot-sidebar.mobile-active .mr-toggle-btn {
+        position: absolute;
+        right: 10px;
+        top: 15px;
+    }
+}

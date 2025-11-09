@@ -137,6 +137,165 @@ export class PlotPreviewManager {
     }
 
     /**
+     * Initialize mobile toggle functionality
+     */
+    initializeMobileToggle() {
+        const mobileToggle = document.getElementById('mr_mobile_toggle');
+        const desktopToggle = document.getElementById('mr_toggle_sidebar');
+        
+        if (!mobileToggle || !this.elements.sidebar) return;
+        
+        // Create overlay element
+        const overlay = document.createElement('div');
+        overlay.className = 'mr-mobile-overlay';
+        document.body.appendChild(overlay);
+        
+        // Mobile toggle button click
+        mobileToggle.addEventListener('click', () => {
+            this.toggleMobileSidebar();
+        });
+        
+        // Desktop toggle button (in header) should also work on mobile
+        if (desktopToggle) {
+            desktopToggle.addEventListener('click', () => {
+                if (this.isMobile) {
+                    this.toggleMobileSidebar();
+                }
+            });
+        }
+        
+        // Overlay click to close
+        overlay.addEventListener('click', () => {
+            this.hideMobileSidebar();
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const wasMobile = this.isMobile;
+            this.isMobile = window.innerWidth <= 768;
+            
+            // If switching from mobile to desktop, clean up mobile state
+            if (wasMobile && !this.isMobile && this.mobileSidebarVisible) {
+                this.hideMobileSidebar();
+            }
+        });
+        
+        // Add touch gesture support
+        this.addTouchGestures();
+        
+        console.log('[machinor-roundtable] Mobile toggle initialized');
+    }
+
+    /**
+     * Toggle mobile sidebar visibility
+     */
+    toggleMobileSidebar() {
+        if (this.mobileSidebarVisible) {
+            this.hideMobileSidebar();
+        } else {
+            this.showMobileSidebar();
+        }
+    }
+
+    /**
+     * Show mobile sidebar
+     */
+    showMobileSidebar() {
+        const mobileToggle = document.getElementById('mr_mobile_toggle');
+        const overlay = document.querySelector('.mr-mobile-overlay');
+        
+        if (!this.elements.sidebar || !overlay) return;
+        
+        // Add mobile classes
+        this.elements.sidebar.classList.add('mobile-active');
+        overlay.classList.add('active');
+        
+        // Trigger animation
+        setTimeout(() => {
+            this.elements.sidebar.classList.add('mobile-visible');
+            this.mobileSidebarVisible = true;
+        }, 10);
+        
+        // Hide floating button when sidebar is open
+        if (mobileToggle) {
+            mobileToggle.style.display = 'none';
+        }
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        console.log('[machinor-roundtable] Mobile sidebar shown');
+    }
+
+    /**
+     * Hide mobile sidebar
+     */
+    hideMobileSidebar() {
+        const mobileToggle = document.getElementById('mr_mobile_toggle');
+        const overlay = document.querySelector('.mr-mobile-overlay');
+        
+        if (!this.elements.sidebar || !overlay) return;
+        
+        // Remove visible class to trigger slide-out animation
+        this.elements.sidebar.classList.remove('mobile-visible');
+        this.mobileSidebarVisible = false;
+        
+        // Remove classes after animation
+        setTimeout(() => {
+            this.elements.sidebar.classList.remove('mobile-active');
+            overlay.classList.remove('active');
+        }, 300);
+        
+        // Show floating button again
+        if (mobileToggle) {
+            mobileToggle.style.display = 'flex';
+        }
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        
+        console.log('[machinor-roundtable] Mobile sidebar hidden');
+    }
+
+    /**
+     * Add touch gesture support for mobile
+     */
+    addTouchGestures() {
+        if (!this.elements.sidebar) return;
+        
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        // Touch start
+        this.elements.sidebar.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        
+        // Touch end
+        this.elements.sidebar.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            touchEndY = e.changedTouches[0].clientY;
+            
+            // Calculate swipe distance
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const absX = Math.abs(deltaX);
+            const absY = Math.abs(deltaY);
+            
+            // Check if it's a horizontal swipe (more horizontal than vertical)
+            if (absX > absY && absX > 50) {
+                // Swipe left to close
+                if (deltaX < -30 && this.mobileSidebarVisible) {
+                    this.hideMobileSidebar();
+                }
+            }
+        });
+    }
+
+    /**
      * Bind event listeners
      */
     bindEvents() {
