@@ -1,89 +1,458 @@
-/* Machinor Roundtable Extension Styles */
+/* Machinor Roundtable - iOS Liquid Glass Base Styles Pink Purple Theme */
 
+/* Import iOS Font Stack */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* iOS Liquid Glass Design System - Pink Purple Theme - Base */
+:root {
+    /* Core Pink Purple Palette */
+    --mr-bg-primary: #0a0a0a;
+    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
+    --mr-bg-glass: rgba(255, 192, 203, 0.08);
+    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
+    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
+    
+    /* Pink Purple Accent System */
+    --mr-accent-primary: #ff69b4;      /* Hot Pink */
+    --mr-accent-secondary: #da70d6;    /* Orchid */
+    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
+    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
+    
+    /* Liquid Glass Gradients */
+    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
+    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
+    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
+    
+    /* iOS Typography System */
+    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+    --mr-text-primary: #f8f9fa;
+    --mr-text-secondary: #e9ecef;
+    --mr-text-tertiary: #dee2e6;
+    --mr-text-muted: #adb5bd;
+    --mr-text-accent: #ff69b4;
+    
+    /* iOS Liquid Glass Borders */
+    --mr-border-glass: rgba(255, 255, 255, 0.12);
+    --mr-border-pink: rgba(255, 105, 180, 0.2);
+    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
+    --mr-border-accent: rgba(218, 112, 214, 0.25);
+    
+    /* iOS Liquid Glass Shadows */
+    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
+    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
+    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
+    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
+    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
+    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
+    
+    /* iOS Radius Scale */
+    --mr-radius-lg: 20px;
+    --mr-radius-md: 16px;
+    --mr-radius-sm: 12px;
+    --mr-radius-xs: 8px;
+    
+    /* iOS Animation System */
+    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Main Extension Container - iOS Liquid Glass */
 .machinor-roundtable-settings {
-    margin: 10px 0;
+    margin: 20px 0;
+    padding: 0;
 }
 
+/* SillyTavern Integration Container - iOS Liquid Glass */
 .machinor-roundtable-settings .inline-drawer-content {
-    padding: 10px;
+    padding: 20px;
+    background: var(--mr-bg-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: var(--mr-radius-md);
+    border: 1px solid var(--mr-border-glass);
+    box-shadow: var(--mr-shadow-glass);
+    position: relative;
+    overflow: hidden;
 }
 
+.machinor-roundtable-settings .inline-drawer-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.machinor-roundtable-settings .inline-drawer-content:hover::before {
+    opacity: 0.3;
+}
+
+/* iOS Settings Sections */
 .mr-section {
-    margin: 15px 0;
-    padding: 10px;
-    background: var(--SmartThemeBlurTintColor);
-    border-radius: 8px;
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: var(--mr-radius-sm);
+    border: 1px solid var(--mr-border-glass);
+    box-shadow: var(--mr-shadow-sm);
+    transition: var(--mr-transition-spring);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.mr-section:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--mr-shadow-glass);
+    border-color: var(--mr-border-pink);
+}
+
+.mr-section:hover::before {
+    left: 100%;
 }
 
 .mr-section label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: 500;
-    color: var(--SmartThemeBodyColor);
+    color: var(--mr-text-primary);
+    font-size: 14px;
+    font-family: var(--mr-font-family);
 }
 
+/* iOS Form Controls */
 .mr-section input[type="number"] {
     width: 100%;
-    padding: 8px;
-    background: var(--SmartThemeBlurTintColor);
-    border: 1px solid var(--SmartThemeBorderColor);
-    border-radius: 4px;
-    color: var(--SmartThemeBodyColor);
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--mr-border-glass);
+    border-radius: var(--mr-radius-xs);
+    color: var(--mr-text-primary);
+    font-size: 14px;
+    font-family: var(--mr-font-family);
+    transition: var(--mr-transition);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .mr-section input[type="number"]:focus {
     outline: none;
-    border-color: var(--SmartThemeEmColor);
+    border-color: var(--mr-accent-primary);
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
+    background: rgba(0, 0, 0, 0.4);
 }
 
+.mr-section input[type="number"]:hover {
+    border-color: var(--mr-border-pink);
+}
+
+/* iOS Toggle Controls */
 .mr-toggle {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    padding: 12px;
+    background: var(--mr-bg-glass-elevated);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: var(--mr-radius-xs);
+    border: 1px solid var(--mr-border-glass);
+    transition: var(--mr-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.mr-toggle:hover {
+    background: rgba(255, 105, 180, 0.08);
+    border-color: var(--mr-border-pink);
+    transform: translateY(-1px);
+}
+
+.mr-toggle:hover::before {
+    left: 100%;
 }
 
 .mr-toggle input[type="checkbox"] {
     width: auto;
     margin: 0;
+    accent-color: var(--mr-accent-primary);
 }
 
 .mr-toggle label {
     margin: 0;
     cursor: pointer;
+    font-weight: 500;
+    color: var(--mr-text-primary);
+    font-family: var(--mr-font-family);
 }
 
+/* iOS Button - Manual Trigger */
 #mr_manual_trigger {
     width: 100%;
-    margin: 10px 0;
+    margin: 16px 0;
+    padding: 12px 24px;
+    background: var(--mr-accent-gradient);
+    border: none;
+    border-radius: var(--mr-radius-sm);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--mr-font-family);
+    cursor: pointer;
+    transition: var(--mr-transition-spring);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.3);
 }
 
+#mr_manual_trigger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+#mr_manual_trigger:hover::before {
+    left: 100%;
+}
+
+#mr_manual_trigger:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(255, 105, 180, 0.4);
+}
+
+#mr_manual_trigger:active {
+    transform: translateY(-1px) scale(1.01);
+    transition: var(--mr-transition-fast);
+}
+
+#mr_manual_trigger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* iOS Status Display */
 .mr-status {
     margin-top: 20px;
-    padding: 10px;
-    background: var(--SmartThemeBlurTintColor);
-    border-radius: 8px;
+    padding: 16px;
+    background: var(--mr-bg-glass);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-radius: var(--mr-radius-sm);
+    border: 1px solid var(--mr-border-glass);
     text-align: center;
+    box-shadow: var(--mr-shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mr-status:hover::before {
+    opacity: 0.3;
 }
 
 .mr-status p {
-    margin: 5px 0;
-    color: var(--SmartThemeBodyColor);
+    margin: 8px 0;
+    color: var(--mr-text-primary);
+    font-family: var(--mr-font-family);
+    position: relative;
+    z-index: 1;
 }
 
 .mr-status p:first-child {
-    color: var(--green);
-    font-weight: 500;
+    color: var(--mr-accent-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.mr-status p:first-child::before {
+    content: '●';
+    font-size: 8px;
+    color: var(--mr-accent-primary);
+    animation: mr-status-pulse 2s infinite;
+}
+
+@keyframes mr-status-pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 #mr_status {
-    color: var(--SmartThemeEmColor);
-    font-weight: 500;
+    color: var(--mr-accent-primary);
+    font-weight: 600;
+    background: rgba(255, 105, 180, 0.1);
+    padding: 4px 8px;
+    border-radius: var(--mr-radius-xs);
+    border: 1px solid rgba(255, 105, 180, 0.2);
 }
 
-/* Responsive adjustments */
+/* iOS Responsive Design */
 @media (max-width: 768px) {
+    .machinor-roundtable-settings .inline-drawer-content {
+        padding: 16px;
+    }
+    
     .mr-section {
-        margin: 10px 0;
-        padding: 8px;
+        margin: 16px 0;
+        padding: 16px;
+    }
+    
+    .mr-toggle {
+        padding: 10px;
+    }
+    
+    #mr_manual_trigger {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    
+    .mr-status {
+        padding: 12px;
+        margin-top: 16px;
+    }
+}
+
+/* iOS Focus Styles for Accessibility */
+.mr-section input:focus,
+.mr-toggle input:focus,
+#mr_manual_trigger:focus {
+    outline: 2px solid var(--mr-accent-primary);
+    outline-offset: 2px;
+}
+
+/* iOS Smooth Animations */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--mr-font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Glass Effect Utilities */
+.glass-effect {
+    background: var(--mr-bg-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--mr-border-glass);
+}
+
+.glass-effect-strong {
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid var(--mr-border-glass);
+}
+
+.glass-effect-elevated {
+    background: var(--mr-bg-glass-elevated);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid var(--mr-border-glass);
+}
+
+/* iOS Gradient Utilities */
+.gradient-primary {
+    background: var(--mr-accent-gradient);
+}
+
+.gradient-soft {
+    background: var(--mr-accent-soft);
+}
+
+.gradient-glow {
+    background: var(--mr-accent-glow);
+}
+
+/* iOS Text Utilities */
+.text-primary { color: var(--mr-text-primary); }
+.text-secondary { color: var(--mr-text-secondary); }
+.text-muted { color: var(--mr-text-muted); }
+.text-accent { color: var(--mr-text-accent); }
+
+/* iOS Animation Classes */
+.spring-hover:hover {
+    transition: var(--mr-transition-spring);
+    transform: translateY(-2px) scale(1.01);
+}
+
+.liquid-hover:hover {
+    transition: var(--mr-transition-liquid);
+    transform: translateY(-3px) scale(1.02);
+}
+
+.glow-hover:hover {
+    box-shadow: var(--mr-shadow-glass-strong);
+}
+
+/* iOS Mobile Touch Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .mr-section:hover,
+    .mr-toggle:hover,
+    .mr-status:hover {
+        transform: none;
+    }
+    
+    .mr-section:active,
+    .mr-toggle:active,
+    #mr_manual_trigger:active {
+        transform: scale(0.98);
+        transition: var(--mr-transition-fast);
     }
 }

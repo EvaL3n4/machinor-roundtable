@@ -101,6 +101,14 @@ export class PlotPreviewManager {
         /** @type {boolean} */
         this.isGenerating = false;
         
+        // Story intelligence data
+        /** @type {Object|null} */
+        this.storyIntelligence = null;
+        /** @type {Object|null} */
+        this.arcStatus = null;
+        /** @type {Object|null} */
+        this.characterAnalysis = null;
+        
         /** @type {PlotPreviewElements} */
         this.elements = this.initializeElements();
         /** @type {boolean} */
@@ -147,6 +155,9 @@ export class PlotPreviewManager {
         
         // Setup listeners for chat/character changes
         this.setupContextChangeListeners();
+        
+        // Initialize story intelligence display
+        this.updateStoryIntelligence();
     }
 
     /**
@@ -269,7 +280,30 @@ export class PlotPreviewManager {
             historyContent: document.getElementById('mr_history_content'),
             modal: document.getElementById('mr_plot_editor_modal'),
             editorText: /** @type {HTMLTextAreaElement} */ (document.getElementById('mr_plot_editor_text')),
-            closeModalBtn: document.getElementById('mr_close_modal')
+            closeModalBtn: document.getElementById('mr_close_modal'),
+            
+            // New story intelligence elements
+            arcProgress: document.getElementById('mr_arc_progress'),
+            arcType: document.getElementById('mr_arc_type'),
+            arcFill: document.getElementById('mr_arc_fill'),
+            arcPhase: document.getElementById('mr_arc_phase'),
+            arcPercentage: document.getElementById('mr_arc_percentage'),
+            storyIntel: document.getElementById('mr_story_intel'),
+            intelToggle: document.getElementById('mr_intel_toggle'),
+            intelContent: document.getElementById('mr_intel_content'),
+            characterAnalysis: document.getElementById('mr_character_analysis'),
+            worldContext: document.getElementById('mr_world_context'),
+            characterCount: document.getElementById('mr_character_count'),
+            
+            // Template gallery elements
+            templateGallery: document.getElementById('mr_template_gallery'),
+            templateToggle: document.getElementById('mr_template_toggle'),
+            templateContent: document.getElementById('mr_template_content'),
+            categoryTabs: document.getElementById('mr_category_tabs'),
+            templatesList: document.getElementById('mr_templates_list'),
+            tabButtons: document.querySelectorAll('.mr-tab-btn'),
+            templateItems: document.querySelectorAll('.mr-template-item'),
+            templateSelectButtons: document.querySelectorAll('.mr-template-select')
         };
 
         if (elements.sidebar) {
@@ -563,7 +597,210 @@ export class PlotPreviewManager {
             });
         }
         
+        // Story intelligence toggle
+        if (this.elements.intelToggle) {
+            this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
+        }
+        
         console.log('[machinor-roundtable] Plot Preview events bound');
+    }
+
+    /**
+     * Update story intelligence display
+     */
+    updateStoryIntelligence() {
+        try {
+            // Update arc status
+            this.updateArcDisplay();
+            
+            // Update character analysis
+            this.updateCharacterAnalysis();
+            
+            // Update world context
+            this.updateWorldContext();
+            
+            // Update character count
+            this.updateCharacterCount();
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating story intelligence:', error);
+        }
+    }
+
+    /**
+     * Update arc progress display
+     */
+    updateArcDisplay() {
+        if (!this.elements.arcType || !this.elements.arcFill) return;
+        
+        try {
+            // Get arc status from plot engine if available
+            const arcStatus = this.plotEngine?.narrativeArc?.getArcStatus();
+            
+            if (arcStatus) {
+                // Update arc type
+                const arcName = arcStatus.arcName || 'Natural Progression';
+                this.elements.arcType.textContent = arcName;
+                
+                // Update progress
+                const progress = arcStatus.progress || 0;
+                this.elements.arcFill.style.width = `${progress}%`;
+                this.elements.arcPercentage.textContent = `${progress}%`;
+                
+                // Update current phase
+                const phase = arcStatus.currentPhase || 'Not started';
+                this.elements.arcPhase.textContent = this.formatPhaseName(phase);
+                
+                // Show/hide arc progress
+                if (this.elements.arcProgress) {
+                    this.elements.arcProgress.style.display = arcStatus.hasActiveArc ? 'block' : 'none';
+                }
+            } else {
+                // Hide arc progress if no active arc
+                if (this.elements.arcProgress) {
+                    this.elements.arcProgress.style.display = 'none';
+                }
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating arc display:', error);
+        }
+    }
+
+    /**
+     * Update character analysis display
+     */
+    updateCharacterAnalysis() {
+        if (!this.elements.characterAnalysis) return;
+        
+        try {
+            // Get character analysis from ST integration if available
+            const context = getContext();
+            const currentChar = context?.characters?.[context?.characterId];
+            
+            if (currentChar && this.plotEngine?.stIntegration) {
+                const analysis = this.plotEngine.stIntegration.analyzeCharacterProfile(currentChar);
+                
+                if (analysis) {
+                    let analysisText = '';
+                    
+                    if (analysis.traits?.length > 0) {
+                        analysisText += `Traits: ${analysis.traits.slice(0, 3).join(', ')}`;
+                    }
+                    
+                    if (analysis.arcPotential) {
+                        analysisText += analysisText ? ' | ' : '';
+                        analysisText += `Arc Potential: ${analysis.arcPotential}`;
+                    }
+                    
+                    this.elements.characterAnalysis.textContent = analysisText || 'Basic character data';
+                } else {
+                    this.elements.characterAnalysis.textContent = 'Basic character';
+                }
+            } else {
+                this.elements.characterAnalysis.textContent = 'No character selected';
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating character analysis:', error);
+            this.elements.characterAnalysis.textContent = 'Analysis unavailable';
+        }
+    }
+
+    /**
+     * Update world context display
+     */
+    updateWorldContext() {
+        if (!this.elements.worldContext) return;
+        
+        try {
+            // Get world context from ST integration if available
+            if (this.plotEngine?.stIntegration) {
+                const worldInfo = this.plotEngine.stIntegration.getWorldInfo();
+                
+                if (worldInfo && Object.keys(worldInfo).length > 0) {
+                    let contextText = '';
+                    let totalEntries = 0;
+                    
+                    // Count world info entries
+                    Object.values(worldInfo).forEach(category => {
+                        if (Array.isArray(category)) {
+                            totalEntries += category.length;
+                        }
+                    });
+                    
+                    contextText = `${totalEntries} world entries`;
+                    
+                    // Add specific categories if available
+                    if (worldInfo.locations?.length > 0) {
+                        contextText += `, ${worldInfo.locations.length} locations`;
+                    }
+                    if (worldInfo.organizations?.length > 0) {
+                        contextText += `, ${worldInfo.organizations.length} groups`;
+                    }
+                    
+                    this.elements.worldContext.textContent = contextText;
+                } else {
+                    this.elements.worldContext.textContent = 'No world data';
+                }
+            } else {
+                this.elements.worldContext.textContent = 'Integration not available';
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating world context:', error);
+            this.elements.worldContext.textContent = 'Context unavailable';
+        }
+    }
+
+    /**
+     * Update character count display
+     */
+    updateCharacterCount() {
+        if (!this.elements.characterCount) return;
+        
+        try {
+            // Get active characters from chat injector if available
+            const activeCharacters = this.chatInjector?.getActiveCharacters() || [];
+            
+            if (activeCharacters.length === 1) {
+                this.elements.characterCount.textContent = 'Single character';
+            } else if (activeCharacters.length > 1) {
+                this.elements.characterCount.textContent = `${activeCharacters.length} characters in group`;
+            } else {
+                this.elements.characterCount.textContent = 'No characters detected';
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating character count:', error);
+            this.elements.characterCount.textContent = 'Count unavailable';
+        }
+    }
+
+    /**
+     * Toggle story intelligence panel
+     */
+    toggleStoryIntel() {
+        if (!this.elements.intelContent || !this.elements.intelToggle) return;
+        
+        const isCollapsed = this.elements.intelContent.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            this.elements.intelContent.classList.remove('collapsed');
+            this.elements.intelToggle.querySelector('i').className = 'fa-solid fa-chevron-up';
+        } else {
+            this.elements.intelContent.classList.add('collapsed');
+            this.elements.intelToggle.querySelector('i').className = 'fa-solid fa-chevron-down';
+        }
+    }
+
+    /**
+     * Format phase name for display
+     */
+    formatPhaseName(phase) {
+        return phase.split('_').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
     }
 
     /**

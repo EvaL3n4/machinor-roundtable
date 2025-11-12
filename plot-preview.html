@@ -10,10 +10,96 @@
         <!-- Current Plot Section -->
         <div class="mr-current-plot">
             <div class="mr-plot-header">
-                <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
-                <span class="mr-status-text" id="mr_status_text">Ready</span>
-                <span class="mr-timer" id="mr_approval_timer"></span>
-            </div>
+                            <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
+                            <span class="mr-status-text" id="mr_status_text">Ready</span>
+                            <span class="mr-timer" id="mr_approval_timer"></span>
+                        </div>
+            
+                        <!-- Narrative Arc Progress -->
+                        <div class="mr-arc-progress" id="mr_arc_progress">
+                            <div class="mr-arc-header">
+                                <h4>Story Arc</h4>
+                                <span class="mr-arc-type" id="mr_arc_type">Natural Progression</span>
+                            </div>
+                            <div class="mr-arc-bar">
+                                <div class="mr-arc-fill" id="mr_arc_fill" style="width: 0%"></div>
+                            </div>
+                            <div class="mr-arc-details">
+                                <span class="mr-arc-phase" id="mr_arc_phase">Not started</span>
+                                <span class="mr-arc-percentage" id="mr_arc_percentage">0%</span>
+                            </div>
+                        </div>
+            
+                        <!-- Story Intelligence Panel -->
+                        <div class="mr-story-intel" id="mr_story_intel">
+                            <div class="mr-intel-header">
+                                <h4>Story Intelligence</h4>
+                                <span class="mr-intel-toggle" id="mr_intel_toggle">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </div>
+                            <div class="mr-intel-content collapsed" id="mr_intel_content">
+                                <div class="mr-intel-item">
+                                    <label>Character Analysis:</label>
+                                    <div class="mr-intel-value" id="mr_character_analysis">Not analyzed</div>
+                                </div>
+                                <div class="mr-intel-item">
+                                    <label>World Context:</label>
+                                    <div class="mr-intel-value" id="mr_world_context">No world data</div>
+                                </div>
+                                <div class="mr-intel-item">
+                                    <label>Multi-Character:</label>
+                                    <div class="mr-intel-value" id="mr_character_count">Single character</div>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <!-- Plot Template Gallery -->
+                        <div class="mr-template-gallery" id="mr_template_gallery">
+                            <div class="mr-template-header">
+                                <h4>Plot Templates</h4>
+                                <span class="mr-template-toggle" id="mr_template_toggle">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </div>
+                            <div class="mr-template-content collapsed" id="mr_template_content">
+                                <div class="mr-template-categories">
+                                    <div class="mr-category-tabs" id="mr_category_tabs">
+                                        <button class="mr-tab-btn active" data-category="romance">Romance</button>
+                                        <button class="mr-tab-btn" data-category="adventure">Adventure</button>
+                                        <button class="mr-tab-btn" data-category="mystery">Mystery</button>
+                                        <button class="mr-tab-btn" data-category="friendship">Friendship</button>
+                                        <button class="mr-tab-btn" data-category="hero">Hero's Journey</button>
+                                    </div>
+                                    <div class="mr-templates-list" id="mr_templates_list">
+                                        <div class="mr-template-item" data-template="meet_cute">
+                                            <div class="mr-template-icon">💕</div>
+                                            <div class="mr-template-info">
+                                                <div class="mr-template-name">Meet Cute</div>
+                                                <div class="mr-template-desc">Two characters meet in an unexpected way</div>
+                                            </div>
+                                            <button class="mr-template-select" data-template="meet_cute">Select</button>
+                                        </div>
+                                        <div class="mr-template-item" data-template="adventure_begins">
+                                            <div class="mr-template-icon">🗺️</div>
+                                            <div class="mr-template-info">
+                                                <div class="mr-template-name">Adventure Begins</div>
+                                                <div class="mr-template-desc">A call to action starts the quest</div>
+                                            </div>
+                                            <button class="mr-template-select" data-template="adventure_begins">Select</button>
+                                        </div>
+                                        <div class="mr-template-item" data-template="mystery_hook">
+                                            <div class="mr-template-icon">🔍</div>
+                                            <div class="mr-template-info">
+                                                <div class="mr-template-name">Mystery Hook</div>
+                                                <div class="mr-template-desc">A strange event that needs investigation</div>
+                                            </div>
+                                            <button class="mr-template-select" data-template="mystery_hook">Select</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
             
             <div class="mr-plot-text" id="mr_current_plot_text">
                 No active plot. Click generate to create one.

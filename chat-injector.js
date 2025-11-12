@@ -30,7 +30,55 @@ export class ChatInjector {
         // Listen for message sent events to track conversation turns
         eventSource.on(event_types.MESSAGE_SENT, this.handleMessageSent.bind(this));
         
-        console.log(`[machinor-roundtable] Chat injector initialized`);
+        // ST Integration Events
+        this.setupSTIntegrationEvents();
+        
+        console.log(`[machinor-roundtable] Chat injector initialized with ST integration`);
+    }
+
+    /**
+     * Setup ST integration event listeners
+     */
+    setupSTIntegrationEvents() {
+        // Listen for character changes
+        eventSource.on('character_selected', (data) => {
+            console.log(`[machinor-roundtable] Character changed, resetting injection tracking`);
+            this.reset();
+            
+            // Refresh plot engine with new character context if available
+            if (this.plotEngine?.stIntegration) {
+                this.plotEngine.stIntegration.analyzeActiveCharacters();
+            }
+        });
+
+        // Listen for chat changes
+        eventSource.on('chat_changed', (data) => {
+            console.log(`[machinor-roundtable] Chat changed, clearing plot cache`);
+            this.reset();
+            
+            // Clear plot cache and refresh context
+            if (this.plotEngine?.clearCache) {
+                this.plotEngine.clearCache();
+            }
+        });
+
+        // Listen for group changes (important for multi-character scenarios)
+        eventSource.on('group_changed', (data) => {
+            console.log(`[machinor-roundtable] Group changed, updating multi-character context`);
+            this.reset();
+        });
+
+        // Listen for world changes (if using world info)
+        if (typeof eventSource.on === 'function' && eventSource.listenerCount) {
+            eventSource.on('world_changed', (data) => {
+                console.log(`[machinor-roundtable] World changed, refreshing integration data`);
+                if (this.plotEngine?.stIntegration) {
+                    this.plotEngine.stIntegration.loadWorldInfo();
+                }
+            });
+        }
+
+        console.log(`[machinor-roundtable] ST integration events setup complete`);
     }
 
     /**
@@ -132,23 +180,77 @@ export class ChatInjector {
     }
 
     /**
-     * Get the current character data
+     * Get the current character data (enhanced for multi-character support)
      */
     getCurrentCharacter() {
         const context = getContext();
         
         // Check if we're in a group chat
         if (context.groupId) {
-            // For group chats, focus on the main character (first in group)
+            // For group chats, try to focus on the most active character or first character
             const group = context.groups?.find(g => g.id === context.groupId);
             if (group && group.members.length > 0) {
+                // For now, focus on the first character - can be enhanced later
                 const mainCharId = group.members[0];
-                return context.characters?.find(c => c.avatar === mainCharId);
+                const character = context.characters?.find(c => c.avatar === mainCharId);
+                
+                if (character && extension_settings[extensionName]?.debugMode) {
+                    debugLog(`Group chat detected, focusing on character: ${character.name}`);
+                }
+                
+                return character;
             }
         }
         
         // Regular character chat
-        return context.character;
+        const singleChar = context.character;
+        if (singleChar && extension_settings[extensionName]?.debugMode) {
+            debugLog(`Single character chat: ${singleChar.name}`);
+        }
+        
+        return singleChar;
+    }
+
+    /**
+     * Get all active characters in current context (for multi-character scenarios)
+     */
+    getActiveCharacters() {
+        const context = getContext();
+        
+        if (!context) return [];
+        
+        const characters = [];
+        
+        // Check if we're in a group chat
+        if (context.groupId && context.groups && context.characters) {
+            const group = context.groups.find(g => g.id === context.groupId);
+            if (group && group.members) {
+                group.members.forEach(memberId => {
+                    const character = context.characters.find(c => c.avatar === memberId);
+                    if (character) {
+                        characters.push({
+                            ...character,
+                            isGroupMember: true,
+                            groupPosition: group.members.indexOf(memberId)
+                        });
+                    }
+                });
+            }
+        } else {
+            // Single character scenario
+            if (context.character) {
+                characters.push({
+                    ...context.character,
+                    isGroupMember: false
+                });
+            }
+        }
+        
+        if (extension_settings[extensionName]?.debugMode) {
+            debugLog(`Active characters: ${characters.length}`, characters.map(c => c.name));
+        }
+        
+        return characters;
     }
 
     /**

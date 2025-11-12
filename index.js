@@ -4,6 +4,8 @@ import { saveSettingsDebounced } from "../../../../script.js";
 import { PlotEngine } from "./plot-engine.js";
 import { ChatInjector } from "./chat-injector.js";
 import { PlotPreviewManager } from "./plot-preview.js";
+import { STIntegrationManager } from "./st-integration.js";
+import { NarrativeArcManager } from "./narrative-arc.js";
 /**
  * Gets the current character from SillyTavern context
  * @returns {Object|null} The current character object or null if no character is selected
@@ -127,6 +129,8 @@ const toastr = window.toastr;
 let plotEngine = null;
 let chatInjector = null;
 let plotPreview = null;
+let stIntegration = null;
+let narrativeArc = null;
 
 // Default settings
 const defaultSettings = {
@@ -184,8 +188,17 @@ jQuery(async () => {
  */
 function initializeCore() {
     try {
-        // Initialize plot engine
-        plotEngine = new PlotEngine();
+        // Initialize SillyTavern integration first
+        stIntegration = new STIntegrationManager();
+        stIntegration.initialize();
+        console.log(`[${extensionName}] ST Integration manager initialized`);
+        
+        // Initialize narrative arc manager with ST integration
+        narrativeArc = new NarrativeArcManager(stIntegration);
+        console.log(`[${extensionName}] Narrative Arc manager initialized`);
+        
+        // Initialize plot engine with ST integration and narrative arc
+        plotEngine = new PlotEngine(stIntegration, narrativeArc);
         console.log(`[${extensionName}] Plot engine initialized`);
         
         // Initialize plot preview manager first (no dependencies)

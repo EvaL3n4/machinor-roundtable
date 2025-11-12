@@ -1,30 +1,67 @@
-/* Machinor Roundtable - Modern Glassmorphism UI */
+/* Machinor Roundtable - iOS Liquid Glass UI Pink Purple Theme */
 
-/* Import Google Fonts */
+/* Import iOS Font Stack */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Variables for Modern Theme */
+/* iOS Liquid Glass Design System - Pink Purple Theme */
 :root {
+    /* Core Pink Purple Palette */
     --mr-bg-primary: #0a0a0a;
-    --mr-bg-secondary: rgba(20, 20, 20, 0.7);
-    --mr-bg-glass: rgba(30, 30, 40, 0.4);
-    --mr-accent-primary: #6366f1;
-    --mr-accent-secondary: #8b5cf6;
-    --mr-accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
-    --mr-text-primary: #f8fafc;
-    --mr-text-secondary: #cbd5e1;
-    --mr-text-muted: #64748b;
-    --mr-border-glass: rgba(255, 255, 255, 0.1);
-    --mr-shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    --mr-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    --mr-radius-lg: 16px;
-    --mr-radius-md: 12px;
-    --mr-radius-sm: 8px;
-    --mr-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --mr-mobile-drawer-transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
+    --mr-bg-glass: rgba(255, 192, 203, 0.08);
+    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
+    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
+    
+    /* Pink Purple Accent System */
+    --mr-accent-primary: #ff69b4;      /* Hot Pink */
+    --mr-accent-secondary: #da70d6;    /* Orchid */
+    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
+    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
+    
+    /* Liquid Glass Gradients */
+    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
+    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
+    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
+    --mr-header-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
+    
+    /* iOS Typography System */
+    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+    --mr-text-primary: #f8f9fa;
+    --mr-text-secondary: #e9ecef;
+    --mr-text-tertiary: #dee2e6;
+    --mr-text-muted: #adb5bd;
+    --mr-text-accent: #ff69b4;
+    
+    /* iOS Liquid Glass Borders */
+    --mr-border-glass: rgba(255, 255, 255, 0.12);
+    --mr-border-pink: rgba(255, 105, 180, 0.2);
+    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
+    --mr-border-accent: rgba(218, 112, 214, 0.25);
+    
+    /* iOS Liquid Glass Shadows */
+    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
+    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
+    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
+    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
+    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
+    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
+    
+    /* iOS Radius Scale */
+    --mr-radius-lg: 20px;
+    --mr-radius-md: 16px;
+    --mr-radius-sm: 12px;
+    --mr-radius-xs: 8px;
+    --mr-radius-full: 50px;
+    
+    /* iOS Animation System */
+    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --mr-mobile-drawer-transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
 }
 
-/* Main Sidebar Container - Glassmorphism */
+/* iOS Liquid Glass Sidebar Container */
 .mr-plot-sidebar {
     position: fixed;
     left: 0;
@@ -34,13 +71,13 @@
     max-height: 85vh;
     max-height: 85dvh;
     background: var(--mr-bg-glass);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(200%) brightness(1.02);
+    -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.02);
     border: 1px solid var(--mr-border-glass);
     border-left: none;
     border-radius: 0 var(--mr-radius-lg) var(--mr-radius-lg) 0;
     color: var(--mr-text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--mr-font-family);
     z-index: 1000;
     transition: var(--mr-transition);
     display: flex;
@@ -49,22 +86,52 @@
     overflow: hidden;
     pointer-events: auto;
     contain: layout paint;
+    position: relative;
 }
 
-/* Collapsed State - Minimal Tab */
+.mr-plot-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(255, 105, 180, 0.03) 0%, 
+        rgba(218, 112, 214, 0.03) 50%, 
+        rgba(186, 85, 211, 0.03) 100%);
+    border-radius: 0 var(--mr-radius-lg) var(--mr-radius-lg) 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.mr-plot-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Collapsed State */
 .mr-plot-sidebar.collapsed {
     width: 60px;
     background: var(--mr-bg-secondary);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
 }
 
-/* Sidebar Header - Gradient Background */
+/* iOS Liquid Glass Header */
 .mr-sidebar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    background: var(--mr-accent-gradient);
+    padding: 20px 24px;
+    background: var(--mr-header-gradient);
     border-bottom: 1px solid var(--mr-border-glass);
     position: relative;
     overflow: hidden;
@@ -77,8 +144,23 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    animation: mr-shimmer 3s infinite;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    animation: mr-shimmer 4s infinite;
+}
+
+.mr-sidebar-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 30%,
+        transparent 70%,
+        rgba(255, 255, 255, 0.08) 100%);
+    pointer-events: none;
 }
 
 @keyframes mr-shimmer {
@@ -89,48 +171,59 @@
 .mr-sidebar-header h3 {
     margin: 0;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     position: relative;
     z-index: 1;
+    letter-spacing: -0.02em;
 }
 
+/* iOS Liquid Glass Toggle Button */
 .mr-toggle-btn {
     background: rgba(255, 255, 255, 0.15);
-    border: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     cursor: pointer;
-    padding: 8px;
-    border-radius: var(--mr-radius-sm);
-    transition: var(--mr-transition);
+    padding: 10px;
+    border-radius: var(--mr-radius-xs);
+    transition: var(--mr-transition-spring);
     position: relative;
     z-index: 1;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: var(--mr-shadow-sm);
 }
 
 .mr-toggle-btn:hover {
     background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.1);
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: var(--mr-shadow-glass);
+}
+
+.mr-toggle-btn:active {
+    transform: scale(0.98) translateY(0px);
+    transition: var(--mr-transition-fast);
 }
 
 .mr-plot-sidebar.collapsed .mr-sidebar-header h3 {
     display: none;
 }
 
-/* Sidebar Content - Scrollable Area - DESKTOP DEFAULT */
+/* Sidebar Content Area */
 .mr-sidebar-content {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
     padding: 20px;
     opacity: 1;
     transition: opacity 0.3s ease;
-    display: block; /* Block layout for desktop */
+    display: block;
     min-height: 0;
     max-height: none;
     box-sizing: border-box;
@@ -142,7 +235,7 @@
     pointer-events: none;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - iOS Pink Theme */
 .mr-sidebar-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -157,23 +250,45 @@
     border-radius: 3px;
 }
 
-/* Current Plot Section - Glass Card */
+/* iOS Liquid Glass Cards */
 .mr-current-plot {
     margin-bottom: 24px;
     padding: 20px;
-    background: var(--mr-bg-secondary);
-    border-radius: var(--mr-radius-md);
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid var(--mr-border-glass);
-    box-shadow: var(--mr-shadow-md);
-    transition: var(--mr-transition);
+    border-radius: var(--mr-radius-md);
+    box-shadow: var(--mr-shadow-glass);
+    transition: var(--mr-transition-spring);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-current-plot::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
 .mr-current-plot:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--mr-shadow-lg);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--mr-shadow-glass-strong);
+    border-color: var(--mr-border-pink);
 }
 
-/* Status Indicator - Animated */
+.mr-current-plot:hover::before {
+    opacity: 1;
+}
+
+/* iOS Status Indicators with Glow */
 .mr-plot-header {
     display: flex;
     align-items: center;
@@ -193,27 +308,39 @@
 }
 
 @keyframes mr-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    0% { 
+        box-shadow: 0 0 0 0 currentColor;
+        transform: scale(1);
+    }
+    70% { 
+        box-shadow: 0 0 0 12px rgba(255, 255, 255, 0);
+        transform: scale(1.1);
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        transform: scale(1);
+    }
 }
 
 .mr-status-indicator.ready {
-    background: #10b981;
-    animation: mr-pulse 2s infinite;
+    background: #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
 }
 
 .mr-status-indicator.pending {
-    background: #f59e0b;
+    background: #ff9500;
+    box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
     animation: mr-pulse 1.5s infinite;
 }
 
 .mr-status-indicator.paused {
-    background: #ef4444;
+    background: #ff3b30;
+    box-shadow: 0 0 20px rgba(255, 59, 48, 0.4);
 }
 
 .mr-status-indicator.injected {
-    background: #3b82f6;
+    background: var(--mr-accent-primary);
+    box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
 }
 
 .mr-status-text {
@@ -226,12 +353,257 @@
     font-size: 12px;
     color: var(--mr-accent-primary);
     font-weight: 600;
-    background: rgba(99, 102, 241, 0.1);
+    background: var(--mr-accent-soft);
     padding: 4px 8px;
-    border-radius: var(--mr-radius-sm);
+    border-radius: var(--mr-radius-xs);
+    border: 1px solid var(--mr-border-pink);
 }
 
-/* Plot Text - Code Block Style */
+/* iOS Liquid Arc Progress */
+.mr-arc-progress {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--mr-accent-soft);
+    border: 1px solid var(--mr-border-pink);
+    border-radius: var(--mr-radius-md);
+    transition: var(--mr-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-arc-progress::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.1), transparent);
+    transition: left 0.8s ease;
+}
+
+.mr-arc-progress:hover {
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.12), rgba(218, 112, 214, 0.12));
+    border-color: rgba(255, 105, 180, 0.4);
+    transform: translateY(-2px);
+    box-shadow: var(--mr-shadow-glass);
+}
+
+.mr-arc-progress:hover::before {
+    left: 100%;
+}
+
+.mr-arc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.mr-arc-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mr-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mr-font-family);
+}
+
+.mr-arc-header h4::before {
+    content: '📖';
+    font-size: 16px;
+}
+
+.mr-arc-type {
+    font-size: 12px;
+    color: var(--mr-accent-primary);
+    font-weight: 500;
+    background: rgba(255, 105, 180, 0.15);
+    padding: 4px 10px;
+    border-radius: var(--mr-radius-xs);
+    border: 1px solid var(--mr-border-pink);
+    font-family: var(--mr-font-family);
+}
+
+.mr-arc-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    border: 1px solid var(--mr-border-glass);
+}
+
+.mr-arc-fill {
+    height: 100%;
+    background: var(--mr-accent-gradient);
+    border-radius: 4px;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+}
+
+.mr-arc-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%);
+    animation: mr-shimmer-progress 2.5s infinite;
+}
+
+@keyframes mr-shimmer-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.mr-arc-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.mr-arc-phase {
+    color: var(--mr-text-secondary);
+    font-weight: 500;
+}
+
+.mr-arc-percentage {
+    color: var(--mr-accent-primary);
+    font-weight: 600;
+    background: rgba(255, 105, 180, 0.15);
+    padding: 4px 8px;
+    border-radius: var(--mr-radius-xs);
+    font-family: var(--mr-font-family);
+}
+
+/* iOS Liquid Glass Story Intelligence */
+.mr-story-intel {
+    margin-bottom: 20px;
+    border-radius: var(--mr-radius-md);
+    border: 1px solid var(--mr-border-glass);
+    background: var(--mr-bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow: hidden;
+    transition: var(--mr-transition);
+    position: relative;
+}
+
+.mr-story-intel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mr-story-intel:hover {
+    border-color: var(--mr-border-pink);
+    box-shadow: var(--mr-shadow-glass);
+    transform: translateY(-1px);
+}
+
+.mr-story-intel:hover::before {
+    opacity: 0.5;
+}
+
+.mr-intel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: var(--mr-transition);
+    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+    z-index: 1;
+}
+
+.mr-intel-header:hover {
+    background: rgba(255, 105, 180, 0.08);
+}
+
+.mr-intel-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mr-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mr-font-family);
+}
+
+.mr-intel-header h4::before {
+    content: '🧠';
+    font-size: 16px;
+}
+
+.mr-intel-toggle {
+    color: var(--mr-text-muted);
+    transition: var(--mr-transition);
+    font-size: 12px;
+}
+
+.mr-intel-toggle:hover {
+    color: var(--mr-accent-primary);
+}
+
+.mr-intel-content {
+    max-height: 200px;
+    overflow-y: auto;
+    transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.mr-intel-content.collapsed {
+    max-height: 0;
+}
+
+.mr-intel-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--mr-border-glass);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mr-intel-item:last-child {
+    border-bottom: none;
+}
+
+.mr-intel-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mr-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mr-intel-value {
+    font-size: 13px;
+    color: var(--mr-text-secondary);
+    line-height: 1.4;
+}
+
+/* Plot Text - iOS Style */
 .mr-plot-text {
     font-size: 14px;
     line-height: 1.6;
@@ -240,13 +612,13 @@
     background: rgba(0, 0, 0, 0.3);
     border-radius: var(--mr-radius-sm);
     border-left: 4px solid var(--mr-accent-primary);
-    font-family: 'Fira Code', 'Courier New', monospace;
+    font-family: var(--mr-font-family);
     color: var(--mr-text-secondary);
     white-space: pre-wrap;
     word-wrap: break-word;
 }
 
-/* Plot Actions - Modern Buttons */
+/* iOS Liquid Glass Action Buttons */
 .mr-plot-actions {
     display: flex;
     gap: 8px;
@@ -255,19 +627,22 @@
 
 .mr-action-btn {
     flex: 1;
-    padding: 10px 12px;
-    background: var(--mr-bg-primary);
+    padding: 12px 16px;
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border: 1px solid var(--mr-border-glass);
     border-radius: var(--mr-radius-sm);
     color: var(--mr-text-primary);
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
-    transition: var(--mr-transition);
+    font-family: var(--mr-font-family);
+    transition: var(--mr-transition-spring);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     position: relative;
     overflow: hidden;
 }
@@ -279,19 +654,26 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
-    transition: left 0.5s;
+    background: var(--mr-accent-gradient);
+    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: -1;
 }
 
 .mr-action-btn:hover::before {
-    left: 100%;
+    left: 0;
 }
 
 .mr-action-btn:hover {
-    background: var(--mr-accent-gradient);
+    background: transparent;
     border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: var(--mr-shadow-md);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: var(--mr-shadow-glass-strong);
+    color: white;
+}
+
+.mr-action-btn:active {
+    transform: translateY(-1px) scale(1.01);
+    transition: var(--mr-transition-fast);
 }
 
 .mr-action-btn.small {
@@ -305,7 +687,7 @@
     margin-top: 12px;
 }
 
-/* Direction Input - Modern Form */
+/* iOS Form Elements */
 .mr-direction-input {
     margin-top: 16px;
 }
@@ -328,13 +710,14 @@
     border-radius: var(--mr-radius-sm);
     color: var(--mr-text-primary);
     font-size: 14px;
+    font-family: var(--mr-font-family);
     transition: var(--mr-transition);
 }
 
 .mr-direction-input input:focus {
     outline: none;
     border-color: var(--mr-accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
 }
 
 .mr-recent-directions {
@@ -344,7 +727,7 @@
     font-style: italic;
 }
 
-/* Next Plot Section - Subtle Glass Card */
+/* Next Plot Section */
 .mr-next-plot {
     margin-bottom: 24px;
     padding: 16px;
@@ -369,7 +752,7 @@
     font-size: 16px;
 }
 
-/* Plot History - Accordion Style */
+/* Plot History */
 .mr-plot-history {
     margin-bottom: 20px;
 }
@@ -387,7 +770,7 @@
 }
 
 .mr-history-header:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(255, 105, 180, 0.1);
     border-color: var(--mr-accent-primary);
 }
 
@@ -425,7 +808,7 @@
 }
 
 .mr-history-item:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(255, 105, 180, 0.1);
     color: var(--mr-text-primary);
     padding-left: 20px;
 }
@@ -463,7 +846,7 @@
     text-align: center;
 }
 
-/* Modal - Glassmorphism Overlay */
+/* iOS Liquid Glass Modal */
 .mr-modal {
     display: none;
     position: fixed;
@@ -554,7 +937,7 @@
     border: 1px solid var(--mr-border-glass);
     border-radius: var(--mr-radius-sm);
     color: var(--mr-text-primary);
-    font-family: 'Fira Code', 'Courier New', monospace;
+    font-family: var(--mr-font-family);
     font-size: 14px;
     line-height: 1.6;
     resize: vertical;
@@ -564,7 +947,7 @@
 .mr-modal-body textarea:focus {
     outline: none;
     border-color: var(--mr-accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
 }
 
 .mr-modal-footer {
@@ -577,14 +960,37 @@
     border-radius: 0 0 var(--mr-radius-lg) var(--mr-radius-lg);
 }
 
+/* iOS Liquid Glass Buttons */
 .mr-btn-primary, .mr-btn-secondary {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border: none;
     border-radius: var(--mr-radius-sm);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: var(--mr-font-family);
     transition: var(--mr-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-btn-primary::before, .mr-btn-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.mr-btn-primary:hover::before, .mr-btn-secondary:hover::before {
+    left: 100%;
 }
 
 .mr-btn-primary {
@@ -594,7 +1000,7 @@
 
 .mr-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 10px 20px rgba(255, 105, 180, 0.3);
 }
 
 .mr-btn-secondary {
@@ -605,9 +1011,310 @@
 
 .mr-btn-secondary:hover {
     background: rgba(255, 255, 255, 0.2);
+    border-color: var(--mr-accent-primary);
 }
 
-/* Responsive Design - Mobile Drawer Experience */
+.mr-btn-primary.full-width, .mr-btn-secondary.full-width {
+    width: 100%;
+    margin-top: 12px;
+}
+
+/* iOS Liquid Glass Template Gallery */
+.mr-template-gallery {
+    margin-bottom: 20px;
+    border-radius: var(--mr-radius-md);
+    border: 1px solid var(--mr-border-glass);
+    background: var(--mr-bg-glass);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    overflow: hidden;
+    transition: var(--mr-transition);
+    position: relative;
+}
+
+.mr-template-gallery::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mr-template-gallery:hover {
+    border-color: var(--mr-border-pink);
+    box-shadow: var(--mr-shadow-glass);
+    transform: translateY(-2px);
+}
+
+.mr-template-gallery:hover::before {
+    opacity: 0.3;
+}
+
+.mr-template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: var(--mr-transition);
+    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+    z-index: 1;
+}
+
+.mr-template-header:hover {
+    background: rgba(255, 105, 180, 0.08);
+}
+
+.mr-template-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mr-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mr-font-family);
+}
+
+.mr-template-header h4::before {
+    content: '📚';
+    font-size: 16px;
+}
+
+.mr-template-toggle {
+    color: var(--mr-text-muted);
+    transition: var(--mr-transition);
+    font-size: 12px;
+}
+
+.mr-template-toggle:hover {
+    color: var(--mr-accent-secondary);
+}
+
+.mr-template-content {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.mr-template-content.collapsed {
+    max-height: 0;
+}
+
+/* iOS Liquid Category Tabs */
+.mr-category-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 20px;
+    border-bottom: 1px solid var(--mr-border-glass);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.mr-category-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.mr-tab-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--mr-border-glass);
+    border-radius: var(--mr-radius-full);
+    color: var(--mr-text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--mr-font-family);
+    cursor: pointer;
+    transition: var(--mr-transition-spring);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--mr-accent-gradient);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.mr-tab-btn:hover {
+    background: rgba(255, 105, 180, 0.1);
+    border-color: rgba(255, 105, 180, 0.3);
+    color: var(--mr-text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.2);
+}
+
+.mr-tab-btn.active::before {
+    opacity: 1;
+}
+
+.mr-tab-btn.active {
+    background: transparent;
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.3);
+}
+
+.mr-templates-list {
+    padding: 20px;
+}
+
+/* iOS Liquid Template Items */
+.mr-template-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    margin-bottom: 8px;
+    background: var(--mr-bg-glass-strong);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--mr-border-glass);
+    border-radius: var(--mr-radius-sm);
+    transition: var(--mr-transition-spring);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-template-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 105, 180, 0.08), 
+        transparent);
+    transition: left 0.6s ease;
+}
+
+.mr-template-item:hover {
+    background: rgba(255, 105, 180, 0.1);
+    border-color: rgba(255, 105, 180, 0.3);
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: var(--mr-shadow-glass);
+}
+
+.mr-template-item:hover::before {
+    left: 100%;
+}
+
+.mr-template-icon {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--mr-accent-soft);
+    border-radius: var(--mr-radius-sm);
+    border: 1px solid var(--mr-border-pink);
+    transition: var(--mr-transition);
+}
+
+.mr-template-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mr-template-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--mr-text-primary);
+    font-family: var(--mr-font-family);
+}
+
+.mr-template-desc {
+    font-size: 11px;
+    color: var(--mr-text-muted);
+    line-height: 1.3;
+}
+
+.mr-template-select {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background: var(--mr-accent-gradient);
+    border: none;
+    border-radius: var(--mr-radius-xs);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mr-font-family);
+    cursor: pointer;
+    transition: var(--mr-transition-spring);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-template-select::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.mr-template-select:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 24px rgba(255, 105, 180, 0.4);
+}
+
+.mr-template-select:hover::before {
+    left: 100%;
+}
+
+/* Loading Animation - iOS Style */
+.mr-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid var(--mr-accent-primary);
+    border-radius: 50%;
+    animation: mr-spin 1s linear infinite;
+}
+
+@keyframes mr-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Mobile Responsive - iOS Design */
 @media (max-width: 600px) {
     .mr-plot-sidebar {
         position: fixed;
@@ -632,8 +1339,6 @@
         flex-direction: column;
         overscroll-behavior: contain;
         z-index: 3602;
-
-        /* Pop-up animation */
         opacity: 0;
         transform: scale(0.95);
         pointer-events: none;
@@ -652,19 +1357,6 @@
         pointer-events: none;
     }
 
-    /* MOBILE ONLY: Completely override collapsed state */
-    .mr-plot-sidebar.mobile-visible {
-        opacity: 1 !important;
-        transform: scale(1) !important;
-        pointer-events: auto !important;
-    }
-    
-    .mr-plot-sidebar.mobile-visible.collapsed {
-        width: 100dvw !important;
-        transform: scale(1) !important;
-    }
-    
-    /* CRITICAL: Force content visibility when mobile is visible */
     .mr-plot-sidebar.mobile-visible .mr-sidebar-content {
         opacity: 1 !important;
         pointer-events: auto !important;
@@ -675,93 +1367,17 @@
         max-height: none !important;
         height: auto !important;
     }
-    
-    /* DESKTOP: Restore original sidebar content behavior */
-    @media (min-width: 769px) {
-        .mr-sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-            display: block; /* Reset from flex */
-            min-height: auto; /* Reset */
-            max-height: none;
-            flex-direction: column;
-            box-sizing: border-box;
-            width: 100%;
-        }
-    
-        /* Desktop collapsed state */
-        .mr-plot-sidebar.collapsed .mr-sidebar-content {
-            opacity: 0;
-            pointer-events: none;
-        }
-    
-        /* Desktop content sections */
-        .mr-current-plot,
-        .mr-next-plot,
-        .mr-plot-history {
-            flex-shrink: 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-    
-        /* Desktop plot text */
-        .mr-plot-text {
-            display: block;
-            visibility: visible;
-            opacity: 1;
-        }
-    }
-    
-    /* MOBILE: Mobile-specific content styles */
-    @media (max-width: 768px) {
-        .mr-sidebar-content {
-            padding: 16px;
-            overflow-y: auto;
-            flex: 1 1 auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            display: flex !important;
-            flex-direction: column !important;
-            box-sizing: border-box;
-            width: 100%;
-        }
-    
-        /* Ensure content sections are visible and properly sized */
-        .mr-current-plot,
-        .mr-next-plot,
-        .mr-plot-history {
-            flex-shrink: 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-    
-        /* Force plot text to be visible */
-        .mr-plot-text {
-            display: block;
-            visibility: visible;
-            opacity: 1;
-        }
-    
-        /* Ensure the header doesn't take too much space */
-        .mr-sidebar-header {
-            flex-shrink: 0;
-        }
-    }
 
     .mr-plot-actions {
         flex-wrap: wrap;
     }
 
-    /* Reposition the close button for the modal view */
     .mr-plot-sidebar .mr-toggle-btn {
-        display: none; /* Hide the default sidebar toggle */
+        display: none;
     }
 
     .mr-sidebar-header {
-        padding-right: 60px; /* Space for the new close button */
+        padding-right: 60px;
     }
 
     .mr-mobile-close-btn {
@@ -789,65 +1405,83 @@
     }
 }
 
-/* Loading Animation */
-.mr-loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top: 3px solid var(--mr-accent-primary);
-    border-radius: 50%;
-    animation: mr-spin 1s linear infinite;
+/* Desktop Responsive */
+@media (min-width: 769px) {
+    .mr-sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+        display: block;
+        min-height: auto;
+        max-height: none;
+        flex-direction: column;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .mr-plot-sidebar.collapsed .mr-sidebar-content {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .mr-current-plot,
+    .mr-next-plot,
+    .mr-plot-history {
+        flex-shrink: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mr-plot-text {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .mr-mobile-close-btn {
+        display: none !important;
+    }
 }
 
-@keyframes mr-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@media (max-width: 768px) {
+    .mr-sidebar-content {
+        padding: 16px;
+        overflow-y: auto;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .mr-current-plot,
+    .mr-next-plot,
+    .mr-plot-history {
+        flex-shrink: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .mr-plot-text {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .mr-sidebar-header {
+        flex-shrink: 0;
+    }
 }
 
-/* Mobile Floating Toggle Button - Hidden on desktop */
+/* Mobile Floating Toggle Button */
 .mr-mobile-toggle {
-    display: none; /* Replaced by inline button */
+    display: none;
 }
 
-.mr-mobile-toggle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
-}
-
-.mr-mobile-toggle:focus-visible {
-    outline: 2px solid var(--mr-accent-secondary);
-    outline-offset: 4px;
-}
-
-/* Hide mobile close button on desktop */
-@media (min-width: 769px) {
-    .mr-mobile-close-btn {
-        display: none !important;
-    }
-}
-
-/* Hide mobile close button on desktop */
-@media (min-width: 769px) {
-    .mr-mobile-close-btn {
-        display: none !important;
-    }
-}
-
-.mr-mobile-portal {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3600;
-    transform: none !important;
-}
-
-.mr-mobile-portal > * {
-    pointer-events: auto;
-    transform: none !important;
-}
-
-/* Mobile Overlay Sidebar */
 @media (max-width: 768px) {
     #leftSendForm .mr-mobile-toggle {
         display: flex;
@@ -875,31 +1509,31 @@
         background: var(--mr-accent-gradient);
         border-color: transparent;
         transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 6px 16px rgba(255, 105, 180, 0.4);
     }
 
     #leftSendForm .mr-mobile-toggle.is-active {
         background: var(--mr-accent-gradient);
         border-color: transparent;
-        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 6px 18px rgba(255, 105, 180, 0.5);
     }
-    
+
     .mr-mobile-toggle.is-active {
-        box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        box-shadow: 0 6px 18px rgba(255, 105, 180, 0.5);
     }
-    
-        .mr-mobile-overlay {
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 50%, rgba(20, 20, 30, 0.4) 100%);
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 3601; /* Must be above content, below drawer */
-        }
-    
+
+    .mr-mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 105, 180, 0.3) 0%, rgba(218, 112, 214, 0.3) 50%, rgba(20, 20, 30, 0.4) 100%);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+        z-index: 3601;
+    }
+
     .mr-mobile-overlay.mobile-visible {
         opacity: 1;
         pointer-events: auto;
@@ -908,5 +1542,46 @@
     .mr-mobile-overlay.mobile-hidden {
         opacity: 0;
         pointer-events: none;
+    }
+}
+
+.mr-mobile-portal {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3600;
+    transform: none !important;
+}
+
+.mr-mobile-portal > * {
+    pointer-events: auto;
+    transform: none !important;
+}
+
+/* Mobile Responsive Template Gallery */
+@media (max-width: 600px) {
+    .mr-template-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .mr-template-info {
+        order: 2;
+    }
+
+    .mr-template-select {
+        order: 3;
+        width: 100%;
+    }
+
+    .mr-category-tabs {
+        padding: 12px;
+        gap: 4px;
+    }
+
+    .mr-tab-btn {
+        padding: 6px 12px;
+        font-size: 11px;
     }
 }

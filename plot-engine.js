@@ -1,6 +1,7 @@
 // Machinor Roundtable - Plot Generation Engine
 import { getContext } from "../../../extensions.js";
 import { generateQuietPrompt } from "../../../../script.js";
+import { STIntegrationManager } from "./st-integration.js";
 
 const PLOT_GENERATION_PROMPT = `You are a plot development assistant for roleplay scenarios. Based on the character information and recent conversation context provided, generate a subtle plot context that will guide the AI model to create more engaging, character-driven responses.
 
@@ -27,9 +28,11 @@ Return ONLY the plot context text, nothing else. Example: "[Character feels grow
 PLOT CONTEXT:`;
 
 export class PlotEngine {
-    constructor() {
+    constructor(stIntegration = null, narrativeArc = null) {
         this.cache = new Map();
         this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+        this.stIntegration = stIntegration;
+        this.narrativeArc = narrativeArc;
     }
 
     /**
@@ -40,92 +43,294 @@ export class PlotEngine {
      * @returns {Promise<String>} Generated plot context
      */
     async generatePlotContext(character, chatHistory, options = {}) {
-        const { style = 'natural', intensity = 'moderate', direction = '', template = 'universal' } = options;
+        // Use arc-aware generation if narrative arc is available
+        if (this.narrativeArc) {
+            return this.generateArcAwarePlotContext(character, chatHistory, options);
+        }
         
-        console.log(`[machinor-roundtable] Starting plot generation for character:`, character?.name);
-        console.log(`[machinor-roundtable] Chat history length:`, chatHistory?.length);
-        console.log(`[machinor-roundtable] Generation options:`, { style, intensity, direction });
-        console.log(`[machinor-roundtable] Building generation prompt...`);
-        
-        const cacheKey = this.generateCacheKey(character, chatHistory, template, style, intensity, direction);
-        console.log('[machinor-roundtable] Cache key:', cacheKey);
-        
-        // Check cache first
-        if (this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < this.cacheTimeout) {
-                console.log(`[machinor-roundtable] Using cached plot context`);
-                return cached.context;
-            }
-            this.cache.delete(cacheKey);
+        // Fall back to enhanced generation if no narrative arc
+        return this.generateEnhancedPlotContext(character, chatHistory, options);
+    }
+
+    /**
+     * Generate plot using narrative arc guidance
+     */
+    async generateArcAwarePlotContext(character, chatHistory, options = {}) {
+        if (!this.narrativeArc) {
+            console.log('[machinor-roundtable] No narrative arc available, falling back to enhanced generation');
+            return this.generateEnhancedPlotContext(character, chatHistory, options);
         }
 
         try {
-            const recentChat = this.extractRecentContext(chatHistory);
-            console.log(`[machinor-roundtable] Extracted recent chat:`, recentChat);
+            // Get plot suggestions from narrative arc system
+            const arcSuggestions = this.narrativeArc.getPlotSuggestions(character, chatHistory, options);
             
-            const prompt = this.buildGenerationPrompt(character, recentChat, style, intensity, direction);
-            console.log(`[machinor-roundtable] Built generation prompt:`, prompt.substring(0, 200) + '...');
+            if (arcSuggestions.length > 0) {
+                // Use the first suggestion for now - can be enhanced to let user choose
+                const suggestion = arcSuggestions[0];
+                
+                console.log('[machinor-roundtable] Using arc-aware generation:', suggestion);
+                
+                // If it's a direct suggestion (arc suggestion type), use it
+                if (suggestion.type === 'arc_suggestion' && suggestion.text) {
+                    return suggestion.text;
+                }
+                
+                // For other types, build enhanced context with arc information
+                const arcContext = this.buildArcContext(character, suggestion, arcSuggestions);
+                
+                // Get enhanced data from ST integration
+                const enhancedPrompt = this.buildEnhancedPrompt(
+                    character,
+                    this.stIntegration?.analyzeCharacterProfile(character),
+                    this.stIntegration?.getWorldInfo(),
+                    this.stIntegration?.getActiveCharacters(),
+                    chatHistory,
+                    { ...options, arcContext }
+                );
+                
+                // Generate plot with arc context
+                const plotContext = await generateQuietPrompt({
+                    quietPrompt: enhancedPrompt,
+                    skipWIAN: true,
+                    removeReasoning: true,
+                    trimToSentence: false
+                });
+                
+                const cleanedContext = plotContext.replace(/^["']|["']$/g, '').trim();
+                console.log('[machinor-roundtable] Arc-aware plot generated successfully');
+                
+                return cleanedContext;
+            }
             
-            // Use SillyTavern's generateQuietPrompt to use the current LLM
-            // This will automatically use the same LLM as the manual generate button
-            console.log('[machinor-roundtable] Calling generateQuietPrompt...');
+            // Fall back to enhanced generation if no arc suggestions
+            return this.generateEnhancedPlotContext(character, chatHistory, options);
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Arc-aware generation failed, falling back:', error);
+            return this.generateEnhancedPlotContext(character, chatHistory, options);
+        }
+    }
+
+    /**
+     * Build arc context information for plot generation
+     */
+    buildArcContext(character, primarySuggestion, allSuggestions) {
+        const context = {
+            hasActiveArc: !!this.narrativeArc.currentArc,
+            arcType: this.narrativeArc.currentArc?.type || null,
+            arcProgress: this.narrativeArc.calculateArcProgress(),
+            currentPhase: primarySuggestion.phase || null,
+            suggestionType: primarySuggestion.type,
+            availableChoices: allSuggestions.length
+        };
+
+        if (this.narrativeArc.currentArc) {
+            const currentArc = this.narrativeArc.currentArc;
+            context.arcName = currentArc.name;
+            context.currentPhaseDescription = currentArc.currentPhase?.description;
+            
+            // Add arc-specific guidance
+            if (currentArc.type === 'romance') {
+                context.arcGuidance = 'Focus on emotional connection and relationship development';
+            } else if (currentArc.type === 'adventure') {
+                context.arcGuidance = 'Emphasize challenges, growth, and heroic elements';
+            } else if (currentArc.type === 'mystery') {
+                context.arcGuidance = 'Include clues, investigation, and revelation elements';
+            } else if (currentArc.type === 'friendship') {
+                context.arcGuidance = 'Highlight connection, support, and mutual growth';
+            } else if (currentArc.type === 'hero_journey') {
+                context.arcGuidance = 'Include transformation, trials, and return with wisdom';
+            }
+        }
+
+        return context;
+    }
+
+    /**
+     * Enhanced plot generation using ST integration data
+     */
+    async generateEnhancedPlotContext(character, chatHistory, options = {}) {
+        if (!this.stIntegration) {
+            console.log('[machinor-roundtable] No ST integration available, falling back to basic generation');
+            return this.generatePlotContext(character, chatHistory, options);
+        }
+
+        try {
+            // Get enhanced character analysis
+            const characterAnalysis = this.stIntegration.analyzeCharacterProfile(character);
+            
+            // Get world context if available
+            const worldContext = this.stIntegration.getWorldInfo();
+            
+            // Get active characters (for multi-character scenarios)
+            const activeCharacters = this.stIntegration.getActiveCharacters();
+            
+            // Build enhanced prompt with all available data
+            const enhancedPrompt = this.buildEnhancedPrompt(
+                character,
+                characterAnalysis,
+                worldContext,
+                activeCharacters,
+                chatHistory,
+                options
+            );
+            
+            console.log('[machinor-roundtable] Using enhanced generation with ST integration data');
+            
+            // Generate plot using enhanced context
             const plotContext = await generateQuietPrompt({
-                quietPrompt: prompt,
+                quietPrompt: enhancedPrompt,
                 skipWIAN: true,
                 removeReasoning: true,
                 trimToSentence: false
             });
             
-            console.log(`[machinor-roundtable] Received plot context from LLM:`, plotContext);
-            
-            // Clean up the response - remove any quotes or extra formatting
             const cleanedContext = plotContext.replace(/^["']|["']$/g, '').trim();
+            console.log('[machinor-roundtable] Enhanced plot generated successfully');
             
-            console.log(`[machinor-roundtable] Cleaned plot context:`, cleanedContext);
-            
-            // Cache the result
-            this.cache.set(cacheKey, {
-                context: cleanedContext,
-                timestamp: Date.now()
-            });
-            
-            console.log(`[machinor-roundtable] Successfully generated and cached plot context`);
             return cleanedContext;
             
         } catch (error) {
-            console.error(`[machinor-roundtable] Failed to generate plot context:`, error);
-            console.error(`[machinor-roundtable] Error details:`, error.message, error.stack);
-            
-            // Show error notification
-            if (typeof toastr !== 'undefined') {
-                // @ts-ignore - toastr is a global library
-                toastr.error(`Plot generation failed: ${error.message}. Using fallback.`, 'Machinor Roundtable');
-            }
-            
-            // Try to use cached plot if available (even if expired)
-            const similarCacheKey = Array.from(this.cache.keys()).find(key =>
-                key.startsWith(`${character.name}-${character.create_date || 'unknown'}`)
-            );
-            
-            if (similarCacheKey) {
-                const cached = this.cache.get(similarCacheKey);
-                console.log(`[machinor-roundtable] Using expired cached plot as fallback`);
-                if (typeof toastr !== 'undefined') {
-                    // @ts-ignore - toastr is a global library
-                    toastr.info('Using cached plot as fallback', 'Machinor Roundtable');
-                }
-                return cached.context;
-            }
-            
-            // Return a fallback context
-            console.log(`[machinor-roundtable] Using fallback context`);
-            return this.getFallbackContext(character, style);
+            console.error('[machinor-roundtable] Enhanced generation failed, falling back:', error);
+            return this.generatePlotContext(character, chatHistory, options);
         }
     }
 
     /**
-     * Build the prompt for plot generation
+     * Build enhanced prompt with ST integration data
+     */
+    buildEnhancedPrompt(character, characterAnalysis, worldContext, activeCharacters, chatHistory, options = {}) {
+        const { style = 'natural', intensity = 'moderate', direction = '' } = options;
+        
+        let prompt = PLOT_GENERATION_PROMPT;
+        
+        // Base character information
+        prompt = prompt
+            .replace('{{char}}', character.name || 'Character')
+            .replace('{{personality}}', character.personality || 'Not specified')
+            .replace('{{description}}', character.description || 'Not specified')
+            .replace('{{scenario}}', character.scenario || 'Not specified')
+            .replace('{{recent_chat}}', this.extractRecentContext(chatHistory));
+        
+        // Add enhanced character analysis if available
+        if (characterAnalysis) {
+            const analysisText = this.formatCharacterAnalysis(characterAnalysis);
+            prompt += `\n\nCHARACTER ANALYSIS:\n${analysisText}`;
+        }
+        
+        // Add world context if available
+        if (worldContext && Object.keys(worldContext).some(key => worldContext[key]?.length > 0)) {
+            const worldText = this.formatWorldContext(worldContext);
+            prompt += `\n\nWORLD CONTEXT:\n${worldText}`;
+        }
+        
+        // Add multi-character context if applicable
+        if (activeCharacters.length > 1) {
+            const multiCharText = this.formatMultiCharacterContext(character, activeCharacters);
+            prompt += `\n\nGROUP DYNAMICS:\n${multiCharText}`;
+        }
+        
+        // Add style and intensity
+        const intensityDescriptions = {
+            subtle: 'very subtle, barely noticeable',
+            moderate: 'balanced, noticeable but not overwhelming',
+            strong: 'strong, clearly guiding the narrative',
+            dramatic: 'dramatic, major plot-driving'
+        };
+        
+        const styleDescriptions = {
+            natural: 'natural and organic',
+            dramatic: 'dramatic and intense',
+            romantic: 'romantic and emotional',
+            mysterious: 'mysterious and intriguing',
+            adventure: 'adventurous and exciting',
+            comedy: 'lighthearted and humorous'
+        };
+        
+        prompt = prompt
+            .replace('{{style}}', styleDescriptions[style] || 'natural')
+            .replace('{{intensity}}', intensityDescriptions[intensity] || 'moderate')
+            .replace('{{direction}}', direction || 'No specific direction');
+        
+        return prompt;
+    }
+
+    /**
+     * Format character analysis for inclusion in prompts
+     */
+    formatCharacterAnalysis(analysis) {
+        let text = '';
+        
+        if (analysis.traits?.length > 0) {
+            text += `Personality traits: ${analysis.traits.join(', ')}\n`;
+        }
+        
+        if (analysis.motivations?.length > 0) {
+            text += `Core motivations: ${analysis.motivations.join(', ')}\n`;
+        }
+        
+        if (analysis.fears?.length > 0) {
+            text += `Fears/concerns: ${analysis.fears.join(', ')}\n`;
+        }
+        
+        if (analysis.arcPotential) {
+            text += `Development potential: ${analysis.arcPotential}\n`;
+        }
+        
+        return text || 'No additional character analysis available.';
+    }
+
+    /**
+     * Format world context for inclusion in prompts
+     */
+    formatWorldContext(worldContext) {
+        let text = '';
+        
+        if (worldContext.locations?.length > 0) {
+            text += `Notable locations: ${worldContext.locations.map(l => l.name).join(', ')}\n`;
+        }
+        
+        if (worldContext.organizations?.length > 0) {
+            text += `Organizations/groups: ${worldContext.organizations.map(o => o.name).join(', ')}\n`;
+        }
+        
+        if (worldContext.items?.length > 0) {
+            text += `Important items: ${worldContext.items.map(i => i.name).join(', ')}\n`;
+        }
+        
+        if (worldContext.lore?.length > 0) {
+            text += `World lore: ${worldContext.lore.length} entries available\n`;
+        }
+        
+        if (worldContext.rules?.length > 0) {
+            text += `World rules: ${worldContext.rules.length} rules established\n`;
+        }
+        
+        return text || 'No specific world context available.';
+    }
+
+    /**
+     * Format multi-character context
+     */
+    formatMultiCharacterContext(currentCharacter, activeCharacters) {
+        const others = activeCharacters.filter(c => c !== currentCharacter);
+        if (others.length === 0) return 'Single character scenario.';
+        
+        let text = `Group includes ${others.length} other characters: `;
+        text += others.map(c => c.name).join(', ');
+        
+        // Add simple group dynamics
+        const roles = others.map(c => c.groupRole).filter(Boolean);
+        if (roles.length > 0) {
+            text += `\nGroup roles: ${roles.join(', ')}`;
+        }
+        
+        return text;
+    }
+
+    /**
+     * Build the prompt for plot generation (enhanced version)
      */
     buildGenerationPrompt(character, recentChat, style = 'natural', intensity = 'moderate', direction = '') {
         const intensityDescriptions = {
