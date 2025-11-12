@@ -40,7 +40,10 @@ export class ChatInjector {
         const context = getContext();
         const settings = context.extension_settings?.machinor_roundtable;
         
+        console.log('[machinor-roundtable] handlePreGeneration called, enabled:', settings?.enabled);
+        
         if (!settings?.enabled) {
+            console.log('[machinor-roundtable] Extension disabled, skipping injection');
             return; // Extension is disabled
         }
 
@@ -51,6 +54,7 @@ export class ChatInjector {
 
         try {
             this.isProcessing = true;
+            console.log('[machinor-roundtable] Starting injection process...');
             
             // Check if we should inject based on frequency
             if (!this.shouldInject(settings.injectionFrequency)) {
@@ -69,6 +73,7 @@ export class ChatInjector {
 
             // Get recent chat history
             const chatHistory = this.getRecentChatHistory();
+            console.log('[machinor-roundtable] Chat history length:', chatHistory.length);
             
             // Generate plot context
             console.log(`[machinor-roundtable] Generating plot context for injection...`);
@@ -80,6 +85,8 @@ export class ChatInjector {
                 return;
             }
 
+            console.log('[machinor-roundtable] Plot context generated:', plotContext);
+            
             // Inject the plot context
             this.injectPlotContext(data, plotContext, settings.debugMode);
             

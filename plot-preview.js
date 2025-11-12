@@ -1,6 +1,10 @@
 // Machinor Roundtable - Plot Preview Manager
 import { getContext } from "../../../extensions.js";
 import { saveSettingsDebounced } from "../../../../script.js";
+// @ts-ignore - eventSource is a global
+const eventSource = window.eventSource;
+// @ts-ignore - event_types is a global
+const event_types = window.event_types;
 
 // @ts-ignore - toastr is a global library
 const toastr = window.toastr;
@@ -137,6 +141,111 @@ export class PlotPreviewManager {
         this.initializeMobileToggle();
         this.updateMobileAccessibilityState(false);
         this.updateResponsivePlacement();
+        
+        // Load saved plot on initialization
+        this.loadPlotFromStorage();
+        
+        // Setup listeners for chat/character changes
+        this.setupContextChangeListeners();
+    }
+
+    /**
+     * Setup listeners for chat and character changes
+     */
+    setupContextChangeListeners() {
+        // Listen for chat changed events
+        if (typeof eventSource !== 'undefined') {
+            eventSource.on(event_types.CHAT_CHANGED, () => {
+                console.log('[machinor-roundtable] Chat changed, loading stored plot...');
+                this.loadPlotFromStorage();
+            });
+            
+            // Listen for character changes
+            eventSource.on(event_types.CHARACTER_SELECTED, () => {
+                console.log('[machinor-roundtable] Character changed, loading stored plot...');
+                this.loadPlotFromStorage();
+            });
+        }
+        
+        console.log('[machinor-roundtable] Context change listeners setup complete');
+    }
+
+    /**
+     * Generate a storage key based on current character and chat
+     * @returns {string|null} Storage key or null if no character/chat
+     */
+    getStorageKey() {
+        const context = getContext();
+        if (!context) return null;
+        
+        const characterId = context.characterId;
+        const chatId = context.chatId;
+        
+        if (characterId === undefined || !chatId) {
+            console.log('[machinor-roundtable] Cannot generate storage key: missing characterId or chatId');
+            return null;
+        }
+        
+        return `mr_plot_${characterId}_${chatId}`;
+    }
+
+    /**
+     * Save current plot to persistent storage
+     * @param {string} plotText - The plot text to save
+     * @param {string} status - The plot status
+     */
+    savePlotToStorage(plotText, status) {
+        const storageKey = this.getStorageKey();
+        if (!storageKey) return;
+        
+        const data = {
+            plotText: plotText,
+            status: status,
+            timestamp: Date.now()
+        };
+        
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(data));
+            console.log('[machinor-roundtable] Plot saved to storage:', storageKey);
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to save plot to storage:', error);
+        }
+    }
+
+    /**
+     * Load plot from persistent storage
+     * @returns {Object|null} Loaded plot data or null
+     */
+    loadPlotFromStorage() {
+        const storageKey = this.getStorageKey();
+        if (!storageKey) return null;
+        
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (!stored) {
+                console.log('[machinor-roundtable] No stored plot found for:', storageKey);
+                return null;
+            }
+            
+            const data = JSON.parse(stored);
+            console.log('[machinor-roundtable] Plot loaded from storage:', storageKey, data);
+            
+            // Display the loaded plot with restored status
+            if (data.plotText) {
+                this.displayCurrentPlot(data.plotText, 'restored');
+                
+                // Add visual indicator
+                if (this.elements.statusText) {
+                    this.elements.statusText.innerHTML = 'Restored <i class="fa-solid fa-database" title="Loaded from storage"></i>';
+                }
+                
+                return data;
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to load plot from storage:', error);
+        }
+        
+        return null;
     }
 
     /**
@@ -578,6 +687,9 @@ export class PlotPreviewManager {
         if (status === 'ready' && !this.isPaused) {
             this.startAutoApproveTimer();
         }
+        
+        // Save to persistent storage
+        this.savePlotToStorage(plotText, status);
         
         console.log('[machinor-roundtable] Current plot displayed:', status);
     }

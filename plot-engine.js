@@ -45,8 +45,10 @@ export class PlotEngine {
         console.log(`[machinor-roundtable] Starting plot generation for character:`, character?.name);
         console.log(`[machinor-roundtable] Chat history length:`, chatHistory?.length);
         console.log(`[machinor-roundtable] Generation options:`, { style, intensity, direction });
+        console.log(`[machinor-roundtable] Building generation prompt...`);
         
         const cacheKey = this.generateCacheKey(character, chatHistory, template, style, intensity, direction);
+        console.log('[machinor-roundtable] Cache key:', cacheKey);
         
         // Check cache first
         if (this.cache.has(cacheKey)) {
@@ -67,6 +69,7 @@ export class PlotEngine {
             
             // Use SillyTavern's generateQuietPrompt to use the current LLM
             // This will automatically use the same LLM as the manual generate button
+            console.log('[machinor-roundtable] Calling generateQuietPrompt...');
             const plotContext = await generateQuietPrompt({
                 quietPrompt: prompt,
                 skipWIAN: true,
