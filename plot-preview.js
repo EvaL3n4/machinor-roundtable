@@ -1596,6 +1596,50 @@ export class PlotPreviewManager {
     }
 
     /**
+     * Generate new plot with current Plot Style/Intensity options (for Skip button)
+     */
+    async generateNewPlotWithOptions() {
+        console.log('[machinor-roundtable] Generating new plot with options...');
+        
+        try {
+            // Use the imported helper functions
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                // @ts-ignore - toastr is a global library
+                toastr.warning('No character selected', 'Machinor Roundtable');
+                return;
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Get Plot Style and Intensity from settings
+            const plotStyle = $('#mr_plot_style').val() || 'natural';
+            const plotIntensity = $('#mr_plot_intensity').val() || 'moderate';
+            console.log('[machinor-roundtable] New Plot Style:', plotStyle, 'Plot Intensity:', plotIntensity);
+            
+            // Combine options for plot generation
+            const plotOptions = {
+                style: plotStyle,
+                intensity: plotIntensity
+            };
+            
+            // Generate plot using the plot engine with options
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
+            
+            if (plotContext) {
+                this.displayCurrentPlot(plotContext, 'ready');
+                // @ts-ignore - toastr is a global library
+                toastr.success('New plot generated with style: ' + plotStyle, 'Machinor Roundtable');
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to generate new plot with options:', error);
+            // @ts-ignore - toastr is a global library
+            toastr.error('Failed to generate plot with options', 'Machinor Roundtable');
+        }
+    }
+
+    /**
      * Generate next plot preview using the plot engine
      */
     async generateNextPlot() {
