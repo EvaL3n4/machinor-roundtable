@@ -10,156 +10,118 @@
         <!-- Current Plot Section -->
         <div class="mr-current-plot">
             <div class="mr-plot-header">
-                            <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
-                            <span class="mr-status-text" id="mr_status_text">Ready</span>
-                            <span class="mr-timer" id="mr_approval_timer"></span>
-                        </div>
+                <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
+                <span class="mr-status-text" id="mr_status_text">Ready</span>
+                <span class="mr-timer" id="mr_approval_timer"></span>
+            </div>
             
-                        <!-- Narrative Arc Progress -->
-                        <div class="mr-arc-progress" id="mr_arc_progress">
-                            <div class="mr-arc-header">
-                                <h4>Story Arc</h4>
-                                <span class="mr-arc-type" id="mr_arc_type">Natural Progression</span>
-                            </div>
-                            <div class="mr-arc-bar">
-                                <div class="mr-arc-fill" id="mr_arc_fill" style="width: 0%"></div>
-                            </div>
-                            <div class="mr-arc-details">
-                                <span class="mr-arc-phase" id="mr_arc_phase">Not started</span>
-                                <span class="mr-arc-percentage" id="mr_arc_percentage">0%</span>
-                            </div>
-                        </div>
+            <!-- Narrative Arc Progress - Simplified -->
+            <div class="mr-arc-progress" id="mr_arc_progress">
+                <div class="mr-arc-header">
+                    <h4>Story Arc</h4>
+                    <span class="mr-arc-type" id="mr_arc_type">Natural Progression</span>
+                </div>
+                <div class="mr-arc-bar">
+                    <div class="mr-arc-fill" id="mr_arc_fill" style="width: 0%"></div>
+                </div>
+                <div class="mr-arc-details">
+                    <span class="mr-arc-phase" id="mr_arc_phase">Not started</span>
+                    <span class="mr-arc-percentage" id="mr_arc_percentage">0%</span>
+                </div>
+            </div>
             
-                        <!-- Story Intelligence Panel -->
-                        <div class="mr-story-intel" id="mr_story_intel">
-                            <div class="mr-intel-header">
-                                <h4>Story Intelligence</h4>
-                                <span class="mr-intel-toggle" id="mr_intel_toggle">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </span>
-                            </div>
-                            <div class="mr-intel-content collapsed" id="mr_intel_content">
-                                <div class="mr-intel-item">
-                                    <label>Character Analysis:</label>
-                                    <div class="mr-intel-value" id="mr_character_analysis">Not analyzed</div>
-                                </div>
-                                <div class="mr-intel-item">
-                                    <label>World Context:</label>
-                                    <div class="mr-intel-value" id="mr_world_context">No world data</div>
-                                </div>
-                                <div class="mr-intel-item">
-                                    <label>Multi-Character:</label>
-                                    <div class="mr-intel-value" id="mr_character_count">Single character</div>
-                                </div>
-                            </div>
-                        </div>
-            
-                        <!-- Plot Template Gallery -->
-                        <div class="mr-template-gallery" id="mr_template_gallery">
-                            <div class="mr-template-header">
-                                <h4>Plot Templates</h4>
-                                <span class="mr-template-toggle" id="mr_template_toggle">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </span>
-                            </div>
-                            <div class="mr-template-content collapsed" id="mr_template_content">
-                                <div class="mr-template-categories">
-                                    <div class="mr-category-tabs" id="mr_category_tabs">
-                                        <button class="mr-tab-btn active" data-category="romance">Romance</button>
-                                        <button class="mr-tab-btn" data-category="adventure">Adventure</button>
-                                        <button class="mr-tab-btn" data-category="mystery">Mystery</button>
-                                        <button class="mr-tab-btn" data-category="friendship">Friendship</button>
-                                        <button class="mr-tab-btn" data-category="hero">Hero's Journey</button>
-                                    </div>
-                                    <div class="mr-templates-list" id="mr_templates_list">
-                                        <div class="mr-template-item" data-template="meet_cute">
-                                            <div class="mr-template-icon">💕</div>
-                                            <div class="mr-template-info">
-                                                <div class="mr-template-name">Meet Cute</div>
-                                                <div class="mr-template-desc">Two characters meet in an unexpected way</div>
-                                            </div>
-                                            <button class="mr-template-select" data-template="meet_cute">Select</button>
-                                        </div>
-                                        <div class="mr-template-item" data-template="adventure_begins">
-                                            <div class="mr-template-icon">🗺️</div>
-                                            <div class="mr-template-info">
-                                                <div class="mr-template-name">Adventure Begins</div>
-                                                <div class="mr-template-desc">A call to action starts the quest</div>
-                                            </div>
-                                            <button class="mr-template-select" data-template="adventure_begins">Select</button>
-                                        </div>
-                                        <div class="mr-template-item" data-template="mystery_hook">
-                                            <div class="mr-template-icon">🔍</div>
-                                            <div class="mr-template-info">
-                                                <div class="mr-template-name">Mystery Hook</div>
-                                                <div class="mr-template-desc">A strange event that needs investigation</div>
-                                            </div>
-                                            <button class="mr-template-select" data-template="mystery_hook">Select</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-            
+            <!-- Current Plot Display -->
             <div class="mr-plot-text" id="mr_current_plot_text">
                 No active plot. Click generate to create one.
             </div>
             
+            <!-- Main Action Buttons - Enhanced -->
             <div class="mr-plot-actions">
-                <button id="mr_edit_plot" class="mr-action-btn" title="Edit Plot">
+                <button id="mr_edit_plot" class="mr-action-btn liquid-hover" title="Edit Plot">
                     <i class="fa-solid fa-pen"></i> Edit
                 </button>
-                <button id="mr_skip_plot" class="mr-action-btn" title="Skip Plot">
+                <button id="mr_skip_plot" class="mr-action-btn liquid-hover" title="Skip Plot">
                     <i class="fa-solid fa-forward"></i> Skip
                 </button>
-                <button id="mr_pause_plot" class="mr-action-btn" title="Pause Auto-Inject">
+                <button id="mr_pause_plot" class="mr-action-btn liquid-hover" title="Pause Auto-Inject">
                     <i class="fa-solid fa-pause"></i> Pause
                 </button>
             </div>
             
+            <!-- Quick Direction Input -->
             <div class="mr-direction-input">
                 <label for="mr_plot_direction">Direction:</label>
-                <input type="text" id="mr_plot_direction" 
+                <input type="text" id="mr_plot_direction"
                        placeholder="Make it more romantic, add conflict..."
                        autocomplete="off">
-                <div class="mr-recent-directions" id="mr_recent_directions"></div>
             </div>
         </div>
 
-        <!-- Next Plot Preview -->
-        <div class="mr-next-plot">
-            <h4>Next Plot Preview</h4>
-            <div class="mr-plot-text" id="mr_next_plot_text">
-                Generating next plot suggestion...
+        <!-- Collapsible Advanced Options -->
+        <div class="mr-advanced-section">
+            <div class="mr-advanced-header" id="mr_advanced_toggle">
+                <h4>Advanced Options</h4>
+                <span class="mr-advanced-toggle">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </span>
             </div>
-            <button id="mr_regenerate_next" class="mr-action-btn small">
-                <i class="fa-solid fa-arrows-rotate"></i> Regenerate
-            </button>
-        </div>
-
-        <!-- Plot History -->
-        <div class="mr-plot-history">
-            <div class="mr-history-header" id="mr_history_toggle">
-                <h4>Plot History</h4>
-                <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="mr-history-content collapsed" id="mr_history_content">
-                <div id="mr_history_list"></div>
-                <div class="mr-history-settings">
-                    <label>Track: 
-                        <input type="number" id="mr_history_limit" 
-                               min="1" max="20" value="5" size="3">
-                        plots
-                    </label>
+            <div class="mr-advanced-content collapsed" id="mr_advanced_content">
+                
+                <!-- Story Intelligence Panel -->
+                <div class="mr-story-intel-compact" id="mr_story_intel">
+                    <div class="mr-intel-item">
+                        <label>Characters:</label>
+                        <div class="mr-intel-value" id="mr_character_count">Single character</div>
+                    </div>
+                    <div class="mr-intel-item">
+                        <label>World:</label>
+                        <div class="mr-intel-value" id="mr_world_context">No world data</div>
+                    </div>
+                </div>
+                
+                <!-- Template Gallery - Compact -->
+                <div class="mr-template-gallery-compact" id="mr_template_gallery">
+                    <div class="mr-templates-grid">
+                        <button class="mr-template-btn liquid-hover" data-template="meet_cute">
+                            <span class="mr-template-emoji">💕</span>
+                            <span class="mr-template-label">Romance</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="adventure_begins">
+                            <span class="mr-template-emoji">🗺️</span>
+                            <span class="mr-template-label">Adventure</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="mystery_hook">
+                            <span class="mr-template-emoji">🔍</span>
+                            <span class="mr-template-label">Mystery</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="conflict_rises">
+                            <span class="mr-template-emoji">⚡</span>
+                            <span class="mr-template-label">Conflict</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="mr-quick-actions">
+                    <button id="mr_regenerate_next" class="mr-action-btn small liquid-hover">
+                        <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+                    </button>
+                    <button id="mr_manual_plot_btn" class="mr-action-btn small liquid-hover">
+                        <i class="fa-solid fa-keyboard"></i> Custom Plot
+                    </button>
+                </div>
+                
+                <!-- Plot History - Minimal -->
+                <div class="mr-history-compact">
+                    <div class="mr-history-header" id="mr_history_toggle">
+                        <h4>Recent Plots</h4>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="mr-history-content collapsed" id="mr_history_content">
+                        <div id="mr_history_list"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Manual Plot Entry -->
-        <div class="mr-manual-entry">
-            <button id="mr_manual_plot_btn" class="mr-action-btn full-width">
-                <i class="fa-solid fa-keyboard"></i> Write Custom Plot
-            </button>
         </div>
     </div>
 </div>
