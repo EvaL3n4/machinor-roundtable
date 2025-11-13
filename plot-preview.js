@@ -205,62 +205,257 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Save current plot to persistent storage
+     * Generate a profile index key for cross-chat navigation
+     * @returns {string|null} Profile index key or null
+     */
+    getProfileIndexKey() {
+        return 'mr_profile_index';
+    }
+
+    /**
+     * Save comprehensive chat profile to persistent storage
      * @param {string} plotText - The plot text to save
      * @param {string} status - The plot status
      */
-    savePlotToStorage(plotText, status) {
+    saveChatProfile(plotText, status) {
         const storageKey = this.getStorageKey();
         if (!storageKey) return;
         
-        const data = {
+        const context = getContext();
+        const character = context?.characters?.[context?.characterId];
+        
+        // Build comprehensive profile data
+        const profileData = {
+            // Core plot data
             plotText: plotText,
             status: status,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            
+            // Character information
+            characterId: context?.characterId,
+            characterName: character?.name || 'Unknown',
+            
+            // Plot history and injections
+            plotHistory: this.plotHistory,
+            injectedPlots: this.getInjectedPlotsTimeline(),
+            
+            // Settings and preferences
+            recentDirections: this.recentDirections,
+            autoApproveTimeout: this.autoApproveTimeout,
+            sidebarCollapsed: this.isCollapsed,
+            
+            // Story intelligence snapshot
+            storyIntelligence: {
+                characterAnalysis: this.extractCharacterInsight(),
+                worldContext: this.extractWorldContext(),
+                characterCount: this.elements.characterCount?.textContent || 'Unknown',
+                arcStatus: this.plotEngine?.narrativeArc?.getArcStatus() || null
+            },
+            
+            // Chat context for restoration
+            chatLength: context?.chat?.length || 0,
+            lastMessageTime: context?.chat?.[context?.chat?.length - 1]?.send_date || null
         };
         
         try {
-            localStorage.setItem(storageKey, JSON.stringify(data));
-            console.log('[machinor-roundtable] Plot saved to storage:', storageKey);
+            // Save the comprehensive profile
+            localStorage.setItem(storageKey, JSON.stringify(profileData));
+            
+            // Update profile index for cross-chat navigation
+            this.updateProfileIndex(storageKey, profileData);
+            
+            console.log('[machinor-roundtable] Chat profile saved:', storageKey, 'History entries:', this.plotHistory.length);
+            
         } catch (error) {
-            console.error('[machinor-roundtable] Failed to save plot to storage:', error);
+            console.error('[machinor-roundtable] Failed to save chat profile:', error);
         }
     }
 
     /**
-     * Load plot from persistent storage
-     * @returns {Object|null} Loaded plot data or null
+     * Update profile index for cross-chat navigation
+     * @param {string} storageKey - The profile storage key
+     * @param {Object} profileData - The profile data
      */
-    loadPlotFromStorage() {
+    updateProfileIndex(storageKey, profileData) {
+        try {
+            const indexKey = this.getProfileIndexKey();
+            let index = {};
+            
+            // Load existing index
+            const storedIndex = localStorage.getItem(indexKey);
+            if (storedIndex) {
+                index = JSON.parse(storedIndex);
+            }
+            
+            // Update or add profile entry
+            index[storageKey] = {
+                characterId: profileData.characterId,
+                characterName: profileData.characterName,
+                lastActive: profileData.timestamp,
+                plotHistoryCount: profileData.plotHistory?.length || 0,
+                injectedPlotsCount: profileData.injectedPlots?.length || 0,
+                chatLength: profileData.chatLength
+            };
+            
+            // Keep only the most recent 50 profiles to prevent storage bloat
+            const sortedEntries = Object.entries(index)
+                .sort(([,a], [,b]) => b.lastActive - a.lastActive)
+                .slice(0, 50);
+            
+            const trimmedIndex = Object.fromEntries(sortedEntries);
+            localStorage.setItem(indexKey, JSON.stringify(trimmedIndex));
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to update profile index:', error);
+        }
+    }
+
+    /**
+     * Load comprehensive chat profile from persistent storage
+     * @returns {Object|null} Loaded profile data or null
+     */
+    loadChatProfile() {
         const storageKey = this.getStorageKey();
         if (!storageKey) return null;
         
         try {
             const stored = localStorage.getItem(storageKey);
             if (!stored) {
-                console.log('[machinor-roundtable] No stored plot found for:', storageKey);
+                console.log('[machinor-roundtable] No stored profile found for:', storageKey);
                 return null;
             }
             
-            const data = JSON.parse(stored);
-            console.log('[machinor-roundtable] Plot loaded from storage:', storageKey, data);
+            const profileData = JSON.parse(stored);
+            console.log('[machinor-roundtable] Chat profile loaded:', storageKey, 'History entries:', profileData.plotHistory?.length || 0);
+            
+            // Restore plot history
+            if (profileData.plotHistory && Array.isArray(profileData.plotHistory)) {
+                this.plotHistory = profileData.plotHistory;
+                this.renderHistory();
+            }
+            
+            // Restore recent directions
+            if (profileData.recentDirections && Array.isArray(profileData.recentDirections)) {
+                this.recentDirections = profileData.recentDirections;
+            }
+            
+            // Restore settings
+            if (profileData.autoApproveTimeout) {
+                this.autoApproveTimeout = profileData.autoApproveTimeout;
+            }
+            if (typeof profileData.sidebarCollapsed === 'boolean') {
+                this.isCollapsed = profileData.sidebarCollapsed;
+                if (this.elements.sidebar) {
+                    this.elements.sidebar.classList.toggle('collapsed', this.isCollapsed);
+                }
+            }
+            
+            // Update story intelligence display with restored data
+            if (profileData.storyIntelligence) {
+                this.updateStoryIntelligenceWithData(profileData.storyIntelligence);
+            }
             
             // Display the loaded plot with restored status
-            if (data.plotText) {
-                this.displayCurrentPlot(data.plotText, 'restored');
+            if (profileData.plotText) {
+                this.displayCurrentPlot(profileData.plotText, 'restored');
                 
-                // Add visual indicator
+                // Add visual indicator with additional info
                 if (this.elements.statusText) {
-                    this.elements.statusText.innerHTML = 'Restored <i class="fa-solid fa-database" title="Loaded from storage"></i>';
+                    const historyInfo = profileData.plotHistory?.length > 0 ? ` (${profileData.plotHistory.length} history)` : '';
+                    this.elements.statusText.innerHTML = `Restored${historyInfo} <i class="fa-solid fa-database" title="Loaded from storage"></i>`;
                 }
                 
-                return data;
+                return profileData;
             }
+            
         } catch (error) {
-            console.error('[machinor-roundtable] Failed to load plot from storage:', error);
+            console.error('[machinor-roundtable] Failed to load chat profile:', error);
         }
         
         return null;
+    }
+
+    /**
+     * Update story intelligence with restored data
+     * @param {Object} storyData - Restored story intelligence data
+     */
+    updateStoryIntelligenceWithData(storyData) {
+        try {
+            // Update character analysis display
+            if (storyData.characterAnalysis && this.elements.characterAnalysis) {
+                this.elements.characterAnalysis.textContent = storyData.characterAnalysis;
+            }
+            
+            // Update world context display
+            if (storyData.worldContext && this.elements.worldContext) {
+                this.elements.worldContext.textContent = storyData.worldContext;
+            }
+            
+            // Update character count
+            if (storyData.characterCount && this.elements.characterCount) {
+                this.elements.characterCount.textContent = storyData.characterCount;
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating story intelligence with restored data:', error);
+        }
+    }
+
+    /**
+     * Get injected plots timeline for profile tracking
+     * @returns {Array} Array of injected plot entries
+     */
+    getInjectedPlotsTimeline() {
+        // This would track actual plot injections - for now, return empty array
+        // In a full implementation, this would be populated when plots are actually injected into chat
+        return [];
+    }
+
+    /**
+     * Extract character insight for profile storage
+     * @returns {string} Character analysis text
+     */
+    extractCharacterInsight() {
+        return this.elements.characterAnalysis?.textContent || 'No character data';
+    }
+
+    /**
+     * Extract world context for profile storage
+     * @returns {string} World context text
+     */
+    extractWorldContext() {
+        return this.elements.worldContext?.textContent || 'No world data';
+    }
+
+    /**
+     * Get profile index for cross-chat navigation
+     * @returns {Object} Profile index object
+     */
+    getProfileIndex() {
+        try {
+            const indexKey = this.getProfileIndexKey();
+            const storedIndex = localStorage.getItem(indexKey);
+            return storedIndex ? JSON.parse(storedIndex) : {};
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to get profile index:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Legacy method - redirects to new comprehensive profile system
+     * @deprecated Use saveChatProfile instead
+     */
+    savePlotToStorage(plotText, status) {
+        this.saveChatProfile(plotText, status);
+    }
+
+    /**
+     * Legacy method - redirects to new comprehensive profile system
+     * @deprecated Use loadChatProfile instead
+     */
+    loadPlotFromStorage() {
+        return this.loadChatProfile();
     }
 
     /**
@@ -684,58 +879,93 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Update character analysis display
+     * Update character analysis display with enhanced data extraction
      */
     updateCharacterAnalysis() {
         if (!this.elements.characterAnalysis) return;
         
         try {
-            // Get character analysis from ST integration if available
             const context = getContext();
             const currentChar = context?.characters?.[context?.characterId];
             
-            if (currentChar && this.plotEngine?.stIntegration) {
-                const analysis = this.plotEngine.stIntegration.analyzeCharacterProfile(currentChar);
+            if (currentChar) {
+                let analysisText = '';
                 
-                if (analysis) {
-                    let analysisText = '';
+                // Try ST integration first
+                if (this.plotEngine?.stIntegration) {
+                    const analysis = this.plotEngine.stIntegration.analyzeCharacterProfile(currentChar);
                     
-                    if (analysis.traits?.length > 0) {
-                        analysisText += `Traits: ${analysis.traits.slice(0, 3).join(', ')}`;
+                    if (analysis) {
+                        if (analysis.traits?.length > 0) {
+                            analysisText += `Traits: ${analysis.traits.slice(0, 3).join(', ')}`;
+                        }
+                        if (analysis.arcPotential) {
+                            analysisText += analysisText ? ' | ' : '';
+                            analysisText += `Arc: ${analysis.arcPotential}`;
+                        }
                     }
-                    
-                    if (analysis.arcPotential) {
-                        analysisText += analysisText ? ' | ' : '';
-                        analysisText += `Arc Potential: ${analysis.arcPotential}`;
-                    }
-                    
-                    this.elements.characterAnalysis.textContent = analysisText || 'Basic character data';
-                } else {
-                    this.elements.characterAnalysis.textContent = 'Basic character';
                 }
+                
+                // Fallback: Extract basic info from character object
+                if (!analysisText) {
+                    const traits = [];
+                    
+                    // Extract personality traits from description/personality
+                    const personalityText = (currentChar.personality || '').toLowerCase();
+                    const descriptionText = (currentChar.description || '').toLowerCase();
+                    const combinedText = `${personalityText} ${descriptionText}`;
+                    
+                    // Look for common personality indicators
+                    if (combinedText.includes('confident') || combinedText.includes('bold')) traits.push('Confident');
+                    if (combinedText.includes('shy') || combinedText.includes('quiet') || combinedText.includes('reserved')) traits.push('Reserved');
+                    if (combinedText.includes('witty') || combinedText.includes('funny') || combinedText.includes('humorous')) traits.push('Witty');
+                    if (combinedText.includes('mysterious') || combinedText.includes('enigmatic')) traits.push('Mysterious');
+                    if (combinedText.includes('caring') || combinedText.includes('kind') || combinedText.includes('gentle')) traits.push('Caring');
+                    if (combinedText.includes('strong') || combinedText.includes('brave') || combinedText.includes('fierce')) traits.push('Strong');
+                    if (combinedText.includes('intelligent') || combinedText.includes('smart') || combinedText.includes('clever')) traits.push('Intelligent');
+                    
+                    // Extract character name characteristics
+                    if (currentChar.name) {
+                        const charName = currentChar.name.toLowerCase();
+                        if (charName.includes('mage') || charName.includes('wizard') || charName.includes('sorcerer')) traits.push('Magical');
+                        if (charName.includes('knight') || charName.includes('warrior') || charName.includes('fighter')) traits.push('Martial');
+                        if (charName.includes('priest') || charName.includes('cleric') || charName.includes('healer')) traits.push('Healing');
+                    }
+                    
+                    if (traits.length > 0) {
+                        analysisText = `Traits: ${traits.slice(0, 3).join(', ')}`;
+                    } else {
+                        analysisText = `Character: ${currentChar.name || 'Unnamed'}`;
+                    }
+                }
+                
+                this.elements.characterAnalysis.textContent = analysisText;
+                console.log('[machinor-roundtable] Character analysis:', analysisText);
+                
             } else {
                 this.elements.characterAnalysis.textContent = 'No character selected';
             }
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating character analysis:', error);
-            this.elements.characterAnalysis.textContent = 'Analysis unavailable';
+            this.elements.characterAnalysis.textContent = 'Character data unavailable';
         }
     }
 
     /**
-     * Update world context display
+     * Update world context display with enhanced data extraction
      */
     updateWorldContext() {
         if (!this.elements.worldContext) return;
         
         try {
-            // Get world context from ST integration if available
+            let contextText = '';
+            
+            // Try ST integration first
             if (this.plotEngine?.stIntegration) {
                 const worldInfo = this.plotEngine.stIntegration.getWorldInfo();
                 
                 if (worldInfo && Object.keys(worldInfo).length > 0) {
-                    let contextText = '';
                     let totalEntries = 0;
                     
                     // Count world info entries
@@ -754,42 +984,99 @@ export class PlotPreviewManager {
                     if (worldInfo.organizations?.length > 0) {
                         contextText += `, ${worldInfo.organizations.length} groups`;
                     }
-                    
-                    this.elements.worldContext.textContent = contextText;
-                } else {
-                    this.elements.worldContext.textContent = 'No world data';
                 }
-            } else {
-                this.elements.worldContext.textContent = 'Integration not available';
             }
+            
+            // Fallback: Extract context from available sources
+            if (!contextText) {
+                const context = getContext();
+                const chat = context?.chat || [];
+                
+                // Analyze chat for world context
+                let locationMentions = 0;
+                let characterMentions = 0;
+                const locationKeywords = ['room', 'house', 'forest', 'city', 'town', 'castle', 'tavern', 'market', 'street', 'garden', 'hall'];
+                const characterKeywords = ['knight', 'mage', 'merchant', 'guard', 'noble', 'villager'];
+                
+                chat.slice(-20).forEach(msg => { // Analyze last 20 messages
+                    const text = (msg.mes || '').toLowerCase();
+                    locationKeywords.forEach(keyword => {
+                        if (text.includes(keyword)) locationMentions++;
+                    });
+                    characterKeywords.forEach(keyword => {
+                        if (text.includes(keyword)) characterMentions++;
+                    });
+                });
+                
+                if (locationMentions > 0 || characterMentions > 0) {
+                    contextText = `Chat context: ${locationMentions} locations, ${characterMentions} characters mentioned`;
+                } else {
+                    contextText = 'Active chat context detected';
+                }
+            }
+            
+            this.elements.worldContext.textContent = contextText || 'No world context available';
+            console.log('[machinor-roundtable] World context:', contextText);
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating world context:', error);
-            this.elements.worldContext.textContent = 'Context unavailable';
+            this.elements.worldContext.textContent = 'World context unavailable';
         }
     }
 
     /**
-     * Update character count display
+     * Update character count display with enhanced detection
      */
     updateCharacterCount() {
         if (!this.elements.characterCount) return;
         
         try {
-            // Get active characters from chat injector if available
+            // Try chat injector first
             const activeCharacters = this.chatInjector?.getActiveCharacters() || [];
             
-            if (activeCharacters.length === 1) {
-                this.elements.characterCount.textContent = 'Single character';
-            } else if (activeCharacters.length > 1) {
-                this.elements.characterCount.textContent = `${activeCharacters.length} characters in group`;
-            } else {
-                this.elements.characterCount.textContent = 'No characters detected';
+            if (activeCharacters.length > 0) {
+                if (activeCharacters.length === 1) {
+                    this.elements.characterCount.textContent = 'Single character';
+                } else {
+                    this.elements.characterCount.textContent = `${activeCharacters.length} characters in group`;
+                }
+                return;
             }
+            
+            // Fallback: Analyze chat for character count
+            const context = getContext();
+            const chat = context?.chat || [];
+            
+            if (chat.length === 0) {
+                this.elements.characterCount.textContent = 'No chat yet';
+                return;
+            }
+            
+            // Count unique speakers in recent chat
+            const recentMessages = chat.slice(-20);
+            const speakers = new Set();
+            
+            recentMessages.forEach(msg => {
+                if (!msg.is_user && msg.name) {
+                    speakers.add(msg.name);
+                }
+            });
+            
+            const charCount = speakers.size;
+            
+            if (charCount === 0) {
+                this.elements.characterCount.textContent = 'No characters detected';
+            } else if (charCount === 1) {
+                this.elements.characterCount.textContent = 'Single character';
+            } else {
+                this.elements.characterCount.textContent = `${charCount} characters active`;
+            }
+            
+            console.log('[machinor-roundtable] Character count updated:', charCount);
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating character count:', error);
-            this.elements.characterCount.textContent = 'Count unavailable';
+            this.elements.characterCount.textContent = 'Character count unavailable';
         }
     }
 
