@@ -200,15 +200,9 @@ export class PlotEngine {
                     return cleanedContext;
                 }
                 
-                // If no template guidance, check if it's a direct suggestion (arc suggestion type)
-                if (suggestion.type === 'arc_suggestion' && suggestion.text) {
-                    console.log('[machinor-roundtable] No template guidance - returning arc suggestion text directly:', suggestion.text);
-                    console.log('[machinor-roundtable] === ARC-AWARE GENERATION END (ARC DIRECT) ===');
-                    return suggestion.text;
-                }
-                
-                // For other suggestion types, build enhanced context with arc information
-                console.log('[machinor-roundtable] Non-arc suggestion type - building enhanced context');
+                // CRITICAL FIX: Always generate via LLM when style/intensity options are present
+                // Remove direct arc suggestion text bypass to ensure API calls
+                console.log('[machinor-roundtable] Style/Intensity options present - generating via LLM API');
                 const arcContext = this.buildArcContext(character, suggestion, arcSuggestions);
                 
                 // Get enhanced data from ST integration

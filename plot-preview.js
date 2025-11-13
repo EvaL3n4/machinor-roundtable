@@ -1258,8 +1258,8 @@ export class PlotPreviewManager {
         
         this.updateStatus('pending');
         
-        // Trigger new plot generation
-        this.generateNewPlot();
+        // Trigger new plot generation with current settings
+        this.generateNewPlotWithOptions();
         
         // @ts-ignore - toastr is a global library
         toastr.info('Plot skipped, generating new one...', 'Machinor Roundtable');
@@ -1303,8 +1303,8 @@ export class PlotPreviewManager {
             this.elements.nextPlotText.textContent = 'Regenerating next plot...';
         }
         
-        // Trigger regeneration
-        this.generateNextPlot();
+        // Trigger regeneration with current settings
+        this.generateNextPlotWithOptions();
         // @ts-ignore - toastr is a global library
         toastr.info('Regenerating next plot...', 'Machinor Roundtable');
         console.log('[machinor-roundtable] Next plot regeneration requested');
@@ -1623,6 +1623,48 @@ export class PlotPreviewManager {
         } catch (error) {
             console.error('[machinor-roundtable] Failed to generate next plot:', error);
             this.displayNextPlot('Generation failed');
+        }
+    }
+    
+    /**
+     * Generate next plot preview with current Plot Style/Intensity options
+     */
+    async generateNextPlotWithOptions() {
+        console.log('[machinor-roundtable] Generating next plot with options...');
+        
+        try {
+            // Use the imported helper functions
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                this.displayNextPlot('No character selected');
+                return;
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Get Plot Style and Intensity from settings
+            const plotStyle = $('#mr_plot_style').val() || 'natural';
+            const plotIntensity = $('#mr_plot_intensity').val() || 'moderate';
+            console.log('[machinor-roundtable] Next Plot Style:', plotStyle, 'Plot Intensity:', plotIntensity);
+            
+            // Combine options for plot generation
+            const plotOptions = {
+                style: plotStyle,
+                intensity: plotIntensity
+            };
+            
+            // Generate plot using the plot engine with options
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
+            
+            if (plotContext) {
+                this.displayNextPlot(plotContext);
+                // @ts-ignore - toastr is a global library
+                toastr.info('Next plot preview generated with style: ' + plotStyle, 'Machinor Roundtable');
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to generate next plot with options:', error);
+            this.displayNextPlot('Generation failed: ' + error.message);
         }
     }
 

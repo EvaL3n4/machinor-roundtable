@@ -1892,9 +1892,41 @@
     
     /* CRITICAL FIX: Mobile scrolling for Advanced Options */
     .mr-advanced-content {
-        max-height: calc(100vh - 300px) !important;
+        max-height: none !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: none !important;
+        scroll-behavior: smooth !important;
+    }
+    
+    /* Remove container constraints - allow expansion beyond screen */
+    .mr-advanced-section {
+        max-width: none !important;
+        width: 100vw !important;
+        margin-left: -24px !important;
+        margin-right: -24px !important;
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    
+    /* Enhanced scrollbar for mobile */
+    .mr-advanced-content::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .mr-advanced-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 3px;
+    }
+    
+    .mr-advanced-content::-webkit-scrollbar-thumb {
+        background: var(--mr-accent-primary);
+        border-radius: 3px;
+        box-shadow: 0 0 4px rgba(255, 105, 180, 0.5);
     }
 }
 
