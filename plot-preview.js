@@ -100,6 +100,10 @@ export class PlotPreviewManager {
         this.isManualEntry = false;
         /** @type {boolean} */
         this.isGenerating = false;
+        /** @type {boolean} */
+        this.isEditingPlot = false;
+        /** @type {string|null} */
+        this.editingPlotId = null;
         
         // Story intelligence data
         /** @type {Object|null} */
@@ -581,6 +585,12 @@ export class PlotPreviewManager {
             this.elements.historyLimitInput.addEventListener('change', () => this.updateHistoryLimit());
         }
         
+        // Template gallery buttons
+        const templateButtons = document.querySelectorAll('.mr-template-btn');
+        templateButtons.forEach(button => {
+            button.addEventListener('click', (e) => this.handleTemplateSelection(e));
+        });
+        
         // Modal
         if (this.elements.closeModalBtn) {
             this.elements.closeModalBtn.addEventListener('click', () => this.closeModal());
@@ -600,6 +610,12 @@ export class PlotPreviewManager {
         // Story intelligence toggle
         if (this.elements.intelToggle) {
             this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
+        }
+        
+        // Advanced options toggle
+        const advancedToggle = document.getElementById('mr_advanced_toggle');
+        if (advancedToggle) {
+            advancedToggle.addEventListener('click', () => this.toggleAdvancedOptions());
         }
         
         console.log('[machinor-roundtable] Plot Preview events bound');
@@ -792,6 +808,163 @@ export class PlotPreviewManager {
             this.elements.intelContent.classList.add('collapsed');
             this.elements.intelToggle.querySelector('i').className = 'fa-solid fa-chevron-down';
         }
+    }
+
+    /**
+     * Toggle advanced options panel with iOS spring animations
+     */
+    toggleAdvancedOptions() {
+        const advancedContent = document.getElementById('mr_advanced_content');
+        const advancedToggle = document.getElementById('mr_advanced_toggle');
+        
+        if (!advancedContent || !advancedToggle) return;
+        
+        const isCollapsed = advancedContent.classList.contains('collapsed');
+        const toggleIcon = advancedToggle.querySelector('.mr-advanced-toggle i');
+        
+        if (isCollapsed) {
+            // Expanding - remove collapsed class
+            advancedContent.classList.remove('collapsed');
+            
+            // Update ARIA attributes for accessibility
+            advancedContent.setAttribute('aria-hidden', 'false');
+            advancedToggle.setAttribute('aria-expanded', 'true');
+            
+            // Animate icon rotation with spring effect
+            if (toggleIcon) {
+                toggleIcon.style.transform = 'rotate(180deg)';
+            }
+            
+            // Add visual feedback
+            advancedToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                advancedToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] Advanced options expanded');
+        } else {
+            // Collapsing - add collapsed class
+            advancedContent.classList.add('collapsed');
+            
+            // Update ARIA attributes for accessibility
+            advancedContent.setAttribute('aria-hidden', 'true');
+            advancedToggle.setAttribute('aria-expanded', 'false');
+            
+            // Animate icon rotation with spring effect
+            if (toggleIcon) {
+                toggleIcon.style.transform = 'rotate(0deg)';
+            }
+            
+            // Add visual feedback
+            advancedToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                advancedToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] Advanced options collapsed');
+        }
+    }
+
+    /**
+     * Handle template selection with proper plot engine integration
+     * Templates should GUIDE generation, not replace it with literal text
+     */
+    async handleTemplateSelection(event) {
+        const button = event.currentTarget;
+        const template = button.dataset.template;
+        
+        if (!template) {
+            console.warn('[machinor-roundtable] No template data found on button');
+            return;
+        }
+        
+        // Clear any existing states from other template buttons
+        document.querySelectorAll('.mr-template-btn').forEach(btn => {
+            btn.classList.remove('success', 'error');
+        });
+        
+        // Add loading state
+        button.classList.add('loading');
+        button.style.pointerEvents = 'none';
+        
+        try {
+            console.log('[machinor-roundtable] Template selected for guidance:', template);
+            
+            // Get current character and context for generation
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                throw new Error('No character selected');
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Convert template to guidance for the plot engine
+            const templateGuidance = this.getTemplateGuidance(template);
+            
+            // Generate plot using the plot engine with template guidance
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, {
+                guidance: templateGuidance,
+                template: template
+            });
+            
+            // Remove loading state
+            button.classList.remove('loading');
+            button.style.pointerEvents = 'auto';
+            
+            // Add success state
+            button.classList.add('success');
+            
+            if (plotContext) {
+                // Display the GENERATED plot (not literal template text)
+                this.displayCurrentPlot(plotContext, 'ready');
+                
+                // Show success message
+                // @ts-ignore - toastr is a global library
+                toastr.success(`Template "${template}" guiding plot generation`, 'Machinor Roundtable');
+                
+                console.log('[machinor-roundtable] Template applied as guidance:', template, 'Generated plot:', plotContext.substring(0, 100) + '...');
+            } else {
+                throw new Error('No plot context generated');
+            }
+            
+            // Remove success state after 2 seconds
+            setTimeout(() => {
+                button.classList.remove('success');
+            }, 2000);
+            
+        } catch (error) {
+            // Handle errors
+            button.classList.remove('loading');
+            button.style.pointerEvents = 'auto';
+            button.classList.add('error');
+            
+            console.error('[machinor-roundtable] Template application failed:', error);
+            
+            // @ts-ignore - toastr is a global library
+            toastr.error(`Failed to apply template "${template}": ${error.message}`, 'Machinor Roundtable');
+            
+            // Remove error state after 3 seconds
+            setTimeout(() => {
+                button.classList.remove('error');
+            }, 3000);
+        }
+    }
+
+    /**
+     * Convert template selection to guidance for plot generation
+     * @param {string} template - The selected template
+     * @returns {string} Guidance text for plot generation
+     */
+    getTemplateGuidance(template) {
+        const templateGuidanceMap = {
+            'meet_cute': 'Focus on a charming first encounter that could develop into romance. Emphasize the initial spark of attraction and emotional connection between characters.',
+            'adventure_begins': 'Introduce an exciting quest or journey. Create anticipation and establish the stakes of the adventure that lies ahead.',
+            'mystery_hook': 'Introduce an intriguing mystery or puzzle. Create questions that need answers and build suspense around the unknown.',
+            'conflict_rises': 'Escalate existing tensions or introduce new obstacles. Build dramatic tension and create challenges for characters to overcome.'
+        };
+        
+        return templateGuidanceMap[template] || `Apply the ${template} narrative template to guide plot development in an interesting direction.`;
     }
 
     /**
@@ -1031,8 +1204,12 @@ export class PlotPreviewManager {
         this.updateStatus('injected');
         this.clearAutoApproveTimer();
         
-        // Add to history
-        this.addToHistory(this.currentPlot);
+        // Add to history (only if not editing an existing plot)
+        if (!this.isEditingPlot || !this.editingPlotId) {
+            this.addToHistory(this.currentPlot);
+        } else {
+            console.log('[machinor-roundtable] Skipping history add - editing existing plot');
+        }
         
         // Trigger injection through chat injector
         // This is a simplified version - in practice, you'd integrate with the actual injection system
@@ -1056,9 +1233,16 @@ export class PlotPreviewManager {
             return;
         }
         
+        // Check if current plot is in history
+        const existingPlot = this.plotHistory.find(plot => plot.text === this.currentPlot);
+        
+        // Set editing state
+        this.isEditingPlot = !!existingPlot;
+        this.editingPlotId = existingPlot ? existingPlot.id : null;
+        
         // For now, open modal - could add inline editing later
         this.openModal(this.currentPlot);
-        console.log('[machinor-roundtable] Plot editor opened');
+        console.log('[machinor-roundtable] Plot editor opened, editing existing:', this.isEditingPlot);
     }
 
     /**
@@ -1191,10 +1375,25 @@ export class PlotPreviewManager {
         } else {
             // Edit existing plot
             this.displayCurrentPlot(editedText, 'ready');
+            
+            // Update the history entry if we were editing an existing plot
+            if (this.isEditingPlot && this.editingPlotId) {
+                const plotIndex = this.plotHistory.findIndex(plot => plot.id === this.editingPlotId);
+                if (plotIndex !== -1) {
+                    this.plotHistory[plotIndex].text = editedText;
+                    this.plotHistory[plotIndex].timestamp = Date.now(); // Update timestamp
+                    this.renderHistory();
+                    console.log('[machinor-roundtable] Updated existing plot in history');
+                }
+            }
+            
             // @ts-ignore - toastr is a global library
             toastr.success('Plot edited successfully', 'Machinor Roundtable');
         }
         
+        // Reset editing state
+        this.isEditingPlot = false;
+        this.editingPlotId = null;
         this.closeModal();
         console.log('[machinor-roundtable] Plot saved:', editedText);
     }
@@ -1239,18 +1438,54 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Toggle plot history visibility
+     * Toggle plot history visibility with iOS spring animations
      */
     toggleHistory() {
         if (!this.elements.historyContent || !this.elements.historyToggle) return;
         
-        this.elements.historyContent.classList.toggle('collapsed');
+        const isCollapsed = this.elements.historyContent.classList.contains('collapsed');
         const icon = this.elements.historyToggle.querySelector('i');
         
-        if (this.elements.historyContent.classList.contains('collapsed')) {
-            if (icon) icon.className = 'fa-solid fa-chevron-down';
+        if (isCollapsed) {
+            // Expanding - remove collapsed class
+            this.elements.historyContent.classList.remove('collapsed');
+            
+            // Update ARIA attributes
+            this.elements.historyContent.setAttribute('aria-hidden', 'false');
+            this.elements.historyToggle.setAttribute('aria-expanded', 'true');
+            
+            // Spring animation for icon rotation
+            if (icon) {
+                icon.style.transform = 'rotate(180deg)';
+            }
+            
+            // Visual feedback with spring effect
+            this.elements.historyToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.elements.historyToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] History expanded');
         } else {
-            if (icon) icon.className = 'fa-solid fa-chevron-up';
+            // Collapsing - add collapsed class
+            this.elements.historyContent.classList.add('collapsed');
+            
+            // Update ARIA attributes
+            this.elements.historyContent.setAttribute('aria-hidden', 'true');
+            this.elements.historyToggle.setAttribute('aria-expanded', 'false');
+            
+            // Spring animation for icon rotation
+            if (icon) {
+                icon.style.transform = 'rotate(0deg)';
+            }
+            
+            // Visual feedback with spring effect
+            this.elements.historyToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.elements.historyToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] History collapsed');
         }
     }
 
@@ -1315,6 +1550,10 @@ export class PlotPreviewManager {
                 const plotId = /** @type {HTMLElement} */ (item).dataset.plotId;
                 const plot = this.plotHistory.find(p => p.id === plotId);
                 if (plot) {
+                    // Set editing state before displaying to prevent duplicate history entries
+                    this.isEditingPlot = true;
+                    this.editingPlotId = plotId;
+                    
                     this.displayCurrentPlot(plot.text, 'ready');
                     // @ts-ignore - toastr is a global library
                     toastr.info('Plot loaded from history', 'Machinor Roundtable');

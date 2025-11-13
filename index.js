@@ -423,9 +423,22 @@ async function generateAndDisplayPlot() {
         const llmSettings = getCurrentLLMSettings();
         debugLog("Current LLM settings:", llmSettings);
         
+        // Get Plot Style and Intensity from settings
+        const plotStyle = $('#mr_plot_style').val() || 'natural';
+        const plotIntensity = $('#mr_plot_intensity').val() || 'moderate';
+        debugLog("Plot Style:", plotStyle, "Plot Intensity:", plotIntensity);
+        
+        // Combine all options for plot generation
+        const plotOptions = {
+            ...llmSettings,
+            style: plotStyle,
+            intensity: plotIntensity
+        };
+        debugLog("Combined plot options:", plotOptions);
+        
         debugLog("Calling plotEngine.generatePlotContext...");
-        // Generate plot context with character and LLM settings
-        const plotContext = await plotEngine.generatePlotContext(character, chatHistory, llmSettings);
+        // Generate plot context with character, settings, and LLM settings
+        const plotContext = await plotEngine.generatePlotContext(character, chatHistory, plotOptions);
         debugLog("Received plot context:", plotContext);
         
         debugLog("Displaying plot in preview...");
