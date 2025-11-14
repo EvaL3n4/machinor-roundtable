@@ -1450,94 +1450,318 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Mobile Responsive - iOS Design */
+/* Mobile Responsive - Complete iOS Liquid Glass Redesign */
 @media (max-width: 600px) {
+    /* iOS Liquid Glass Mobile Modal Container */
     .mr-plot-sidebar {
-        position: fixed;
-        inset: 0;
+        position: fixed !important;
         top: 0 !important;
         left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
         transform: none !important;
-        width: 100dvw;
-        height: 100dvh;
-        max-height: 100dvh;
-        padding-top: max(env(safe-area-inset-top), 20px);
-        padding-right: max(env(safe-area-inset-right), 24px);
-        padding-bottom: max(env(safe-area-inset-bottom), 24px);
-        padding-left: max(env(safe-area-inset-left), 24px);
-        border: none;
-        border-radius: var(--mr-radius-lg);
-        background: rgba(15, 15, 25, 0.95);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        box-shadow: var(--mr-shadow-lg);
-        display: flex;
-        flex-direction: column;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        
+        /* Center the modal content properly */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: stretch !important;
+        
+        /* Authentic iOS Liquid Glass Background */
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.05) 0%,
+                rgba(218, 112, 214, 0.05) 20%,
+                rgba(186, 85, 211, 0.05) 40%,
+                rgba(25, 25, 35, 0.9) 100%);
+        backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
+        -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
+        
+        /* iOS Shadows and Elevation */
+        box-shadow:
+            0 25px 50px -12px rgba(255, 105, 180, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        
         overscroll-behavior: contain;
         z-index: 3602;
-        opacity: 0;
-        transform: scale(0.95);
+        
+        /* iOS Modal Animation States */
+        opacity: 0 !important;
+        transform: translateY(100vh) scale(0.95);
         pointer-events: none;
-        transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        
+        /* iOS Safe Area Support */
+        padding-top: max(env(safe-area-inset-top), 20px);
+        padding-right: max(env(safe-area-inset-right), 16px);
+        padding-bottom: max(env(safe-area-inset-bottom), 20px);
+        padding-left: max(env(safe-area-inset-left), 16px);
     }
 
+    /* iOS Modal Visible State */
     .mr-plot-sidebar.mobile-visible {
-        opacity: 1;
-        transform: scale(1);
+        opacity: 1 !important;
+        transform: translateY(0) scale(1);
         pointer-events: auto;
+        animation: iosModalAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        
+        /* Subtle hardware acceleration that doesn't interfere with animations */
+        will-change: opacity, transform;
     }
 
+    /* iOS Modal Hidden State */
     .mr-plot-sidebar.mobile-hidden {
-        opacity: 0;
-        transform: scale(0.95);
+        opacity: 0 !important;
+        transform: translateY(100vh) scale(0.95);
         pointer-events: none;
+        animation: iosModalDisappear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
+    /* iOS Modal Content Container */
     .mr-plot-sidebar.mobile-visible .mr-sidebar-content {
         opacity: 1 !important;
         pointer-events: auto !important;
         visibility: visible !important;
         display: flex !important;
+        flex-direction: column !important;
         flex: 1 1 auto !important;
         min-height: 0 !important;
         max-height: none !important;
         height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 16px 16px 40px 16px !important;
+        gap: 16px;
+        align-items: stretch;
+        width: 100% !important;
+        box-sizing: border-box;
+        
+        /* Fix ghosting during transitions */
+        backface-visibility: hidden !important;
+        -webkit-backface-visibility: hidden !important;
+        transform: translateZ(0) !important;
+        will-change: opacity, transform !important;
     }
 
+    /* iOS Action Button Layout */
     .mr-plot-actions {
         flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
     }
 
+    .mr-action-btn {
+        min-height: 44px;
+        min-width: 44px;
+        flex: 1;
+        padding: 14px 18px;
+    }
+
+    /* Hide Desktop Toggle Button */
     .mr-plot-sidebar .mr-toggle-btn {
-        display: none;
+        display: none !important;
     }
 
+    /* iOS Liquid Glass Header */
     .mr-sidebar-header {
-        padding-right: 60px;
+        padding: 24px 20px 20px 20px !important;
+        padding-right: 60px !important;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.15) 0%,
+                rgba(218, 112, 214, 0.15) 50%,
+                rgba(186, 85, 211, 0.15) 100%);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 20px 20px 0 0;
+        margin: -16px -20px 20px -20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
     }
 
+    .mr-sidebar-header::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2.5px;
+    }
+
+    /* iOS Liquid Glass Close Button */
     .mr-mobile-close-btn {
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
         position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
+        top: 28px;
+        right: 20px;
+        width: 44px !important;
+        height: 44px !important;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 50%;
         color: white;
         font-size: 18px;
+        font-weight: 300;
         cursor: pointer;
         z-index: 10;
-        transition: var(--mr-transition);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 4px 16px rgba(255, 105, 180, 0.2);
     }
 
-    .mr-mobile-close-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: rotate(90deg);
+    .mr-mobile-close-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+    }
+
+    /* iOS Enhanced Advanced Section */
+    .mr-advanced-section {
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 16px !important;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 255, 255, 0.08) 0%,
+                rgba(255, 255, 255, 0.05) 100%);
+        backdrop-filter: blur(25px) saturate(200%);
+        -webkit-backdrop-filter: blur(25px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow:
+            0 8px 32px rgba(255, 105, 180, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        width: 100% !important;
+        max-width: none !important;
+        position: relative;
+    }
+
+    /* iOS Advanced Header Touch Target */
+    .mr-advanced-header {
+        min-height: 44px !important;
+        padding: 16px 20px !important;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.02) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
+        position: relative;
+    }
+
+    .mr-advanced-header:active {
+        background: rgba(255, 105, 180, 0.1);
+        transform: scale(0.98);
+    }
+
+    /* iOS Advanced Toggle Button */
+    .mr-advanced-toggle {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+    }
+
+    .mr-advanced-toggle:active {
+        transform: scale(0.92);
+        background: rgba(255, 105, 180, 0.2);
+        border-color: rgba(255, 105, 180, 0.3);
+    }
+
+    .mr-advanced-toggle i {
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* iOS Enhanced Advanced Content Animation */
+    .mr-advanced-content {
+        flex-shrink: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        opacity: 1 !important;
+        transform: translateY(0);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 20px !important;
+        border-radius: 0 0 20px 20px;
+        width: 100% !important;
+        box-sizing: border-box;
+        position: relative !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .mr-advanced-content:not(.collapsed) {
+        max-height: none !important;
+        opacity: 1 !important;
+        transform: translateY(0);
+        padding: 20px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        position: relative !important;
+        left: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+}
+
+/* iOS Modal Animations */
+@keyframes iosModalAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(100vh) scale(0.95);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-10px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iosModalDisappear {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    40% {
+        opacity: 0.8;
+        transform: translateY(-5px) scale(0.98);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(100vh) scale(0.95);
     }
 }
 
@@ -1658,26 +1882,247 @@
         box-shadow: 0 6px 18px rgba(255, 105, 180, 0.5);
     }
 
+    /* iOS Liquid Glass Modal Overlay */
     .mr-mobile-overlay {
         position: fixed;
         inset: 0;
-        background: linear-gradient(135deg, rgba(255, 105, 180, 0.3) 0%, rgba(218, 112, 214, 0.3) 50%, rgba(20, 20, 30, 0.4) 100%);
-        backdrop-filter: blur(12px) saturate(180%);
-        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.15) 0%,
+                rgba(218, 112, 214, 0.15) 25%,
+                rgba(186, 85, 211, 0.15) 50%,
+                rgba(25, 25, 35, 0.6) 100%);
+        backdrop-filter: blur(50px) saturate(200%) brightness(1.1);
+        -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.1);
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.3s ease-in-out;
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 3601;
+        
+        /* iOS-style animation states */
+        transform: scale(1.1);
     }
 
     .mr-mobile-overlay.mobile-visible {
         opacity: 1;
         pointer-events: auto;
+        transform: scale(1);
+        animation: iosOverlayAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     .mr-mobile-overlay.mobile-hidden {
         opacity: 0;
         pointer-events: none;
+        transform: scale(1.1);
+        animation: iosOverlayDisappear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* iOS Liquid Glass Mobile Toggle Button Enhancement */
+    .mr-mobile-toggle {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.15) 0%,
+                rgba(218, 112, 214, 0.15) 50%,
+                rgba(186, 85, 211, 0.15) 100%);
+        backdrop-filter: blur(25px) saturate(200%);
+        -webkit-backdrop-filter: blur(25px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        color: var(--mr-text-primary);
+        box-shadow:
+            0 8px 25px rgba(255, 105, 180, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mr-mobile-toggle::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--mr-accent-gradient);
+        transition: left 0.5s ease;
+        z-index: -1;
+    }
+
+    .mr-mobile-toggle:hover::before,
+    .mr-mobile-toggle.is-active::before {
+        left: 0;
+    }
+
+    .mr-mobile-toggle:hover,
+    .mr-mobile-toggle.is-active {
+        background: transparent;
+        border-color: transparent;
+        transform: scale(1.05) translateY(-2px);
+        box-shadow:
+            0 12px 35px rgba(255, 105, 180, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        color: white;
+    }
+
+    .mr-mobile-toggle:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+
+    /* iOS Enhanced Current Plot Section */
+    .mr-current-plot {
+        flex-shrink: 0 !important;
+        margin: 0 0 16px 0;
+        padding: 16px;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 192, 203, 0.12) 0%,
+                rgba(255, 192, 203, 0.08) 100%);
+        backdrop-filter: blur(30px) saturate(200%);
+        -webkit-backdrop-filter: blur(30px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        box-shadow:
+            0 8px 25px rgba(255, 105, 180, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 200px !important;
+        overflow: hidden;
+    }
+
+    .mr-current-plot:active {
+        transform: scale(0.98);
+        box-shadow:
+            0 6px 20px rgba(255, 105, 180, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .mr-current-plot .mr-plot-text {
+        max-height: 80px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* iOS Enhanced Template Buttons */
+    .mr-template-btn {
+        min-height: 60px !important;
+        min-width: 60px !important;
+        padding: 16px 12px;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.1) 0%,
+                rgba(218, 112, 214, 0.1) 100%);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 16px;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mr-template-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--mr-accent-gradient);
+        transition: left 0.5s ease;
+        z-index: -1;
+    }
+
+    .mr-template-btn:hover::before,
+    .mr-template-btn:active::before {
+        left: 0;
+    }
+
+    .mr-template-btn:hover,
+    .mr-template-btn:active {
+        background: transparent;
+        border-color: rgba(255, 105, 180, 0.3);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow:
+            0 8px 25px rgba(255, 105, 180, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    /* iOS Enhanced Quick Actions */
+    .mr-quick-actions {
+        display: flex;
+        gap: 12px;
+        padding: 20px;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.02) 100%);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 16px;
+        margin: 0 -20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mr-quick-actions .mr-action-btn {
+        min-height: 44px;
+        padding: 12px 16px;
+        background:
+            linear-gradient(135deg,
+                rgba(255, 105, 180, 0.12) 0%,
+                rgba(218, 112, 214, 0.12) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .mr-quick-actions .mr-action-btn:active {
+        transform: scale(0.95);
+        background: rgba(255, 105, 180, 0.2);
+    }
+}
+
+/* iOS Overlay Animations */
+@keyframes iosOverlayAppear {
+    0% {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+    60% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes iosOverlayDisappear {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    40% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.1);
     }
 }
 
@@ -2289,4 +2734,65 @@
 
 .mr-action-btn.error:hover {
     background: rgba(239, 68, 68, 0.3);
+}
+
+/* Cross-Device Synced History Styles */
+.mr-history-item {
+    background: var(--mr-bg-tertiary);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--mr-border-subtle);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-history-item:hover {
+    background: var(--mr-bg-hover);
+    border-color: var(--mr-accent-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mr-history-item.synced {
+    border-left: 3px solid var(--mr-accent-primary);
+    background: linear-gradient(135deg, var(--mr-bg-tertiary) 0%, rgba(var(--mr-accent-rgb), 0.05) 100%);
+}
+
+.mr-history-item.synced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 20px 20px 0;
+    border-color: transparent var(--mr-accent-primary) transparent transparent;
+}
+
+.mr-history-text {
+    font-size: 0.9rem;
+    color: var(--mr-text-primary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.mr-history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--mr-text-muted);
+}
+
+.mr-history-time {
+    opacity: 0.8;
+}
+
+.mr-history-item.synced .mr-history-time {
+    color: var(--mr-accent-primary);
+    font-weight: 500;
 }

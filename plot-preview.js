@@ -227,6 +227,8 @@ export class PlotPreviewManager {
             if (context && context.characterId !== undefined && context.chatId) {
                 console.log('[machinor-roundtable] ✅ Context ready, loading stored plot...');
                 this.loadPlotFromStorage();
+                // Also refresh history display with synced data
+                this.renderHistory();
             } else {
                 console.log('[machinor-roundtable] ⏳ Context not ready yet, will retry...');
                 // If context still not ready, try again with longer delay
@@ -543,18 +545,44 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Legacy method - redirects to new comprehensive profile system
-     * @deprecated Use saveChatProfile instead
+     * Save plot to cross-device storage (migrated from localStorage)
+     * @param {string} plotText - The plot text to save
+     * @param {string} status - The plot status
      */
     savePlotToStorage(plotText, status) {
+        // Save to cross-device system
+        if (typeof window.addPlotPreviewToHistory === 'function') {
+            window.addPlotPreviewToHistory(plotText, status);
+        }
+        
+        // Also save to localStorage for backward compatibility
         this.saveChatProfile(plotText, status);
     }
 
     /**
-     * Legacy method - redirects to new comprehensive profile system
-     * @deprecated Use loadChatProfile instead
+     * Load plot from cross-device storage (migrated from localStorage)
+     * @returns {Object|null} Loaded plot data or null
      */
     loadPlotFromStorage() {
+        // Try to load from cross-device system first
+        if (typeof window.getCurrentPlotPreview === 'function') {
+            const syncedPreview = window.getCurrentPlotPreview();
+            if (syncedPreview) {
+                console.log('[machinor-roundtable] ✅ Loaded plot from cross-device storage:', syncedPreview.text.substring(0, 50) + '...');
+                
+                // Display the loaded plot
+                this.displayCurrentPlot(syncedPreview.text, 'ready');
+                
+                // Add visual indicator
+                if (this.elements.statusText) {
+                    this.elements.statusText.innerHTML = `Ready <i class="fa-solid fa-cloud" title="Loaded from cross-device storage"></i>`;
+                }
+                
+                return syncedPreview;
+            }
+        }
+        
+        // Fallback to localStorage system
         return this.loadChatProfile();
     }
 
@@ -854,10 +882,35 @@ export class PlotPreviewManager {
             this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
         }
         
-        // Advanced options toggle
+        // Advanced options toggle - Enhanced for mobile with iOS haptic feedback
         const advancedToggle = document.getElementById('mr_advanced_toggle');
         if (advancedToggle) {
-            advancedToggle.addEventListener('click', () => this.toggleAdvancedOptions());
+            // Use both click and touchstart for maximum compatibility
+            advancedToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.toggleAdvancedOptions();
+            });
+            
+            // Enhanced touch handling for iOS devices
+            advancedToggle.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // iOS-style haptic feedback simulation
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+                
+                this.toggleAdvancedOptions();
+            }, { passive: false });
+            
+            // Prevent long-press context menu on mobile
+            advancedToggle.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+            
+            console.log('[machinor-roundtable] Advanced options toggle bound for mobile with haptic feedback');
         }
         
         console.log('[machinor-roundtable] Plot Preview events bound');
@@ -1151,52 +1204,89 @@ export class PlotPreviewManager {
         const advancedContent = document.getElementById('mr_advanced_content');
         const advancedToggle = document.getElementById('mr_advanced_toggle');
         
-        if (!advancedContent || !advancedToggle) return;
+        if (!advancedContent || !advancedToggle) {
+            console.warn('[machinor-roundtable] Advanced toggle elements not found:', {
+                content: !!advancedContent,
+                toggle: !!advancedToggle,
+                contentId: 'mr_advanced_content',
+                toggleId: 'mr_advanced_toggle'
+            });
+            return;
+        }
         
-        const isCollapsed = advancedContent.classList.contains('collapsed');
-        const toggleIcon = advancedToggle.querySelector('.mr-advanced-toggle i');
+        // Check both class state AND inline display style for comprehensive state detection
+        const isCollapsed = advancedContent.classList.contains('collapsed') ||
+                           (advancedContent.style.display === 'none');
+        
+        // Enhanced selector to find the icon - check multiple approaches
+        let toggleIcon = advancedToggle.querySelector('.mr-advanced-toggle i');
+        if (!toggleIcon) {
+            toggleIcon = advancedToggle.querySelector('span i');
+        }
+        if (!toggleIcon) {
+            toggleIcon = advancedToggle.querySelector('i');
+        }
+        
+        console.log('[machinor-roundtable] Toggling advanced options:', {
+            isCollapsed: isCollapsed,
+            hasIcon: !!toggleIcon,
+            iconClasses: toggleIcon?.className || 'none',
+            toggleClasses: advancedToggle.className,
+            contentClasses: advancedContent.className,
+            displayStyle: advancedContent.style.display
+        });
+        
+        // iOS Spring Animation for the toggle button itself
+        advancedToggle.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
         
         if (isCollapsed) {
-            // Expanding - remove collapsed class
+            // Expanding - remove collapsed class and ensure display is not none
             advancedContent.classList.remove('collapsed');
+            advancedContent.style.display = 'block'; // Ensure it's visible
+            advancedContent.setAttribute('aria-expanded', 'true');
             
             // Update ARIA attributes for accessibility
             advancedContent.setAttribute('aria-hidden', 'false');
             advancedToggle.setAttribute('aria-expanded', 'true');
             
-            // Animate icon rotation with spring effect
+            // Animate icon rotation with iOS spring effect
             if (toggleIcon) {
                 toggleIcon.style.transform = 'rotate(180deg)';
             }
             
-            // Add visual feedback
-            advancedToggle.style.transform = 'scale(0.98)';
+            // iOS-style visual feedback with spring animation
+            advancedToggle.style.transform = 'scale(0.92)';
             setTimeout(() => {
                 advancedToggle.style.transform = 'scale(1)';
-            }, 150);
+            }, 100);
             
-            console.log('[machinor-roundtable] Advanced options expanded');
+            console.log('[machinor-roundtable] Advanced options expanded with iOS animation');
         } else {
-            // Collapsing - add collapsed class
+            // Collapsing - add collapsed class and hide with display none
             advancedContent.classList.add('collapsed');
+            advancedContent.style.display = 'none'; // Force hide
+            advancedContent.setAttribute('aria-expanded', 'false');
             
             // Update ARIA attributes for accessibility
             advancedContent.setAttribute('aria-hidden', 'true');
             advancedToggle.setAttribute('aria-expanded', 'false');
             
-            // Animate icon rotation with spring effect
+            // Animate icon rotation with iOS spring effect
             if (toggleIcon) {
                 toggleIcon.style.transform = 'rotate(0deg)';
             }
             
-            // Add visual feedback
-            advancedToggle.style.transform = 'scale(0.98)';
+            // iOS-style visual feedback with spring animation
+            advancedToggle.style.transform = 'scale(0.92)';
             setTimeout(() => {
                 advancedToggle.style.transform = 'scale(1)';
-            }, 150);
+            }, 100);
             
-            console.log('[machinor-roundtable] Advanced options collapsed');
+            console.log('[machinor-roundtable] Advanced options collapsed with iOS animation');
         }
+        
+        // Force reflow to ensure animation starts
+        advancedToggle.offsetHeight;
     }
 
     /**
@@ -1541,6 +1631,11 @@ export class PlotPreviewManager {
         // Add to history (only if not editing an existing plot)
         if (!this.isEditingPlot || !this.editingPlotId) {
             this.addToHistory(this.currentPlot);
+            
+            // Save to plot preview history for cross-device sync
+            if (typeof window.addPlotPreviewToHistory === 'function') {
+                window.addPlotPreviewToHistory(this.currentPlot, 'injected');
+            }
         } else {
             console.log('[machinor-roundtable] Skipping history add - editing existing plot');
         }
@@ -1862,33 +1957,91 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Render plot history
+     * Load cross-device synced injection history for current chat
+     */
+    loadSyncedHistory() {
+        try {
+            // Call the global helper function to get current chat history
+            if (typeof window.getCurrentChatHistory === 'function') {
+                const syncedHistory = window.getCurrentChatHistory();
+                console.log('[machinor-roundtable] Loaded synced history:', syncedHistory.length, 'entries');
+                return syncedHistory;
+            } else {
+                console.warn('[machinor-roundtable] getCurrentChatHistory function not available yet');
+                return [];
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Error loading synced history:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Render plot history (enhanced for cross-device sync)
      */
     renderHistory() {
         if (!this.elements.historyList) return;
         
-        if (this.plotHistory.length === 0) {
+        // Load synced history first
+        const syncedHistory = this.loadSyncedHistory();
+        
+        if (syncedHistory.length === 0 && this.plotHistory.length === 0) {
             this.elements.historyList.innerHTML = '<div class="mr-history-item">No plot history yet</div>';
             return;
         }
         
-        this.elements.historyList.innerHTML = this.plotHistory.map(plot => `
-            <div class="mr-history-item" data-plot-id="${plot.id}" title="${new Date(plot.timestamp).toLocaleString()}">
-                ${plot.text.substring(0, 60)}${plot.text.length > 60 ? '...' : ''}
-            </div>
-        `).join('');
+        // Combine synced history with any local history
+        const combinedHistory = [
+            ...syncedHistory.map(entry => ({
+                text: entry.text,
+                timestamp: new Date(entry.timestamp).getTime(),
+                id: `synced_${entry.timestamp}`,
+                isSynced: true,
+                character: entry.character,
+                style: entry.style,
+                intensity: entry.intensity
+            })),
+            ...this.plotHistory.map(plot => ({
+                ...plot,
+                isSynced: false
+            }))
+        ];
+        
+        // Sort by timestamp (newest first)
+        combinedHistory.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Limit to history limit
+        const limitedHistory = combinedHistory.slice(0, this.historyLimit);
+        
+        this.elements.historyList.innerHTML = limitedHistory.map(plot => {
+            const timestamp = new Date(plot.timestamp).toLocaleString();
+            const character = plot.character ? ` • ${plot.character}` : '';
+            const style = plot.style && plot.style !== 'natural' ? ` • ${plot.style}` : '';
+            const syncedIcon = plot.isSynced ? '<i class="fa-solid fa-cloud" title="Cross-device synced"></i>' : '';
+            
+            return `
+                <div class="mr-history-item ${plot.isSynced ? 'synced' : ''}"
+                     data-plot-text="${encodeURIComponent(plot.text)}"
+                     title="${timestamp}${character}${style}">
+                    <div class="mr-history-text">${plot.text.substring(0, 60)}${plot.text.length > 60 ? '...' : ''}</div>
+                    <div class="mr-history-meta">
+                        ${syncedIcon}
+                        <span class="mr-history-time">${new Date(plot.timestamp).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
         
         // Add click handlers
         this.elements.historyList.querySelectorAll('.mr-history-item').forEach(item => {
             item.addEventListener('click', () => {
-                const plotId = /** @type {HTMLElement} */ (item).dataset.plotId;
-                const plot = this.plotHistory.find(p => p.id === plotId);
-                if (plot) {
-                    // Set editing state before displaying to prevent duplicate history entries
-                    this.isEditingPlot = true;
-                    this.editingPlotId = plotId;
+                const plotText = decodeURIComponent(/** @type {HTMLElement} */ (item).dataset.plotText);
+                if (plotText) {
+                    // Clear editing state for synced entries
+                    this.isEditingPlot = false;
+                    this.editingPlotId = null;
                     
-                    this.displayCurrentPlot(plot.text, 'ready');
+                    this.displayCurrentPlot(plotText, 'ready');
                     // @ts-ignore - toastr is a global library
                     toastr.info('Plot loaded from history', 'Machinor Roundtable');
                 }

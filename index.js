@@ -118,6 +118,211 @@ function debugLog(message, data = null) {
     }
 }
 
+/**
+ * Get current chat ID for history storage
+ * @returns {string|null} Current chat ID or null if not available
+ */
+function getCurrentChatId() {
+    try {
+        const context = getContext();
+        if (!context) {
+            return null;
+        }
+        
+        // Try to get chat ID from context
+        if (context.chatId) {
+            return String(context.chatId);
+        }
+        
+        // Fallback: try to construct ID from available data
+        if (context.chat) {
+            return `chat_${context.chat.length}_${context.chat[0]?.send_date || 'unknown'}`;
+        }
+        
+        // Last resort: use a default for single-chats
+        if (context.characterId !== undefined && context.characters) {
+            const char = context.characters[context.characterId];
+            return `char_${char?.avatar || 'unknown'}_default`;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error(`[${extensionName}] Error getting chat ID:`, error);
+        return null;
+    }
+}
+
+/**
+ * Add injection to history for cross-device sync
+ * @param {string} plotContext - The plot context that was injected
+ * @param {Object} metadata - Additional metadata about the injection
+ */
+function addInjectionToHistory(plotContext, metadata = {}) {
+    try {
+        const chatId = getCurrentChatId();
+        if (!chatId) {
+            debugLog("No chat ID available, cannot save injection history");
+            return;
+        }
+        
+        // Initialize chatHistories if not exists
+        extension_settings[extensionName].chatHistories = extension_settings[extensionName].chatHistories || {};
+        extension_settings[extensionName].chatHistories[chatId] = extension_settings[extensionName].chatHistories[chatId] || [];
+        
+        // Create history entry
+        const historyEntry = {
+            text: plotContext,
+            timestamp: new Date().toISOString(),
+            character: metadata.character || 'Unknown Character',
+            style: metadata.style || 'natural',
+            intensity: metadata.intensity || 'moderate'
+        };
+        
+        // Add to history
+        extension_settings[extensionName].chatHistories[chatId].unshift(historyEntry);
+        
+        // Enforce history limit
+        const historyLimit = extension_settings[extensionName].historyLimit || 5;
+        if (extension_settings[extensionName].chatHistories[chatId].length > historyLimit) {
+            extension_settings[extensionName].chatHistories[chatId] = extension_settings[extensionName].chatHistories[chatId].slice(0, historyLimit);
+        }
+        
+        // Save settings
+        saveSettingsDebounced();
+        debugLog(`Saved injection to history for chat ${chatId}:`, historyEntry);
+        
+    } catch (error) {
+        console.error(`[${extensionName}] Error adding injection to history:`, error);
+    }
+}
+
+/**
+ * Get injection history for current chat
+ * @returns {Array} Array of injection history entries for current chat
+ */
+function getCurrentChatHistory() {
+    try {
+        const chatId = getCurrentChatId();
+        if (!chatId) {
+            return [];
+        }
+        
+        const histories = extension_settings[extensionName].chatHistories || {};
+        return histories[chatId] || [];
+    } catch (error) {
+        console.error(`[${extensionName}] Error getting chat history:`, error);
+        return [];
+    }
+}
+
+/**
+ * Clear injection history for current chat
+ */
+function clearCurrentChatHistory() {
+    try {
+        const chatId = getCurrentChatId();
+        if (!chatId) {
+            debugLog("No chat ID available, cannot clear history");
+            return;
+        }
+        
+        if (extension_settings[extensionName].chatHistories && extension_settings[extensionName].chatHistories[chatId]) {
+            delete extension_settings[extensionName].chatHistories[chatId];
+            saveSettingsDebounced();
+            debugLog(`Cleared injection history for chat ${chatId}`);
+        }
+    } catch (error) {
+        console.error(`[${extensionName}] Error clearing chat history:`, error);
+    }
+}
+
+// Make functions globally accessible for cross-file communication
+window.getCurrentChatId = getCurrentChatId;
+window.addInjectionToHistory = addInjectionToHistory;
+window.getCurrentChatHistory = getCurrentChatHistory;
+window.clearCurrentChatHistory = clearCurrentChatHistory;
+
+/**
+ * Save plot preview to history for cross-device sync
+ * @param {string} plotText - The plot text to save
+ * @param {string} status - The plot status
+ */
+function addPlotPreviewToHistory(plotText, status = 'ready') {
+    try {
+        const chatId = getCurrentChatId();
+        if (!chatId) {
+            debugLog("No chat ID available, cannot save plot preview history");
+            return;
+        }
+        
+        // Initialize previewHistories if not exists
+        extension_settings[extensionName].previewHistories = extension_settings[extensionName].previewHistories || {};
+        extension_settings[extensionName].previewHistories[chatId] = extension_settings[extensionName].previewHistories[chatId] || [];
+        
+        // Create preview entry
+        const previewEntry = {
+            text: plotText,
+            status: status,
+            timestamp: new Date().toISOString(),
+            id: Date.now().toString()
+        };
+        
+        // Add to preview history
+        extension_settings[extensionName].previewHistories[chatId].unshift(previewEntry);
+        
+        // Enforce history limit
+        const historyLimit = extension_settings[extensionName].historyLimit || 5;
+        if (extension_settings[extensionName].previewHistories[chatId].length > historyLimit) {
+            extension_settings[extensionName].previewHistories[chatId] = extension_settings[extensionName].previewHistories[chatId].slice(0, historyLimit);
+        }
+        
+        // Save settings
+        saveSettingsDebounced();
+        debugLog(`Saved plot preview to history for chat ${chatId}`);
+        
+    } catch (error) {
+        console.error(`[${extensionName}] Error saving plot preview to history:`, error);
+    }
+}
+
+/**
+ * Get plot preview history for current chat
+ * @returns {Array} Array of plot preview history entries for current chat
+ */
+function getCurrentPlotPreviewHistory() {
+    try {
+        const chatId = getCurrentChatId();
+        if (!chatId) {
+            return [];
+        }
+        
+        const histories = extension_settings[extensionName].previewHistories || {};
+        return histories[chatId] || [];
+    } catch (error) {
+        console.error(`[${extensionName}] Error getting plot preview history:`, error);
+        return [];
+    }
+}
+
+/**
+ * Load the most recent plot preview for current chat
+ * @returns {Object|null} Most recent plot preview or null
+ */
+function getCurrentPlotPreview() {
+    try {
+        const history = getCurrentPlotPreviewHistory();
+        return history.length > 0 ? history[0] : null;
+    } catch (error) {
+        console.error(`[${extensionName}] Error getting current plot preview:`, error);
+        return null;
+    }
+}
+
+// Make preview functions globally accessible
+window.addPlotPreviewToHistory = addPlotPreviewToHistory;
+window.getCurrentPlotPreviewHistory = getCurrentPlotPreviewHistory;
+window.getCurrentPlotPreview = getCurrentPlotPreview;
+
 // Extension name MUST match folder name
 const extensionName = "machinor-roundtable";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
@@ -137,7 +342,9 @@ const defaultSettings = {
     enabled: false,
     injectionFrequency: 7, // Default: inject plot every 7 exchanges
     debugMode: false,
-    currentTemplate: "universal-development"
+    currentTemplate: "universal-development",
+    // Cross-device synced injection history
+    chatHistories: {} // { [chatId]: [{text, timestamp, character, style, intensity}] }
 };
 
 // Extension initialization
@@ -228,6 +435,9 @@ function loadSettings() {
     $("#mr_enabled").prop("checked", extension_settings[extensionName].enabled);
     $("#mr_frequency").val(extension_settings[extensionName].injectionFrequency);
     $("#mr_debug").prop("checked", extension_settings[extensionName].debugMode);
+    $("#mr_history_limit").val(extension_settings[extensionName].historyLimit || 5);
+    $("#mr_plot_style").val(extension_settings[extensionName].plotStyle || 'natural');
+    $("#mr_plot_intensity").val(extension_settings[extensionName].plotIntensity || 'moderate');
     
     console.log(`[${extensionName}] Settings loaded:`, extension_settings[extensionName]);
 }
@@ -240,6 +450,9 @@ function bindEvents() {
         mr_enabled: $("#mr_enabled"),
         mr_frequency: $("#mr_frequency"),
         mr_debug: $("#mr_debug"),
+        mr_history_limit: $("#mr_history_limit"),
+        mr_plot_style: $("#mr_plot_style"),
+        mr_plot_intensity: $("#mr_plot_intensity"),
         mr_manual_trigger: $("#mr_manual_trigger"),
         mr_clear_cache: $("#mr_clear_cache"),
         mr_reset_settings: $("#mr_reset_settings")
@@ -249,6 +462,9 @@ function bindEvents() {
         mr_enabled: elements.mr_enabled.length,
         mr_frequency: elements.mr_frequency.length,
         mr_debug: elements.mr_debug.length,
+        mr_history_limit: elements.mr_history_limit.length,
+        mr_plot_style: elements.mr_plot_style.length,
+        mr_plot_intensity: elements.mr_plot_intensity.length,
         mr_manual_trigger: elements.mr_manual_trigger.length,
         mr_clear_cache: elements.mr_clear_cache.length,
         mr_reset_settings: elements.mr_reset_settings.length
@@ -276,6 +492,30 @@ function bindEvents() {
         console.log(`[${extensionName}] Bound mr_debug event`);
     } else {
         console.error(`[${extensionName}] mr_debug element not found!`);
+    }
+    
+    // History limit input
+    if (elements.mr_history_limit.length > 0) {
+        elements.mr_history_limit.on("input", onHistoryLimitChange);
+        console.log(`[${extensionName}] Bound mr_history_limit event`);
+    } else {
+        console.error(`[${extensionName}] mr_history_limit element not found!`);
+    }
+    
+    // Plot style change
+    if (elements.mr_plot_style.length > 0) {
+        elements.mr_plot_style.on("change", onPlotStyleChange);
+        console.log(`[${extensionName}] Bound mr_plot_style event`);
+    } else {
+        console.error(`[${extensionName}] mr_plot_style element not found!`);
+    }
+    
+    // Plot intensity change
+    if (elements.mr_plot_intensity.length > 0) {
+        elements.mr_plot_intensity.on("change", onPlotIntensityChange);
+        console.log(`[${extensionName}] Bound mr_plot_intensity event`);
+    } else {
+        console.error(`[${extensionName}] mr_plot_intensity element not found!`);
     }
     
     // Manual trigger button
@@ -324,6 +564,27 @@ function onDebugToggle(event) {
     extension_settings[extensionName].debugMode = value;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Debug mode:`, value);
+}
+
+function onHistoryLimitChange(event) {
+    const value = parseInt($(event.target).val()) || 5;
+    extension_settings[extensionName].historyLimit = value;
+    saveSettingsDebounced();
+    console.log(`[${extensionName}] History limit set to:`, value);
+}
+
+function onPlotStyleChange(event) {
+    const value = $(event.target).val() || 'natural';
+    extension_settings[extensionName].plotStyle = value;
+    saveSettingsDebounced();
+    console.log(`[${extensionName}] Plot style set to:`, value);
+}
+
+function onPlotIntensityChange(event) {
+    const value = $(event.target).val() || 'moderate';
+    extension_settings[extensionName].plotIntensity = value;
+    saveSettingsDebounced();
+    console.log(`[${extensionName}] Plot intensity set to:`, value);
 }
 
 function onClearCache() {
@@ -462,6 +723,16 @@ async function generateAndDisplayPlot() {
         extension_settings[extensionName].plotCount = (extension_settings[extensionName].plotCount || 0) + 1;
         saveSettingsDebounced();
         updateStatusDisplay();
+        
+        // Save to injection history for cross-device sync
+        addInjectionToHistory(plotContext, {
+            character: character?.name || 'Unknown Character',
+            style: plotStyle,
+            intensity: plotIntensity
+        });
+        
+        // Save to plot preview history for cross-device sync
+        addPlotPreviewToHistory(plotContext, 'ready');
         
         // @ts-ignore - toastr is a global library
         toastr.info("Plot generated and ready for preview", "Machinor Roundtable");
