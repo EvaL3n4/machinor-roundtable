@@ -403,12 +403,25 @@ async function generateAndDisplayPlot() {
     debugLog("Starting generateAndDisplayPlot function");
     
     try {
+        // CRITICAL FIX: Set pending status first to show "Generating..." during async operation
+        if (plotPreview && typeof plotPreview.updateStatus === 'function') {
+            plotPreview.updateStatus('pending');
+            plotPreview.clearAutoApproveTimer(); // Prevent auto-inject during generation
+            debugLog("✅ Set pending status for plot generation");
+        } else {
+            debugLog("⚠️ plotPreview not available for status update");
+        }
+        
         // Use the new helper to get current character
         const character = getCurrentCharacter();
         debugLog("Character detection result:", character ? character.name : "No character");
         
         if (!character) {
             debugLog("No character selected, showing warning");
+            // Reset status on error
+            if (plotPreview && typeof plotPreview.updateStatus === 'function') {
+                plotPreview.updateStatus('ready');
+            }
             // @ts-ignore - toastr is a global library
             toastr.warning("No character selected", "Machinor Roundtable");
             return;
@@ -457,6 +470,13 @@ async function generateAndDisplayPlot() {
     } catch (error) {
         console.error(`[${extensionName}] Failed to generate plot:`, error);
         console.error(`[${extensionName}] Error details:`, error.message, error.stack);
+        
+        // CRITICAL FIX: Reset status to ready on any error
+        if (plotPreview && typeof plotPreview.updateStatus === 'function') {
+            plotPreview.updateStatus('ready');
+            debugLog("✅ Reset status to ready after error");
+        }
+        
         // @ts-ignore - toastr is a global library
         toastr.error("Failed to generate plot: " + error.message, "Machinor Roundtable");
     }

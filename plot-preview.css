@@ -1890,43 +1890,48 @@
         transition: transform 0.1s ease;
     }
     
-    /* CRITICAL FIX: Mobile scrolling for Advanced Options */
-    .mr-advanced-content {
+    /* MOBILE-FIRST FIX: Proper Advanced Options layout */
+    .mr-advanced-content,
+    .mr-advanced-content:not(.collapsed) {
         max-height: none !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior: none !important;
+        overscroll-behavior: contain !important;
         scroll-behavior: smooth !important;
+        padding: 16px 20px !important;
     }
     
-    /* Remove container constraints - allow expansion beyond screen */
+    /* MOBILE-FIRST FIX: Container-based responsive design */
     .mr-advanced-section {
         max-width: none !important;
-        width: 100vw !important;
-        margin-left: -24px !important;
-        margin-right: -24px !important;
-        padding-left: 24px !important;
-        padding-right: 24px !important;
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
+        width: 100% !important;
+        margin: 16px -20px !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        border-radius: var(--mr-radius-md) !important;
+        border-left: 1px solid var(--mr-border-glass) !important;
+        border-right: 1px solid var(--mr-border-glass) !important;
+        box-sizing: border-box !important;
     }
     
     /* Enhanced scrollbar for mobile */
-    .mr-advanced-content::-webkit-scrollbar {
-        width: 6px;
+    .mr-advanced-content::-webkit-scrollbar,
+    .mr-advanced-content:not(.collapsed)::-webkit-scrollbar {
+        width: 6px !important;
     }
     
-    .mr-advanced-content::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 3px;
+    .mr-advanced-content::-webkit-scrollbar-track,
+    .mr-advanced-content:not(.collapsed)::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border-radius: 3px !important;
     }
     
-    .mr-advanced-content::-webkit-scrollbar-thumb {
-        background: var(--mr-accent-primary);
-        border-radius: 3px;
-        box-shadow: 0 0 4px rgba(255, 105, 180, 0.5);
+    .mr-advanced-content::-webkit-scrollbar-thumb,
+    .mr-advanced-content:not(.collapsed)::-webkit-scrollbar-thumb {
+        background: var(--mr-accent-primary) !important;
+        border-radius: 3px !important;
+        box-shadow: 0 0 4px rgba(255, 105, 180, 0.5) !important;
     }
 }
 
