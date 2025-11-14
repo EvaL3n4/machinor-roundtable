@@ -1,2 +1,5 @@
 # Ignore design system documentation
-IOS-LIQUID-GLASS-DESIGN-SYSTEM.md
+*.md
+!README.md
+# Ignore testing files
+test*.js
