@@ -171,23 +171,45 @@ jQuery(async () => {
         // Load saved settings
         loadSettings();
         
-        // Initialize core components
-        initializeCore();
+        // 🚀 Initialize core components (now async for backend)
+        await initializeCore();
         
         // Bind UI events
         bindEvents();
         
-        console.log(`[${extensionName}] ✅ Loaded successfully`);
+        console.log(`[${extensionName}] ✅ Loaded successfully with cross-device sync`);
     } catch (error) {
         console.error(`[${extensionName}] ❌ Failed to load:`, error);
     }
 });
 
+// 🚀 Cleanup function for backend shutdown
+function cleanupBackend() {
+    try {
+        import('./backend-client.js').then(({ shutdownBackendClient }) => {
+            shutdownBackendClient();
+            console.log(`[${extensionName}] Backend client shutdown complete`);
+        }).catch(error => {
+            console.warn(`[${extensionName}] Failed to shutdown backend:`, error);
+        });
+    } catch (error) {
+        console.warn(`[${extensionName}] Backend cleanup error:`, error);
+    }
+}
+
+// Handle page unload
+window.addEventListener('beforeunload', cleanupBackend);
+window.addEventListener('pagehide', cleanupBackend);
+
 /**
  * Initialize core components
  */
-function initializeCore() {
+async function initializeCore() {
     try {
+        // 🚀 STARTUP: Initialize backend server for cross-device sync
+        console.log(`[${extensionName}] 🚀 Starting backend server for cross-device sync...`);
+        await initializeBackend();
+        
         // Initialize SillyTavern integration first
         stIntegration = new STIntegrationManager();
         stIntegration.initialize();
@@ -215,6 +237,85 @@ function initializeCore() {
         
     } catch (error) {
         console.error(`[${extensionName}] Failed to initialize core components:`, error);
+    }
+}
+
+/**
+ * 🚀 Initialize backend server for cross-device synchronization
+ */
+async function initializeBackend() {
+    try {
+        // Import backend client dynamically to avoid issues if backend is not available
+        const { getBackendClient } = await import('./backend-client.js');
+        
+        console.log(`[${extensionName}] Backend client imported successfully`);
+        
+        // Get or create backend client instance
+        const backendClient = getBackendClient();
+        
+        // Wait a moment for backend to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check connection status
+        const status = backendClient.getConnectionStatus();
+        console.log(`[${extensionName}] Backend status:`, status);
+        
+        if (status.connected) {
+            console.log(`[${extensionName}] ✅ Backend server running - cross-device sync enabled`);
+            if (toastr) {
+                toastr.success('Cross-device sync enabled', 'Machinor Roundtable');
+            }
+        } else {
+            console.log(`[${extensionName}] 🔄 Backend using localStorage fallback`);
+        }
+        
+        // Add backend status to UI if status element exists
+        updateBackendStatusDisplay(status);
+        
+    } catch (error) {
+        console.warn(`[${extensionName}] Backend initialization failed, using localStorage only:`, error.message);
+        
+        // Show fallback notification
+        if (toastr) {
+            toastr.info('Using local storage fallback', 'Machinor Roundtable');
+        }
+    }
+}
+
+/**
+ * Update backend status display in UI
+ * @param {Object} status - Backend connection status
+ */
+function updateBackendStatusDisplay(status) {
+    try {
+        // Create or update backend status indicator
+        let statusElement = document.getElementById('mr_backend_status');
+        
+        if (!statusElement) {
+            // Create status element if it doesn't exist
+            statusElement = document.createElement('div');
+            statusElement.id = 'mr_backend_status';
+            statusElement.className = 'mr-backend-status';
+            statusElement.style.cssText = 'margin-top: 10px; font-size: 0.8em; color: #666;';
+            
+            // Find a good place to add it - settings panel
+            const settingsPanel = document.querySelector('#mr_enabled')?.closest('.mr-setting-group');
+            if (settingsPanel) {
+                settingsPanel.appendChild(statusElement);
+            }
+        }
+        
+        // Update status text and styling
+        if (status.connected) {
+            statusElement.innerHTML = '🌐 Cross-device sync enabled';
+            statusElement.style.color = '#28a745';
+        } else {
+            statusElement.innerHTML = '💾 Local storage mode';
+            statusElement.style.color = '#6c757d';
+        }
+        
+    } catch (error) {
+        console.warn('Failed to update backend status display:', error);
     }
 }
 

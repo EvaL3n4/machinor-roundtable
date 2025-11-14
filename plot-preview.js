@@ -1,6 +1,7 @@
 // Machinor Roundtable - Plot Preview Manager
 import { getContext } from "../../../extensions.js";
 import { saveSettingsDebounced } from "../../../../script.js";
+import { getBackendClient } from "./backend-client.js";
 // @ts-ignore - eventSource is a global
 const eventSource = window.eventSource;
 // @ts-ignore - event_types is a global
@@ -148,6 +149,12 @@ export class PlotPreviewManager {
         /** @type {number|null} */
         this.mobileHideTimeout = null;
         
+        // 🚀 NEW: Backend storage integration
+        /** @type {Object|null} */
+        this.backendClient = getBackendClient();
+        /** @type {boolean} */
+        this.serverAvailable = false;
+        
         this.bindEvents();
         this.loadSettings();
         this.initializeMobileToggle();
@@ -157,6 +164,9 @@ export class PlotPreviewManager {
         // CRITICAL FIX: Don't load saved plot immediately - context may not be ready
         // Setup listeners for chat/character changes instead
         this.setupContextChangeListeners();
+        
+        // Initialize backend client listeners
+        this.setupBackendListeners();
         
         // Initialize story intelligence display
         this.updateStoryIntelligence();
@@ -205,14 +215,74 @@ export class PlotPreviewManager {
         
         console.log('[machinor-roundtable] Context change listeners setup complete');
     }
+
+    /**
+     * Setup backend client event listeners for real-time sync
+     */
+    setupBackendListeners() {
+        if (!this.backendClient) return;
+        
+        // Listen for connection status changes
+        this.backendClient.on('connection_status', (status) => {
+            this.serverAvailable = status.connected;
+            console.log(`[machinor-roundtable] 🚀 Backend connection status: ${status.connected ? 'ONLINE' : 'OFFLINE'}`);
+            
+            if (status.connected) {
+                // Update status indicator in UI if available
+                if (this.elements.statusText) {
+                    const connectionIndicator = this.serverAvailable ? ' 🌐' : '';
+                    this.elements.statusText.title = `Machinor Roundtable - Server ${status.connected ? 'connected' : 'disconnected'}`;
+                }
+            }
+        });
+        
+        // Listen for profile updates from other devices
+        this.backendClient.on('profile_updated', (data) => {
+            console.log(`[machinor-roundtable] 🔄 Profile updated from another device:`, data);
+            
+            // Check if this update is for the current profile
+            const currentProfileId = this.backendClient?.getProfileId();
+            if (currentProfileId && data.profileId === currentProfileId) {
+                console.log('[machinor-roundtable] ✅ Current profile updated from another device');
+                
+                // Update local data with server data
+                if (data.data.plotHistory) {
+                    this.plotHistory = data.data.plotHistory;
+                    this.renderHistory();
+                }
+                
+                if (data.data.currentPlot) {
+                    this.displayCurrentPlot(data.data.currentPlot.text, data.data.currentPlot.status);
+                }
+                
+                // Show notification
+                if (toastr) {
+                    toastr.info('Plot data synchronized from another device', 'Machinor Roundtable');
+                }
+            }
+        });
+        
+        // Listen for user presence updates
+        this.backendClient.on('user_presence', (data) => {
+            console.log(`[machinor-roundtable] 👤 User presence update: ${data.userId} is ${data.status}`);
+            
+            // Could show online status indicators in UI
+            if (data.status === 'online') {
+                // User is online on another device
+                console.log('[machinor-roundtable] 📱 Cross-device sync active');
+            }
+        });
+        
+        console.log('[machinor-roundtable] Backend client listeners setup complete');
+    }
     
     /**
-     * Delayed context loading with proper timing and validation
+     * Delayed context loading with proper timing and validation (async)
      * @param {number} delay - Delay in milliseconds
      * @param {string} source - Source of the trigger
      */
-    delayedContextLoad(delay, source) {
-        setTimeout(() => {
+    async delayedContextLoad(delay, source) {
+        setTimeout(async () => {
             const context = getContext();
             
             console.log(`[machinor-roundtable] 🔍 Attempting load from ${source}:`, {
@@ -226,7 +296,7 @@ export class PlotPreviewManager {
             // Validate context is ready before attempting load
             if (context && context.characterId !== undefined && context.chatId) {
                 console.log('[machinor-roundtable] ✅ Context ready, loading stored plot...');
-                this.loadPlotFromStorage();
+                await this.loadPlotFromStorage();
             } else {
                 console.log('[machinor-roundtable] ⏳ Context not ready yet, will retry...');
                 // If context still not ready, try again with longer delay
@@ -264,7 +334,9 @@ export class PlotPreviewManager {
             return null;
         }
         
-        const storageKey = `mr_plot_${characterId}_${chatId}`;
+        // CRITICAL FIX: Use same key pattern as backend to avoid mismatch
+        const userId = context?.user?.id || context?.userId || 'default_user';
+        const storageKey = `mr_plot_${userId}_${characterId}_${chatId}`;
         console.log('[machinor-roundtable] Generated storage key:', storageKey);
         return storageKey;
     }
@@ -278,23 +350,27 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Save comprehensive chat profile to persistent storage
+     * Save comprehensive chat profile to persistent storage with backend sync
      * @param {string} plotText - The plot text to save
      * @param {string} status - The plot status
      */
-    saveChatProfile(plotText, status) {
-        const storageKey = this.getStorageKey();
-        if (!storageKey) return;
-        
+    async saveChatProfile(plotText, status) {
         const context = getContext();
         const character = context?.characters?.[context?.characterId];
         
         // Build comprehensive profile data
         const profileData = {
             // Core plot data
-            plotText: plotText,
-            status: status,
-            timestamp: Date.now(),
+            currentPlot: {
+                text: plotText,
+                status: status,
+                timestamp: Date.now(),
+                options: {
+                    style: $('#mr_plot_style')?.val() || 'natural',
+                    intensity: $('#mr_plot_intensity')?.val() || 'moderate',
+                    direction: this.elements.directionInput?.value || ''
+                }
+            },
             
             // Character information
             characterId: context?.characterId,
@@ -305,9 +381,13 @@ export class PlotPreviewManager {
             injectedPlots: this.getInjectedPlotsTimeline(),
             
             // Settings and preferences
-            recentDirections: this.recentDirections,
-            autoApproveTimeout: this.autoApproveTimeout,
-            sidebarCollapsed: this.isCollapsed,
+            settings: {
+                recentDirections: this.recentDirections,
+                autoApproveTimeout: this.autoApproveTimeout,
+                sidebarCollapsed: this.isCollapsed,
+                plotStyle: $('#mr_plot_style')?.val() || 'natural',
+                plotIntensity: $('#mr_plot_intensity')?.val() || 'moderate'
+            },
             
             // Story intelligence snapshot
             storyIntelligence: {
@@ -318,21 +398,72 @@ export class PlotPreviewManager {
             },
             
             // Chat context for restoration
-            chatLength: context?.chat?.length || 0,
-            lastMessageTime: context?.chat?.[context?.chat?.length - 1]?.send_date || null
+            chatContext: {
+                chatLength: context?.chat?.length || 0,
+                lastMessageTime: context?.chat?.[context?.chat?.length - 1]?.send_date || null
+            },
+            
+            // Version for sync conflict resolution
+            version: (this.profileVersion || 0) + 1,
+            lastModified: Date.now()
         };
         
+        console.log('[machinor-roundtable] 🔍 SAVE DEBUGGING:', {
+            hasContext: !!context,
+            characterId: context?.characterId,
+            chatId: context?.chatId,
+            hasBackendClient: !!this.backendClient,
+            backendConnected: this.serverAvailable,
+            profileVersion: this.profileVersion
+        });
+        
         try {
-            // Save the comprehensive profile
-            localStorage.setItem(storageKey, JSON.stringify(profileData));
-            
-            // Update profile index for cross-chat navigation
-            this.updateProfileIndex(storageKey, profileData);
-            
-            console.log('[machinor-roundtable] Chat profile saved:', storageKey, 'History entries:', this.plotHistory.length);
+            // 🚀 NEW: Use backend API with localStorage fallback
+            if (this.backendClient) {
+                console.log('[machinor-roundtable] 🚀 Saving profile to backend...');
+                const result = await this.backendClient.saveProfile(profileData);
+                
+                console.log('[machinor-roundtable] 🔍 SAVE RESULT:', result);
+                
+                if (result && result.success) {
+                    this.profileVersion = result.version;
+                    console.log(`[machinor-roundtable] ✅ Profile saved to server: ${result.profileId} (version ${result.version})`);
+                    
+                    // CRITICAL FIX: Also save to localStorage for immediate fallback access
+                    console.log('[machinor-roundtable] 💾 Syncing to localStorage for immediate access...');
+                    this.saveChatProfileLocal(profileData);
+                    
+                } else {
+                    console.log('[machinor-roundtable] ⚠️ Backend save failed, using localStorage fallback');
+                    this.saveChatProfileLocal(profileData);
+                }
+            } else {
+                console.log('[machinor-roundtable] 🔄 No backend client, using localStorage');
+                this.saveChatProfileLocal(profileData);
+            }
             
         } catch (error) {
             console.error('[machinor-roundtable] Failed to save chat profile:', error);
+            console.log('[machinor-roundtable] 🔄 Falling back to localStorage due to error');
+            // Always fall back to localStorage on error
+            this.saveChatProfileLocal(profileData);
+        }
+    }
+
+    /**
+     * Legacy localStorage save method (fallback)
+     * @param {Object} profileData - The profile data to save
+     */
+    saveChatProfileLocal(profileData) {
+        const storageKey = this.getStorageKey();
+        if (!storageKey) return;
+        
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(profileData));
+            this.updateProfileIndex(storageKey, profileData);
+            console.log('[machinor-roundtable] 💾 Chat profile saved to localStorage:', storageKey);
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to save to localStorage:', error);
         }
     }
 
@@ -376,10 +507,54 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Load comprehensive chat profile from persistent storage
+     * Load comprehensive chat profile from persistent storage with backend sync
+     * @returns {Promise<Object|null>} Loaded profile data or null
+     */
+    async loadChatProfile() {
+        console.log('[machinor-roundtable] 🔍 LOAD PROFILE ATTEMPT');
+        
+        const storageKey = this.getStorageKey();
+        console.log('[machinor-roundtable] 🔍 STORAGE KEY FOR LOAD:', storageKey);
+        
+        try {
+            // 🚀 NEW: Try backend first, then fallback to localStorage
+            if (this.backendClient) {
+                console.log('[machinor-roundtable] 🚀 Attempting to load profile from backend...');
+                const serverProfile = await this.backendClient.loadProfile();
+                
+                console.log('[machinor-roundtable] 🔍 LOAD RESULT:', serverProfile);
+                
+                if (serverProfile) {
+                    console.log('[machinor-roundtable] ✅ Profile loaded from server:', serverProfile.id);
+                    this.profileVersion = serverProfile.version;
+                    return this.restoreProfileFromServerData(serverProfile);
+                } else {
+                    console.log('[machinor-roundtable] 🔄 No server profile found, checking localStorage...');
+                    const localProfile = this.loadChatProfileLocal();
+                    if (localProfile) {
+                        console.log('[machinor-roundtable] 💾 Profile loaded from localStorage (migration opportunity)');
+                        // Optionally sync local profile to server
+                        this.migrateLocalProfileToServer(localProfile);
+                    }
+                    return localProfile;
+                }
+            } else {
+                console.log('[machinor-roundtable] 🔄 No backend client, using localStorage');
+                return this.loadChatProfileLocal();
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to load chat profile:', error);
+            console.log('[machinor-roundtable] 🔄 Falling back to localStorage...');
+            return this.loadChatProfileLocal();
+        }
+    }
+
+    /**
+     * Legacy localStorage load method (fallback)
      * @returns {Object|null} Loaded profile data or null
      */
-    loadChatProfile() {
+    loadChatProfileLocal() {
         const storageKey = this.getStorageKey();
         if (!storageKey) return null;
         
@@ -391,13 +566,67 @@ export class PlotPreviewManager {
             }
             
             const profileData = JSON.parse(stored);
-            console.log('[machinor-roundtable] Chat profile loaded:', storageKey, 'History entries:', profileData.plotHistory?.length || 0);
+            console.log('[machinor-roundtable] 💾 Chat profile loaded from localStorage:', storageKey, 'History entries:', profileData.plotHistory?.length || 0);
             
+            // Restore plot history
+            if (profileData.plotHistory && Array.isArray(profileData.plotHistory)) {
+                this.plotHistory = profileData.plotHistory;
+                this.renderHistory();
+            }
+            
+            // Restore recent directions
+            if (profileData.recentDirections && Array.isArray(profileData.recentDirections)) {
+                this.recentDirections = profileData.recentDirections;
+            }
+            
+            // Restore settings
+            if (profileData.autoApproveTimeout) {
+                this.autoApproveTimeout = profileData.autoApproveTimeout;
+            }
+            if (typeof profileData.sidebarCollapsed === 'boolean') {
+                this.isCollapsed = profileData.sidebarCollapsed;
+                if (this.elements.sidebar) {
+                    this.elements.sidebar.classList.toggle('collapsed', this.isCollapsed);
+                }
+            }
+            
+            // Update story intelligence display with restored data
+            if (profileData.storyIntelligence) {
+                this.updateStoryIntelligenceWithData(profileData.storyIntelligence);
+            }
+            
+            // Display the loaded plot
+            if (profileData.plotText || profileData.currentPlot?.text) {
+                const plotText = profileData.plotText || profileData.currentPlot?.text;
+                this.displayCurrentPlot(plotText, 'restored');
+                
+                if (this.elements.statusText) {
+                    const historyInfo = profileData.plotHistory?.length > 0 ? ` (${profileData.plotHistory.length} history)` : '';
+                    this.elements.statusText.innerHTML = `Restored${historyInfo} <i class="fa-solid fa-database" title="Loaded from storage"></i>`;
+                }
+            }
+            
+            return profileData;
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to load from localStorage:', error);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Restore profile data from server format
+     * @param {Object} serverProfile - Profile data from server
+     * @returns {Object} Restored profile data
+     */
+    restoreProfileFromServerData(serverProfile) {
+        try {
             // CRITICAL FIX: Enhanced debugging for persistence issues
-            console.log('[machinor-roundtable] 🗂️ RESTORING CHAT PROFILE:', {
-                storageKey: storageKey,
-                hasPlotHistory: !!(profileData.plotHistory && Array.isArray(profileData.plotHistory)),
-                plotHistoryLength: profileData.plotHistory?.length || 0,
+            console.log('[machinor-roundtable] 🗂️ RESTORING CHAT PROFILE FROM SERVER:', {
+                profileId: serverProfile.id,
+                hasPlotHistory: !!(serverProfile.plotHistory && Array.isArray(serverProfile.plotHistory)),
+                plotHistoryLength: serverProfile.plotHistory?.length || 0,
                 hasElements: {
                     historyList: !!this.elements.historyList,
                     statusText: !!this.elements.statusText,
@@ -406,9 +635,9 @@ export class PlotPreviewManager {
             });
             
             // Restore plot history
-            if (profileData.plotHistory && Array.isArray(profileData.plotHistory)) {
-                this.plotHistory = profileData.plotHistory;
-                console.log('[machinor-roundtable] ✅ History restored:', this.plotHistory.length, 'entries');
+            if (serverProfile.plotHistory && Array.isArray(serverProfile.plotHistory)) {
+                this.plotHistory = serverProfile.plotHistory;
+                console.log('[machinor-roundtable] ✅ History restored from server:', this.plotHistory.length, 'entries');
                 console.log('[machinor-roundtable] 🔄 Calling renderHistory()...');
                 
                 // Force render with enhanced logging
@@ -419,60 +648,78 @@ export class PlotPreviewManager {
                     const renderedCount = this.elements.historyList.querySelectorAll('.mr-history-item').length;
                     console.log('[machinor-roundtable] 📊 History items rendered:', renderedCount);
                     
-                    // Additional check for any existing content
                     const historyContent = this.elements.historyList.innerHTML;
                     console.log('[machinor-roundtable] 📄 History list HTML preview:', historyContent.substring(0, 200) + (historyContent.length > 200 ? '...' : ''));
                 }
             } else {
-                console.log('[machinor-roundtable] ⚠️ No plot history found in profile');
+                console.log('[machinor-roundtable] ⚠️ No plot history found in server profile');
             }
             
             // Restore recent directions
-            if (profileData.recentDirections && Array.isArray(profileData.recentDirections)) {
-                this.recentDirections = profileData.recentDirections;
-                console.log('[machinor-roundtable] ✅ Recent directions restored:', this.recentDirections.length);
+            if (serverProfile.settings?.recentDirections && Array.isArray(serverProfile.settings.recentDirections)) {
+                this.recentDirections = serverProfile.settings.recentDirections;
+                console.log('[machinor-roundtable] ✅ Recent directions restored from server:', this.recentDirections.length);
             }
             
             // Restore settings
-            if (profileData.autoApproveTimeout) {
-                this.autoApproveTimeout = profileData.autoApproveTimeout;
-                console.log('[machinor-roundtable] ✅ Auto-approve timeout restored:', this.autoApproveTimeout);
+            if (serverProfile.settings?.autoApproveTimeout) {
+                this.autoApproveTimeout = serverProfile.settings.autoApproveTimeout;
+                console.log('[machinor-roundtable] ✅ Auto-approve timeout restored from server:', this.autoApproveTimeout);
             }
-            if (typeof profileData.sidebarCollapsed === 'boolean') {
-                this.isCollapsed = profileData.sidebarCollapsed;
+            if (typeof serverProfile.settings?.sidebarCollapsed === 'boolean') {
+                this.isCollapsed = serverProfile.settings.sidebarCollapsed;
                 if (this.elements.sidebar) {
                     this.elements.sidebar.classList.toggle('collapsed', this.isCollapsed);
-                    console.log('[machinor-roundtable] ✅ Sidebar state restored:', this.isCollapsed ? 'collapsed' : 'expanded');
+                    console.log('[machinor-roundtable] ✅ Sidebar state restored from server:', this.isCollapsed ? 'collapsed' : 'expanded');
                 }
             }
             
             // Update story intelligence display with restored data
-            if (profileData.storyIntelligence) {
-                console.log('[machinor-roundtable] ✅ Story intelligence data available, updating...');
-                this.updateStoryIntelligenceWithData(profileData.storyIntelligence);
+            if (serverProfile.storyIntelligence) {
+                console.log('[machinor-roundtable] ✅ Story intelligence data available from server, updating...');
+                this.updateStoryIntelligenceWithData(serverProfile.storyIntelligence);
             }
             
-            // Display the loaded plot with restored status
-            if (profileData.plotText) {
-                console.log('[machinor-roundtable] 📝 Displaying restored plot:', profileData.plotText.substring(0, 100) + '...');
-                this.displayCurrentPlot(profileData.plotText, 'restored');
+            // Display the loaded plot with server status
+            if (serverProfile.currentPlot?.text) {
+                console.log('[machinor-roundtable] 📝 Displaying restored plot from server:', serverProfile.currentPlot.text.substring(0, 100) + '...');
+                this.displayCurrentPlot(serverProfile.currentPlot.text, 'restored');
                 
-                // Add visual indicator with additional info
+                // Add visual indicator with server sync info
                 if (this.elements.statusText) {
-                    const historyInfo = profileData.plotHistory?.length > 0 ? ` (${profileData.plotHistory.length} history)` : '';
-                    this.elements.statusText.innerHTML = `Restored${historyInfo} <i class="fa-solid fa-database" title="Loaded from storage"></i>`;
-                    console.log('[machinor-roundtable] ✅ Status text updated with history indicator');
+                    const historyInfo = serverProfile.plotHistory?.length > 0 ? ` (${serverProfile.plotHistory.length} history)` : '';
+                    const syncIndicator = this.serverAvailable ? ' 🌐' : '';
+                    this.elements.statusText.innerHTML = `Server Restored${historyInfo}${syncIndicator} <i class="fa-solid fa-cloud" title="Loaded from server"></i>`;
+                    console.log('[machinor-roundtable] ✅ Status text updated with server indicator');
                 }
                 
-                console.log('[machinor-roundtable] 🎉 Profile restoration complete!');
-                return profileData;
+                console.log('[machinor-roundtable] 🎉 Server Profile restoration complete!');
+                return serverProfile;
             }
             
         } catch (error) {
-            console.error('[machinor-roundtable] Failed to load chat profile:', error);
+            console.error('[machinor-roundtable] Failed to restore server profile:', error);
         }
         
         return null;
+    }
+
+    /**
+     * Migrate local profile to server (optional background sync)
+     * @param {Object} localProfile - Local profile data
+     */
+    async migrateLocalProfileToServer(localProfile) {
+        try {
+            if (this.serverAvailable && localProfile) {
+                console.log('[machinor-roundtable] 🔄 Migrating local profile to server...');
+                const result = await this.backendClient.saveProfile(localProfile);
+                if (result && result.success) {
+                    console.log(`[machinor-roundtable] ✅ Local profile migrated to server: ${result.profileId}`);
+                }
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to migrate local profile to server:', error);
+        }
     }
 
     /**
@@ -546,15 +793,15 @@ export class PlotPreviewManager {
      * Legacy method - redirects to new comprehensive profile system
      * @deprecated Use saveChatProfile instead
      */
-    savePlotToStorage(plotText, status) {
-        this.saveChatProfile(plotText, status);
+    async savePlotToStorage(plotText, status) {
+        return this.saveChatProfile(plotText, status);
     }
 
     /**
      * Legacy method - redirects to new comprehensive profile system
      * @deprecated Use loadChatProfile instead
      */
-    loadPlotFromStorage() {
+    async loadPlotFromStorage() {
         return this.loadChatProfile();
     }
 
@@ -1405,11 +1652,11 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Display current plot in sidebar
+     * Display current plot in sidebar with backend sync
      * @param {string} plotText - The plot text to display
      * @param {string} status - The status to show
      */
-    displayCurrentPlot(plotText, status = 'ready') {
+    async displayCurrentPlot(plotText, status = 'ready') {
         this.currentPlot = plotText;
         
         if (this.elements.currentPlotText) {
@@ -1432,8 +1679,12 @@ export class PlotPreviewManager {
             this.startAutoApproveTimer();
         }
         
-        // Save to persistent storage
-        this.savePlotToStorage(plotText, status);
+        // 🚀 NEW: Save to persistent storage with backend sync (async)
+        try {
+            await this.savePlotToStorage(plotText, status);
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to save plot to storage:', error);
+        }
         
         console.log('[machinor-roundtable] Current plot displayed:', status);
     }
