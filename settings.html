@@ -6,10 +6,11 @@
         </div>
         
         <div class="mr-settings-content">
-            <!-- Main Controls -->
+            <!-- Main Controls Section -->
             <div class="mr-settings-section">
-                <h4>Main Controls</h4>
-                
+                <div class="mr-section-header">
+                    <h4>Main Controls</h4>
+                </div>
                 <div class="mr-toggle-item">
                     <input id="mr_enabled" type="checkbox" class="mr-toggle-switch">
                     <label for="mr_enabled" class="mr-toggle-label">
@@ -27,10 +28,11 @@
                 </div>
             </div>
 
-            <!-- Generation Settings -->
+            <!-- Generation Settings Section -->
             <div class="mr-settings-section">
-                <h4>Generation Settings</h4>
-                
+                <div class="mr-section-header">
+                    <h4>Generation Settings</h4>
+                </div>
                 <div class="mr-form-group">
                     <label for="mr_frequency">Injection Frequency</label>
                     <div class="mr-input-with-value">
@@ -74,10 +76,11 @@
                 </div>
             </div>
 
-            <!-- Advanced Options -->
+            <!-- Advanced Options Section -->
             <div class="mr-settings-section">
-                <h4>Advanced Options</h4>
-                
+                <div class="mr-section-header">
+                    <h4>Advanced Options</h4>
+                </div>
                 <div class="mr-form-group">
                     <label for="mr_history_limit">History Limit</label>
                     <div class="mr-input-with-value">
@@ -113,16 +116,18 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
+            <!-- Quick Actions Section -->
             <div class="mr-settings-section">
-                <h4>Quick Actions</h4>
-                <button id="mr_manual_trigger" class="mr-btn-primary full-width">
+                <div class="mr-section-header">
+                    <h4>Quick Actions</h4>
+                </div>
+                <button id="mr_manual_trigger" class="mr-btn-primary">
                     <i class="fa-solid fa-magic"></i> Generate Plot Now
                 </button>
-                <button id="mr_clear_cache" class="mr-btn-secondary full-width">
+                <button id="mr_clear_cache" class="mr-btn-secondary">
                     <i class="fa-solid fa-broom"></i> Clear Plot Cache
                 </button>
-                <button id="mr_reset_settings" class="mr-btn-secondary full-width">
+                <button id="mr_reset_settings" class="mr-btn-secondary">
                     <i class="fa-solid fa-rotate-left"></i> Reset to Defaults
                 </button>
             </div>

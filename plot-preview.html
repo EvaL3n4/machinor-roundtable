@@ -57,69 +57,72 @@
             </div>
         </div>
 
-        <!-- Collapsible Advanced Options -->
+        <!-- Advanced Options Section - Seamless Integration -->
         <div class="mr-advanced-section">
-            <div class="mr-advanced-header" id="mr_advanced_toggle">
-                <h4>Advanced Options</h4>
-                <span class="mr-advanced-toggle">
-                    <i class="fa-solid fa-chevron-down"></i>
-                </span>
+            <!-- Story Intelligence Panel -->
+            <div class="mr-section-header">
+                <h4><i class="fa-solid fa-chart-line"></i> Story Intelligence</h4>
             </div>
-            <div class="mr-advanced-content collapsed" id="mr_advanced_content">
-                
-                <!-- Story Intelligence Panel -->
-                <div class="mr-story-intel-compact" id="mr_story_intel">
-                    <div class="mr-intel-item">
-                        <label>Characters:</label>
-                        <div class="mr-intel-value" id="mr_character_count">Single character</div>
-                    </div>
-                    <div class="mr-intel-item">
-                        <label>World:</label>
-                        <div class="mr-intel-value" id="mr_world_context">No world data</div>
-                    </div>
+            <div class="mr-story-intel-compact" id="mr_story_intel">
+                <div class="mr-intel-item">
+                    <label>Characters:</label>
+                    <div class="mr-intel-value" id="mr_character_count">Single character</div>
                 </div>
-                
-                <!-- Template Gallery - Compact -->
-                <div class="mr-template-gallery-compact" id="mr_template_gallery">
-                    <div class="mr-templates-grid">
-                        <button class="mr-template-btn liquid-hover" data-template="meet_cute">
-                            <span class="mr-template-emoji">💕</span>
-                            <span class="mr-template-label">Romance</span>
-                        </button>
-                        <button class="mr-template-btn liquid-hover" data-template="adventure_begins">
-                            <span class="mr-template-emoji">🗺️</span>
-                            <span class="mr-template-label">Adventure</span>
-                        </button>
-                        <button class="mr-template-btn liquid-hover" data-template="mystery_hook">
-                            <span class="mr-template-emoji">🔍</span>
-                            <span class="mr-template-label">Mystery</span>
-                        </button>
-                        <button class="mr-template-btn liquid-hover" data-template="conflict_rises">
-                            <span class="mr-template-emoji">⚡</span>
-                            <span class="mr-template-label">Conflict</span>
-                        </button>
-                    </div>
+                <div class="mr-intel-item">
+                    <label>World:</label>
+                    <div class="mr-intel-value" id="mr_world_context">No world data</div>
                 </div>
-                
-                <!-- Quick Actions -->
-                <div class="mr-quick-actions">
-                    <button id="mr_regenerate_next" class="mr-action-btn small liquid-hover">
-                        <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+            </div>
+            
+            <!-- Template Gallery - Compact -->
+            <div class="mr-section-header">
+                <h4><i class="fa-solid fa-palette"></i> Quick Templates</h4>
+            </div>
+            <div class="mr-template-gallery-compact" id="mr_template_gallery">
+                <div class="mr-templates-grid">
+                    <button class="mr-template-btn liquid-hover" data-template="meet_cute">
+                        <span class="mr-template-emoji">💕</span>
+                        <span class="mr-template-label">Romance</span>
                     </button>
-                    <button id="mr_manual_plot_btn" class="mr-action-btn small liquid-hover">
-                        <i class="fa-solid fa-keyboard"></i> Custom Plot
+                    <button class="mr-template-btn liquid-hover" data-template="adventure_begins">
+                        <span class="mr-template-emoji">🗺️</span>
+                        <span class="mr-template-label">Adventure</span>
+                    </button>
+                    <button class="mr-template-btn liquid-hover" data-template="mystery_hook">
+                        <span class="mr-template-emoji">🔍</span>
+                        <span class="mr-template-label">Mystery</span>
+                    </button>
+                    <button class="mr-template-btn liquid-hover" data-template="conflict_rises">
+                        <span class="mr-template-emoji">⚡</span>
+                        <span class="mr-template-label">Conflict</span>
                     </button>
                 </div>
-                
-                <!-- Plot History - Minimal -->
-                <div class="mr-history-compact">
-                    <div class="mr-history-header" id="mr_history_toggle">
-                        <h4>Recent Plots</h4>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
-                    <div class="mr-history-content collapsed" id="mr_history_content">
-                        <div id="mr_history_list"></div>
-                    </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="mr-section-header">
+                <h4><i class="fa-solid fa-tools"></i> Actions</h4>
+            </div>
+            <div class="mr-quick-actions">
+                <button id="mr_regenerate_next" class="mr-action-btn small liquid-hover">
+                    <i class="fa-solid fa-arrows-rotate"></i> Regenerate
+                </button>
+                <button id="mr_manual_plot_btn" class="mr-action-btn small liquid-hover">
+                    <i class="fa-solid fa-keyboard"></i> Custom Plot
+                </button>
+            </div>
+            
+            <!-- Plot History - Minimal -->
+            <div class="mr-section-header">
+                <h4><i class="fa-solid fa-history"></i> Recent Plots</h4>
+            </div>
+            <div class="mr-history-compact">
+                <div class="mr-history-header" id="mr_history_toggle">
+                    <span>View History</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="mr-history-content collapsed" id="mr_history_content">
+                    <div id="mr_history_list"></div>
                 </div>
             </div>
         </div>

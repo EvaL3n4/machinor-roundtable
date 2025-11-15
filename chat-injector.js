@@ -90,6 +90,12 @@ export class ChatInjector {
         
         console.log('[machinor-roundtable] handlePreGeneration called, enabled:', settings?.enabled);
         
+        // CRITICAL FIX: Check if chat context is properly loaded
+        if (!this.isChatContextReady()) {
+            console.log('[machinor-roundtable] Chat context not ready yet, deferring injection');
+            return; // Wait for context to be ready
+        }
+        
         if (!settings?.enabled) {
             console.log('[machinor-roundtable] Extension disabled, skipping injection');
             return; // Extension is disabled
@@ -141,6 +147,13 @@ export class ChatInjector {
             // Update injection tracking
             this.lastInjectionTurn = this.injectionCounter;
             
+            // Save injection to history for cross-device sync
+            this.saveInjectionToHistory(plotContext, {
+                character: character.name || 'Unknown Character',
+                style: this.getCurrentPlotStyle(),
+                intensity: this.getCurrentPlotIntensity()
+            });
+            
             // Update plot preview status if available
             if (this.plotPreview) {
                 this.plotPreview.displayCurrentPlot(plotContext, 'injected');
@@ -177,6 +190,48 @@ export class ChatInjector {
     shouldInject(frequency) {
         const exchangesSinceLastInjection = this.injectionCounter - this.lastInjectionTurn;
         return exchangesSinceLastInjection >= frequency;
+    }
+
+    /**
+     * Check if the current chat context is ready for injections
+     * @returns {boolean} True if context is ready, false otherwise
+     */
+    isChatContextReady() {
+        try {
+            const context = getContext();
+            
+            // Check if context exists
+            if (!context) {
+                return false;
+            }
+            
+            // Check if character is selected
+            if (context.characterId === undefined || context.characterId === null) {
+                return false;
+            }
+            
+            // Check if chat exists and has content
+            if (!context.chat || context.chat.length === 0) {
+                return false;
+            }
+            
+            // Check if characters array exists
+            if (!context.characters || !Array.isArray(context.characters)) {
+                return false;
+            }
+            
+            // Check if the current character exists in the characters array
+            if (!context.characters[context.characterId]) {
+                return false;
+            }
+            
+            console.log('[machinor-roundtable] ✅ Chat context is ready for injections');
+            return true;
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error checking chat context readiness:', error);
+            return false;
+        }
     }
 
     /**
@@ -348,5 +403,44 @@ export class ChatInjector {
             isProcessing: this.isProcessing,
             cacheSize: this.plotEngine.getCacheSize()
         };
+    }
+
+    /**
+     * Get current plot style from UI
+     */
+    getCurrentPlotStyle() {
+        try {
+            return $('#mr_plot_style').val() || 'natural';
+        } catch (error) {
+            return 'natural';
+        }
+    }
+
+    /**
+     * Get current plot intensity from UI
+     */
+    getCurrentPlotIntensity() {
+        try {
+            return $('#mr_plot_intensity').val() || 'moderate';
+        } catch (error) {
+            return 'moderate';
+        }
+    }
+
+    /**
+     * Save injection to history for cross-device sync
+     * This method calls the global helper function from index.js
+     */
+    saveInjectionToHistory(plotContext, metadata) {
+        try {
+            // Call the global function from index.js
+            if (typeof window.addInjectionToHistory === 'function') {
+                window.addInjectionToHistory(plotContext, metadata);
+            } else {
+                console.warn('[machinor-roundtable] addInjectionToHistory function not available yet');
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Error saving injection to history:', error);
+        }
     }
 }

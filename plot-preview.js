@@ -100,6 +100,10 @@ export class PlotPreviewManager {
         this.isManualEntry = false;
         /** @type {boolean} */
         this.isGenerating = false;
+        /** @type {boolean} */
+        this.isEditingPlot = false;
+        /** @type {string|null} */
+        this.editingPlotId = null;
         
         // Story intelligence data
         /** @type {Object|null} */
@@ -150,10 +154,8 @@ export class PlotPreviewManager {
         this.updateMobileAccessibilityState(false);
         this.updateResponsivePlacement();
         
-        // Load saved plot on initialization
-        this.loadPlotFromStorage();
-        
-        // Setup listeners for chat/character changes
+        // CRITICAL FIX: Don't load saved plot immediately - context may not be ready
+        // Setup listeners for chat/character changes instead
         this.setupContextChangeListeners();
         
         // Initialize story intelligence display
@@ -164,21 +166,75 @@ export class PlotPreviewManager {
      * Setup listeners for chat and character changes
      */
     setupContextChangeListeners() {
-        // Listen for chat changed events
+        // CRITICAL FIX: Enhanced context change detection for better persistence
+        
+        // Method 1: Try SillyTavern event system first
         if (typeof eventSource !== 'undefined') {
+            // Listen for chat changed events
             eventSource.on(event_types.CHAT_CHANGED, () => {
-                console.log('[machinor-roundtable] Chat changed, loading stored plot...');
-                this.loadPlotFromStorage();
+                console.log('[machinor-roundtable] 🔄 Chat changed event detected');
+                this.delayedContextLoad(150, 'chat_changed');
             });
             
             // Listen for character changes
             eventSource.on(event_types.CHARACTER_SELECTED, () => {
-                console.log('[machinor-roundtable] Character changed, loading stored plot...');
-                this.loadPlotFromStorage();
+                console.log('[machinor-roundtable] 🔄 Character changed event detected');
+                this.delayedContextLoad(150, 'character_selected');
+            });
+            
+            // Also listen for broader context changes
+            eventSource.on('context_changed', () => {
+                console.log('[machinor-roundtable] 🔄 General context changed event detected');
+                this.delayedContextLoad(200, 'context_changed');
             });
         }
         
+        // Method 2: Polling fallback for when context becomes available
+        this.contextCheckInterval = setInterval(() => {
+            const context = getContext();
+            if (context && context.characterId !== undefined && context.chatId) {
+                if (!this.contextLoadedOnce) {
+                    console.log('[machinor-roundtable] 🎯 Context became available via polling');
+                    this.contextLoadedOnce = true;
+                    this.delayedContextLoad(100, 'polling_detection');
+                }
+                // Stop polling once we have context
+                clearInterval(this.contextCheckInterval);
+            }
+        }, 500); // Check every 500ms
+        
         console.log('[machinor-roundtable] Context change listeners setup complete');
+    }
+    
+    /**
+     * Delayed context loading with proper timing and validation
+     * @param {number} delay - Delay in milliseconds
+     * @param {string} source - Source of the trigger
+     */
+    delayedContextLoad(delay, source) {
+        setTimeout(() => {
+            const context = getContext();
+            
+            console.log(`[machinor-roundtable] 🔍 Attempting load from ${source}:`, {
+                characterId: context?.characterId,
+                chatId: context?.chatId,
+                contextExists: !!context,
+                hasCharacters: !!context?.characters,
+                hasChat: !!context?.chat
+            });
+            
+            // Validate context is ready before attempting load
+            if (context && context.characterId !== undefined && context.chatId) {
+                console.log('[machinor-roundtable] ✅ Context ready, loading stored plot...');
+                this.loadPlotFromStorage();
+                // Also refresh history display with synced data
+                this.renderHistory();
+            } else {
+                console.log('[machinor-roundtable] ⏳ Context not ready yet, will retry...');
+                // If context still not ready, try again with longer delay
+                this.delayedContextLoad(500, `${source}_retry`);
+            }
+        }, delay);
     }
 
     /**
@@ -187,76 +243,347 @@ export class PlotPreviewManager {
      */
     getStorageKey() {
         const context = getContext();
-        if (!context) return null;
+        if (!context) {
+            console.log('[machinor-roundtable] getStorageKey: No context available');
+            return null;
+        }
         
         const characterId = context.characterId;
         const chatId = context.chatId;
         
+        // CRITICAL FIX: More detailed logging for debugging persistence issues
+        console.log('[machinor-roundtable] getStorageKey - Context:', {
+            characterId: characterId,
+            chatId: chatId,
+            contextExists: !!context,
+            hasCharacters: !!context.characters,
+            hasChat: !!context.chat
+        });
+        
         if (characterId === undefined || !chatId) {
             console.log('[machinor-roundtable] Cannot generate storage key: missing characterId or chatId');
+            console.log('[machinor-roundtable] CharacterId:', characterId, 'ChatId:', chatId);
             return null;
         }
         
-        return `mr_plot_${characterId}_${chatId}`;
+        const storageKey = `mr_plot_${characterId}_${chatId}`;
+        console.log('[machinor-roundtable] Generated storage key:', storageKey);
+        return storageKey;
     }
 
     /**
-     * Save current plot to persistent storage
+     * Generate a profile index key for cross-chat navigation
+     * @returns {string|null} Profile index key or null
+     */
+    getProfileIndexKey() {
+        return 'mr_profile_index';
+    }
+
+    /**
+     * Save comprehensive chat profile to persistent storage
      * @param {string} plotText - The plot text to save
      * @param {string} status - The plot status
      */
-    savePlotToStorage(plotText, status) {
+    saveChatProfile(plotText, status) {
         const storageKey = this.getStorageKey();
         if (!storageKey) return;
         
-        const data = {
+        const context = getContext();
+        const character = context?.characters?.[context?.characterId];
+        
+        // Build comprehensive profile data
+        const profileData = {
+            // Core plot data
             plotText: plotText,
             status: status,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            
+            // Character information
+            characterId: context?.characterId,
+            characterName: character?.name || 'Unknown',
+            
+            // Plot history and injections
+            plotHistory: this.plotHistory,
+            injectedPlots: this.getInjectedPlotsTimeline(),
+            
+            // Settings and preferences
+            recentDirections: this.recentDirections,
+            autoApproveTimeout: this.autoApproveTimeout,
+            sidebarCollapsed: this.isCollapsed,
+            
+            // Story intelligence snapshot
+            storyIntelligence: {
+                characterAnalysis: this.extractCharacterInsight(),
+                worldContext: this.extractWorldContext(),
+                characterCount: this.elements.characterCount?.textContent || 'Unknown',
+                arcStatus: this.plotEngine?.narrativeArc?.getArcStatus() || null
+            },
+            
+            // Chat context for restoration
+            chatLength: context?.chat?.length || 0,
+            lastMessageTime: context?.chat?.[context?.chat?.length - 1]?.send_date || null
         };
         
         try {
-            localStorage.setItem(storageKey, JSON.stringify(data));
-            console.log('[machinor-roundtable] Plot saved to storage:', storageKey);
+            // Save the comprehensive profile
+            localStorage.setItem(storageKey, JSON.stringify(profileData));
+            
+            // Update profile index for cross-chat navigation
+            this.updateProfileIndex(storageKey, profileData);
+            
+            console.log('[machinor-roundtable] Chat profile saved:', storageKey, 'History entries:', this.plotHistory.length);
+            
         } catch (error) {
-            console.error('[machinor-roundtable] Failed to save plot to storage:', error);
+            console.error('[machinor-roundtable] Failed to save chat profile:', error);
         }
     }
 
     /**
-     * Load plot from persistent storage
-     * @returns {Object|null} Loaded plot data or null
+     * Update profile index for cross-chat navigation
+     * @param {string} storageKey - The profile storage key
+     * @param {Object} profileData - The profile data
      */
-    loadPlotFromStorage() {
+    updateProfileIndex(storageKey, profileData) {
+        try {
+            const indexKey = this.getProfileIndexKey();
+            let index = {};
+            
+            // Load existing index
+            const storedIndex = localStorage.getItem(indexKey);
+            if (storedIndex) {
+                index = JSON.parse(storedIndex);
+            }
+            
+            // Update or add profile entry
+            index[storageKey] = {
+                characterId: profileData.characterId,
+                characterName: profileData.characterName,
+                lastActive: profileData.timestamp,
+                plotHistoryCount: profileData.plotHistory?.length || 0,
+                injectedPlotsCount: profileData.injectedPlots?.length || 0,
+                chatLength: profileData.chatLength
+            };
+            
+            // Keep only the most recent 50 profiles to prevent storage bloat
+            const sortedEntries = Object.entries(index)
+                .sort(([,a], [,b]) => b.lastActive - a.lastActive)
+                .slice(0, 50);
+            
+            const trimmedIndex = Object.fromEntries(sortedEntries);
+            localStorage.setItem(indexKey, JSON.stringify(trimmedIndex));
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to update profile index:', error);
+        }
+    }
+
+    /**
+     * Load comprehensive chat profile from persistent storage
+     * @returns {Object|null} Loaded profile data or null
+     */
+    loadChatProfile() {
         const storageKey = this.getStorageKey();
         if (!storageKey) return null;
         
         try {
             const stored = localStorage.getItem(storageKey);
             if (!stored) {
-                console.log('[machinor-roundtable] No stored plot found for:', storageKey);
+                console.log('[machinor-roundtable] No stored profile found for:', storageKey);
                 return null;
             }
             
-            const data = JSON.parse(stored);
-            console.log('[machinor-roundtable] Plot loaded from storage:', storageKey, data);
+            const profileData = JSON.parse(stored);
+            console.log('[machinor-roundtable] Chat profile loaded:', storageKey, 'History entries:', profileData.plotHistory?.length || 0);
+            
+            // CRITICAL FIX: Enhanced debugging for persistence issues
+            console.log('[machinor-roundtable] 🗂️ RESTORING CHAT PROFILE:', {
+                storageKey: storageKey,
+                hasPlotHistory: !!(profileData.plotHistory && Array.isArray(profileData.plotHistory)),
+                plotHistoryLength: profileData.plotHistory?.length || 0,
+                hasElements: {
+                    historyList: !!this.elements.historyList,
+                    statusText: !!this.elements.statusText,
+                    sidebar: !!this.elements.sidebar
+                }
+            });
+            
+            // Restore plot history
+            if (profileData.plotHistory && Array.isArray(profileData.plotHistory)) {
+                this.plotHistory = profileData.plotHistory;
+                console.log('[machinor-roundtable] ✅ History restored:', this.plotHistory.length, 'entries');
+                console.log('[machinor-roundtable] 🔄 Calling renderHistory()...');
+                
+                // Force render with enhanced logging
+                this.renderHistory();
+                
+                // Verify history was rendered
+                if (this.elements.historyList) {
+                    const renderedCount = this.elements.historyList.querySelectorAll('.mr-history-item').length;
+                    console.log('[machinor-roundtable] 📊 History items rendered:', renderedCount);
+                    
+                    // Additional check for any existing content
+                    const historyContent = this.elements.historyList.innerHTML;
+                    console.log('[machinor-roundtable] 📄 History list HTML preview:', historyContent.substring(0, 200) + (historyContent.length > 200 ? '...' : ''));
+                }
+            } else {
+                console.log('[machinor-roundtable] ⚠️ No plot history found in profile');
+            }
+            
+            // Restore recent directions
+            if (profileData.recentDirections && Array.isArray(profileData.recentDirections)) {
+                this.recentDirections = profileData.recentDirections;
+                console.log('[machinor-roundtable] ✅ Recent directions restored:', this.recentDirections.length);
+            }
+            
+            // Restore settings
+            if (profileData.autoApproveTimeout) {
+                this.autoApproveTimeout = profileData.autoApproveTimeout;
+                console.log('[machinor-roundtable] ✅ Auto-approve timeout restored:', this.autoApproveTimeout);
+            }
+            if (typeof profileData.sidebarCollapsed === 'boolean') {
+                this.isCollapsed = profileData.sidebarCollapsed;
+                if (this.elements.sidebar) {
+                    this.elements.sidebar.classList.toggle('collapsed', this.isCollapsed);
+                    console.log('[machinor-roundtable] ✅ Sidebar state restored:', this.isCollapsed ? 'collapsed' : 'expanded');
+                }
+            }
+            
+            // Update story intelligence display with restored data
+            if (profileData.storyIntelligence) {
+                console.log('[machinor-roundtable] ✅ Story intelligence data available, updating...');
+                this.updateStoryIntelligenceWithData(profileData.storyIntelligence);
+            }
             
             // Display the loaded plot with restored status
-            if (data.plotText) {
-                this.displayCurrentPlot(data.plotText, 'restored');
+            if (profileData.plotText) {
+                console.log('[machinor-roundtable] 📝 Displaying restored plot:', profileData.plotText.substring(0, 100) + '...');
+                this.displayCurrentPlot(profileData.plotText, 'restored');
                 
-                // Add visual indicator
+                // Add visual indicator with additional info
                 if (this.elements.statusText) {
-                    this.elements.statusText.innerHTML = 'Restored <i class="fa-solid fa-database" title="Loaded from storage"></i>';
+                    const historyInfo = profileData.plotHistory?.length > 0 ? ` (${profileData.plotHistory.length} history)` : '';
+                    this.elements.statusText.innerHTML = `Restored${historyInfo} <i class="fa-solid fa-database" title="Loaded from storage"></i>`;
+                    console.log('[machinor-roundtable] ✅ Status text updated with history indicator');
                 }
                 
-                return data;
+                console.log('[machinor-roundtable] 🎉 Profile restoration complete!');
+                return profileData;
             }
+            
         } catch (error) {
-            console.error('[machinor-roundtable] Failed to load plot from storage:', error);
+            console.error('[machinor-roundtable] Failed to load chat profile:', error);
         }
         
         return null;
+    }
+
+    /**
+     * Update story intelligence with restored data
+     * @param {Object} storyData - Restored story intelligence data
+     */
+    updateStoryIntelligenceWithData(storyData) {
+        try {
+            // Update character analysis display
+            if (storyData.characterAnalysis && this.elements.characterAnalysis) {
+                this.elements.characterAnalysis.textContent = storyData.characterAnalysis;
+            }
+            
+            // Update world context display
+            if (storyData.worldContext && this.elements.worldContext) {
+                this.elements.worldContext.textContent = storyData.worldContext;
+            }
+            
+            // Update character count
+            if (storyData.characterCount && this.elements.characterCount) {
+                this.elements.characterCount.textContent = storyData.characterCount;
+            }
+            
+        } catch (error) {
+            console.error('[machinor-roundtable] Error updating story intelligence with restored data:', error);
+        }
+    }
+
+    /**
+     * Get injected plots timeline for profile tracking
+     * @returns {Array} Array of injected plot entries
+     */
+    getInjectedPlotsTimeline() {
+        // This would track actual plot injections - for now, return empty array
+        // In a full implementation, this would be populated when plots are actually injected into chat
+        return [];
+    }
+
+    /**
+     * Extract character insight for profile storage
+     * @returns {string} Character analysis text
+     */
+    extractCharacterInsight() {
+        return this.elements.characterAnalysis?.textContent || 'No character data';
+    }
+
+    /**
+     * Extract world context for profile storage
+     * @returns {string} World context text
+     */
+    extractWorldContext() {
+        return this.elements.worldContext?.textContent || 'No world data';
+    }
+
+    /**
+     * Get profile index for cross-chat navigation
+     * @returns {Object} Profile index object
+     */
+    getProfileIndex() {
+        try {
+            const indexKey = this.getProfileIndexKey();
+            const storedIndex = localStorage.getItem(indexKey);
+            return storedIndex ? JSON.parse(storedIndex) : {};
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to get profile index:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Save plot to cross-device storage (migrated from localStorage)
+     * @param {string} plotText - The plot text to save
+     * @param {string} status - The plot status
+     */
+    savePlotToStorage(plotText, status) {
+        // Save to cross-device system
+        if (typeof window.addPlotPreviewToHistory === 'function') {
+            window.addPlotPreviewToHistory(plotText, status);
+        }
+        
+        // Also save to localStorage for backward compatibility
+        this.saveChatProfile(plotText, status);
+    }
+
+    /**
+     * Load plot from cross-device storage (migrated from localStorage)
+     * @returns {Object|null} Loaded plot data or null
+     */
+    loadPlotFromStorage() {
+        // Try to load from cross-device system first
+        if (typeof window.getCurrentPlotPreview === 'function') {
+            const syncedPreview = window.getCurrentPlotPreview();
+            if (syncedPreview) {
+                console.log('[machinor-roundtable] ✅ Loaded plot from cross-device storage:', syncedPreview.text.substring(0, 50) + '...');
+                
+                // Display the loaded plot
+                this.displayCurrentPlot(syncedPreview.text, 'ready');
+                
+                // Add visual indicator
+                if (this.elements.statusText) {
+                    this.elements.statusText.innerHTML = `Ready <i class="fa-solid fa-cloud" title="Loaded from cross-device storage"></i>`;
+                }
+                
+                return syncedPreview;
+            }
+        }
+        
+        // Fallback to localStorage system
+        return this.loadChatProfile();
     }
 
     /**
@@ -409,10 +736,7 @@ export class PlotPreviewManager {
         const mobileToggle = document.getElementById('mr_mobile_toggle');
         this.previouslyFocusedElement = mobileToggle || (document.activeElement instanceof HTMLElement ? document.activeElement : null);
 
-        const portal = this.ensureMobilePortalContainer();
-        portal.style.pointerEvents = 'auto';
-
-        // CRITICAL: Remove collapsed state completely for mobile
+        // SIMPLIFIED: Use CSS classes instead of DOM manipulation
         this.isCollapsed = false; // Update state variable
         this.elements.sidebar.classList.remove('collapsed');
         this.elements.sidebar.classList.remove('mobile-hidden');
@@ -424,47 +748,9 @@ export class PlotPreviewManager {
         document.body.style.overflow = 'hidden';
         mobileToggle?.classList.add('is-active');
 
-        // DEBUG: Log the current state
-        console.log('[machinor-roundtable] Mobile sidebar opening - collapsed state:', this.isCollapsed);
-        console.log('[machinor-roundtable] Sidebar classes:', this.elements.sidebar.className);
-
-        // Force content to be visible and properly rendered
-        if (this.elements.currentPlotText) {
-            console.log('[machinor-roundtable] Current plot text content:', this.elements.currentPlotText.textContent);
-            console.log('[machinor-roundtable] Current plot text display:', window.getComputedStyle(this.elements.currentPlotText).display);
-            
-            // Force visibility and layout
-            this.elements.currentPlotText.style.visibility = 'visible';
-            this.elements.currentPlotText.style.opacity = '1';
-            this.elements.currentPlotText.style.display = 'block';
-        }
-
-        // Ensure all content sections are visible
-        const contentSections = this.elements.sidebar.querySelectorAll('.mr-current-plot, .mr-next-plot, .mr-plot-history');
-        contentSections.forEach(section => {
-            if (section instanceof HTMLElement) {
-                section.style.visibility = 'visible';
-                section.style.opacity = '1';
-                section.style.display = 'block';
-            }
-        });
-
-        // Force the sidebar content container to be visible
-        const contentContainer = this.elements.sidebar.querySelector('.mr-sidebar-content');
-        if (contentContainer instanceof HTMLElement) {
-            contentContainer.style.visibility = 'visible';
-            contentContainer.style.opacity = '1';
-            contentContainer.style.display = 'flex';
-            contentContainer.style.height = 'auto';
-            contentContainer.style.minHeight = '200px'; // Ensure minimum height
-        }
-
-        // Force reflow to ensure proper layout
-        this.elements.sidebar.offsetHeight;
-
         this.updateMobileAccessibilityState(true);
         this.applyMobileFocusTrap();
-        console.log('[machinor-roundtable] Mobile sidebar shown with content verification');
+        console.log('[machinor-roundtable] Mobile sidebar shown (CSS-only approach)');
     }
 
     hideMobileSidebar(skipAnimation = false) {
@@ -472,8 +758,8 @@ export class PlotPreviewManager {
 
         this.mobileSidebarVisible = false;
         const mobileToggle = document.getElementById('mr_mobile_toggle');
-        const portal = this.ensureMobilePortalContainer();
 
+        // SIMPLIFIED: Use CSS classes for all state changes
         this.elements.sidebar.classList.remove('mobile-visible');
         this.elements.sidebar.classList.add('mobile-hidden');
         this.mobileOverlay.classList.remove('mobile-visible');
@@ -485,19 +771,7 @@ export class PlotPreviewManager {
         this.updateMobileAccessibilityState(false);
         this.releaseMobileFocusTrap();
 
-        if (skipAnimation) {
-            portal.style.pointerEvents = 'none';
-        } else {
-            const onTransitionEnd = (event) => {
-                if (event.target === this.elements.sidebar && event.propertyName === 'opacity' && !this.mobileSidebarVisible) {
-                    portal.style.pointerEvents = 'none';
-                    this.elements.sidebar.removeEventListener('transitionend', onTransitionEnd);
-                }
-            };
-            this.elements.sidebar.addEventListener('transitionend', onTransitionEnd);
-        }
-
-        console.log('[machinor-roundtable] Mobile sidebar hidden');
+        console.log('[machinor-roundtable] Mobile sidebar hidden (CSS-only approach)');
     }
 
 
@@ -581,6 +855,12 @@ export class PlotPreviewManager {
             this.elements.historyLimitInput.addEventListener('change', () => this.updateHistoryLimit());
         }
         
+        // Template gallery buttons
+        const templateButtons = document.querySelectorAll('.mr-template-btn');
+        templateButtons.forEach(button => {
+            button.addEventListener('click', (e) => this.handleTemplateSelection(e));
+        });
+        
         // Modal
         if (this.elements.closeModalBtn) {
             this.elements.closeModalBtn.addEventListener('click', () => this.closeModal());
@@ -601,6 +881,8 @@ export class PlotPreviewManager {
         if (this.elements.intelToggle) {
             this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
         }
+        
+        // No longer needed - Advanced Options is now a permanent section
         
         console.log('[machinor-roundtable] Plot Preview events bound');
     }
@@ -668,58 +950,93 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Update character analysis display
+     * Update character analysis display with enhanced data extraction
      */
     updateCharacterAnalysis() {
         if (!this.elements.characterAnalysis) return;
         
         try {
-            // Get character analysis from ST integration if available
             const context = getContext();
             const currentChar = context?.characters?.[context?.characterId];
             
-            if (currentChar && this.plotEngine?.stIntegration) {
-                const analysis = this.plotEngine.stIntegration.analyzeCharacterProfile(currentChar);
+            if (currentChar) {
+                let analysisText = '';
                 
-                if (analysis) {
-                    let analysisText = '';
+                // Try ST integration first
+                if (this.plotEngine?.stIntegration) {
+                    const analysis = this.plotEngine.stIntegration.analyzeCharacterProfile(currentChar);
                     
-                    if (analysis.traits?.length > 0) {
-                        analysisText += `Traits: ${analysis.traits.slice(0, 3).join(', ')}`;
+                    if (analysis) {
+                        if (analysis.traits?.length > 0) {
+                            analysisText += `Traits: ${analysis.traits.slice(0, 3).join(', ')}`;
+                        }
+                        if (analysis.arcPotential) {
+                            analysisText += analysisText ? ' | ' : '';
+                            analysisText += `Arc: ${analysis.arcPotential}`;
+                        }
                     }
-                    
-                    if (analysis.arcPotential) {
-                        analysisText += analysisText ? ' | ' : '';
-                        analysisText += `Arc Potential: ${analysis.arcPotential}`;
-                    }
-                    
-                    this.elements.characterAnalysis.textContent = analysisText || 'Basic character data';
-                } else {
-                    this.elements.characterAnalysis.textContent = 'Basic character';
                 }
+                
+                // Fallback: Extract basic info from character object
+                if (!analysisText) {
+                    const traits = [];
+                    
+                    // Extract personality traits from description/personality
+                    const personalityText = (currentChar.personality || '').toLowerCase();
+                    const descriptionText = (currentChar.description || '').toLowerCase();
+                    const combinedText = `${personalityText} ${descriptionText}`;
+                    
+                    // Look for common personality indicators
+                    if (combinedText.includes('confident') || combinedText.includes('bold')) traits.push('Confident');
+                    if (combinedText.includes('shy') || combinedText.includes('quiet') || combinedText.includes('reserved')) traits.push('Reserved');
+                    if (combinedText.includes('witty') || combinedText.includes('funny') || combinedText.includes('humorous')) traits.push('Witty');
+                    if (combinedText.includes('mysterious') || combinedText.includes('enigmatic')) traits.push('Mysterious');
+                    if (combinedText.includes('caring') || combinedText.includes('kind') || combinedText.includes('gentle')) traits.push('Caring');
+                    if (combinedText.includes('strong') || combinedText.includes('brave') || combinedText.includes('fierce')) traits.push('Strong');
+                    if (combinedText.includes('intelligent') || combinedText.includes('smart') || combinedText.includes('clever')) traits.push('Intelligent');
+                    
+                    // Extract character name characteristics
+                    if (currentChar.name) {
+                        const charName = currentChar.name.toLowerCase();
+                        if (charName.includes('mage') || charName.includes('wizard') || charName.includes('sorcerer')) traits.push('Magical');
+                        if (charName.includes('knight') || charName.includes('warrior') || charName.includes('fighter')) traits.push('Martial');
+                        if (charName.includes('priest') || charName.includes('cleric') || charName.includes('healer')) traits.push('Healing');
+                    }
+                    
+                    if (traits.length > 0) {
+                        analysisText = `Traits: ${traits.slice(0, 3).join(', ')}`;
+                    } else {
+                        analysisText = `Character: ${currentChar.name || 'Unnamed'}`;
+                    }
+                }
+                
+                this.elements.characterAnalysis.textContent = analysisText;
+                console.log('[machinor-roundtable] Character analysis:', analysisText);
+                
             } else {
                 this.elements.characterAnalysis.textContent = 'No character selected';
             }
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating character analysis:', error);
-            this.elements.characterAnalysis.textContent = 'Analysis unavailable';
+            this.elements.characterAnalysis.textContent = 'Character data unavailable';
         }
     }
 
     /**
-     * Update world context display
+     * Update world context display with enhanced data extraction
      */
     updateWorldContext() {
         if (!this.elements.worldContext) return;
         
         try {
-            // Get world context from ST integration if available
+            let contextText = '';
+            
+            // Try ST integration first
             if (this.plotEngine?.stIntegration) {
                 const worldInfo = this.plotEngine.stIntegration.getWorldInfo();
                 
                 if (worldInfo && Object.keys(worldInfo).length > 0) {
-                    let contextText = '';
                     let totalEntries = 0;
                     
                     // Count world info entries
@@ -738,42 +1055,99 @@ export class PlotPreviewManager {
                     if (worldInfo.organizations?.length > 0) {
                         contextText += `, ${worldInfo.organizations.length} groups`;
                     }
-                    
-                    this.elements.worldContext.textContent = contextText;
-                } else {
-                    this.elements.worldContext.textContent = 'No world data';
                 }
-            } else {
-                this.elements.worldContext.textContent = 'Integration not available';
             }
+            
+            // Fallback: Extract context from available sources
+            if (!contextText) {
+                const context = getContext();
+                const chat = context?.chat || [];
+                
+                // Analyze chat for world context
+                let locationMentions = 0;
+                let characterMentions = 0;
+                const locationKeywords = ['room', 'house', 'forest', 'city', 'town', 'castle', 'tavern', 'market', 'street', 'garden', 'hall'];
+                const characterKeywords = ['knight', 'mage', 'merchant', 'guard', 'noble', 'villager'];
+                
+                chat.slice(-20).forEach(msg => { // Analyze last 20 messages
+                    const text = (msg.mes || '').toLowerCase();
+                    locationKeywords.forEach(keyword => {
+                        if (text.includes(keyword)) locationMentions++;
+                    });
+                    characterKeywords.forEach(keyword => {
+                        if (text.includes(keyword)) characterMentions++;
+                    });
+                });
+                
+                if (locationMentions > 0 || characterMentions > 0) {
+                    contextText = `Chat context: ${locationMentions} locations, ${characterMentions} characters mentioned`;
+                } else {
+                    contextText = 'Active chat context detected';
+                }
+            }
+            
+            this.elements.worldContext.textContent = contextText || 'No world context available';
+            console.log('[machinor-roundtable] World context:', contextText);
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating world context:', error);
-            this.elements.worldContext.textContent = 'Context unavailable';
+            this.elements.worldContext.textContent = 'World context unavailable';
         }
     }
 
     /**
-     * Update character count display
+     * Update character count display with enhanced detection
      */
     updateCharacterCount() {
         if (!this.elements.characterCount) return;
         
         try {
-            // Get active characters from chat injector if available
+            // Try chat injector first
             const activeCharacters = this.chatInjector?.getActiveCharacters() || [];
             
-            if (activeCharacters.length === 1) {
-                this.elements.characterCount.textContent = 'Single character';
-            } else if (activeCharacters.length > 1) {
-                this.elements.characterCount.textContent = `${activeCharacters.length} characters in group`;
-            } else {
-                this.elements.characterCount.textContent = 'No characters detected';
+            if (activeCharacters.length > 0) {
+                if (activeCharacters.length === 1) {
+                    this.elements.characterCount.textContent = 'Single character';
+                } else {
+                    this.elements.characterCount.textContent = `${activeCharacters.length} characters in group`;
+                }
+                return;
             }
+            
+            // Fallback: Analyze chat for character count
+            const context = getContext();
+            const chat = context?.chat || [];
+            
+            if (chat.length === 0) {
+                this.elements.characterCount.textContent = 'No chat yet';
+                return;
+            }
+            
+            // Count unique speakers in recent chat
+            const recentMessages = chat.slice(-20);
+            const speakers = new Set();
+            
+            recentMessages.forEach(msg => {
+                if (!msg.is_user && msg.name) {
+                    speakers.add(msg.name);
+                }
+            });
+            
+            const charCount = speakers.size;
+            
+            if (charCount === 0) {
+                this.elements.characterCount.textContent = 'No characters detected';
+            } else if (charCount === 1) {
+                this.elements.characterCount.textContent = 'Single character';
+            } else {
+                this.elements.characterCount.textContent = `${charCount} characters active`;
+            }
+            
+            console.log('[machinor-roundtable] Character count updated:', charCount);
             
         } catch (error) {
             console.error('[machinor-roundtable] Error updating character count:', error);
-            this.elements.characterCount.textContent = 'Count unavailable';
+            this.elements.characterCount.textContent = 'Character count unavailable';
         }
     }
 
@@ -792,6 +1166,108 @@ export class PlotPreviewManager {
             this.elements.intelContent.classList.add('collapsed');
             this.elements.intelToggle.querySelector('i').className = 'fa-solid fa-chevron-down';
         }
+    }
+
+    /**
+     * Handle template selection with proper plot engine integration
+     * Templates should GUIDE generation, not replace it with literal text
+     */
+    async handleTemplateSelection(event) {
+        const button = event.currentTarget;
+        const template = button.dataset.template;
+        
+        if (!template) {
+            console.warn('[machinor-roundtable] No template data found on button');
+            return;
+        }
+        
+        // Clear any existing states from other template buttons
+        document.querySelectorAll('.mr-template-btn').forEach(btn => {
+            btn.classList.remove('success', 'error');
+        });
+        
+        // Add loading state
+        button.classList.add('loading');
+        button.style.pointerEvents = 'none';
+        
+        try {
+            console.log('[machinor-roundtable] Template selected for guidance:', template);
+            
+            // Get current character and context for generation
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                throw new Error('No character selected');
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Convert template to guidance for the plot engine
+            const templateGuidance = this.getTemplateGuidance(template);
+            
+            // Generate plot using the plot engine with template guidance
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, {
+                guidance: templateGuidance,
+                template: template
+            });
+            
+            // Remove loading state
+            button.classList.remove('loading');
+            button.style.pointerEvents = 'auto';
+            
+            // Add success state
+            button.classList.add('success');
+            
+            if (plotContext) {
+                // Display the GENERATED plot (not literal template text)
+                this.displayCurrentPlot(plotContext, 'ready');
+                
+                // Show success message
+                // @ts-ignore - toastr is a global library
+                toastr.success(`Template "${template}" guiding plot generation`, 'Machinor Roundtable');
+                
+                console.log('[machinor-roundtable] Template applied as guidance:', template, 'Generated plot:', plotContext.substring(0, 100) + '...');
+            } else {
+                throw new Error('No plot context generated');
+            }
+            
+            // Remove success state after 2 seconds
+            setTimeout(() => {
+                button.classList.remove('success');
+            }, 2000);
+            
+        } catch (error) {
+            // Handle errors
+            button.classList.remove('loading');
+            button.style.pointerEvents = 'auto';
+            button.classList.add('error');
+            
+            console.error('[machinor-roundtable] Template application failed:', error);
+            
+            // @ts-ignore - toastr is a global library
+            toastr.error(`Failed to apply template "${template}": ${error.message}`, 'Machinor Roundtable');
+            
+            // Remove error state after 3 seconds
+            setTimeout(() => {
+                button.classList.remove('error');
+            }, 3000);
+        }
+    }
+
+    /**
+     * Convert template selection to guidance for plot generation
+     * @param {string} template - The selected template
+     * @returns {string} Guidance text for plot generation
+     */
+    getTemplateGuidance(template) {
+        const templateGuidanceMap = {
+            'meet_cute': 'Focus on a charming first encounter that could develop into romance. Emphasize the initial spark of attraction and emotional connection between characters.',
+            'adventure_begins': 'Introduce an exciting quest or journey. Create anticipation and establish the stakes of the adventure that lies ahead.',
+            'mystery_hook': 'Introduce an intriguing mystery or puzzle. Create questions that need answers and build suspense around the unknown.',
+            'conflict_rises': 'Escalate existing tensions or introduce new obstacles. Build dramatic tension and create challenges for characters to overcome.'
+        };
+        
+        return templateGuidanceMap[template] || `Apply the ${template} narrative template to guide plot development in an interesting direction.`;
     }
 
     /**
@@ -1031,8 +1507,17 @@ export class PlotPreviewManager {
         this.updateStatus('injected');
         this.clearAutoApproveTimer();
         
-        // Add to history
-        this.addToHistory(this.currentPlot);
+        // Add to history (only if not editing an existing plot)
+        if (!this.isEditingPlot || !this.editingPlotId) {
+            this.addToHistory(this.currentPlot);
+            
+            // Save to plot preview history for cross-device sync
+            if (typeof window.addPlotPreviewToHistory === 'function') {
+                window.addPlotPreviewToHistory(this.currentPlot, 'injected');
+            }
+        } else {
+            console.log('[machinor-roundtable] Skipping history add - editing existing plot');
+        }
         
         // Trigger injection through chat injector
         // This is a simplified version - in practice, you'd integrate with the actual injection system
@@ -1056,9 +1541,16 @@ export class PlotPreviewManager {
             return;
         }
         
+        // Check if current plot is in history
+        const existingPlot = this.plotHistory.find(plot => plot.text === this.currentPlot);
+        
+        // Set editing state
+        this.isEditingPlot = !!existingPlot;
+        this.editingPlotId = existingPlot ? existingPlot.id : null;
+        
         // For now, open modal - could add inline editing later
         this.openModal(this.currentPlot);
-        console.log('[machinor-roundtable] Plot editor opened');
+        console.log('[machinor-roundtable] Plot editor opened, editing existing:', this.isEditingPlot);
     }
 
     /**
@@ -1074,8 +1566,8 @@ export class PlotPreviewManager {
         
         this.updateStatus('pending');
         
-        // Trigger new plot generation
-        this.generateNewPlot();
+        // Trigger new plot generation with current settings
+        this.generateNewPlotWithOptions();
         
         // @ts-ignore - toastr is a global library
         toastr.info('Plot skipped, generating new one...', 'Machinor Roundtable');
@@ -1119,8 +1611,8 @@ export class PlotPreviewManager {
             this.elements.nextPlotText.textContent = 'Regenerating next plot...';
         }
         
-        // Trigger regeneration
-        this.generateNextPlot();
+        // Trigger regeneration with current settings
+        this.generateNextPlotWithOptions();
         // @ts-ignore - toastr is a global library
         toastr.info('Regenerating next plot...', 'Machinor Roundtable');
         console.log('[machinor-roundtable] Next plot regeneration requested');
@@ -1146,6 +1638,11 @@ export class PlotPreviewManager {
         
         if (this.elements.modal) {
             this.elements.modal.style.display = 'block';
+            
+            // Ensure proper z-index for mobile - higher than plot preview
+            if (this.isMobile) {
+                this.elements.modal.style.zIndex = '5000';
+            }
         }
         
         if (this.elements.editorText) {
@@ -1191,10 +1688,25 @@ export class PlotPreviewManager {
         } else {
             // Edit existing plot
             this.displayCurrentPlot(editedText, 'ready');
+            
+            // Update the history entry if we were editing an existing plot
+            if (this.isEditingPlot && this.editingPlotId) {
+                const plotIndex = this.plotHistory.findIndex(plot => plot.id === this.editingPlotId);
+                if (plotIndex !== -1) {
+                    this.plotHistory[plotIndex].text = editedText;
+                    this.plotHistory[plotIndex].timestamp = Date.now(); // Update timestamp
+                    this.renderHistory();
+                    console.log('[machinor-roundtable] Updated existing plot in history');
+                }
+            }
+            
             // @ts-ignore - toastr is a global library
             toastr.success('Plot edited successfully', 'Machinor Roundtable');
         }
         
+        // Reset editing state
+        this.isEditingPlot = false;
+        this.editingPlotId = null;
         this.closeModal();
         console.log('[machinor-roundtable] Plot saved:', editedText);
     }
@@ -1239,18 +1751,54 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Toggle plot history visibility
+     * Toggle plot history visibility with iOS spring animations
      */
     toggleHistory() {
         if (!this.elements.historyContent || !this.elements.historyToggle) return;
         
-        this.elements.historyContent.classList.toggle('collapsed');
+        const isCollapsed = this.elements.historyContent.classList.contains('collapsed');
         const icon = this.elements.historyToggle.querySelector('i');
         
-        if (this.elements.historyContent.classList.contains('collapsed')) {
-            if (icon) icon.className = 'fa-solid fa-chevron-down';
+        if (isCollapsed) {
+            // Expanding - remove collapsed class
+            this.elements.historyContent.classList.remove('collapsed');
+            
+            // Update ARIA attributes
+            this.elements.historyContent.setAttribute('aria-hidden', 'false');
+            this.elements.historyToggle.setAttribute('aria-expanded', 'true');
+            
+            // Spring animation for icon rotation
+            if (icon) {
+                icon.style.transform = 'rotate(180deg)';
+            }
+            
+            // Visual feedback with spring effect
+            this.elements.historyToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.elements.historyToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] History expanded');
         } else {
-            if (icon) icon.className = 'fa-solid fa-chevron-up';
+            // Collapsing - add collapsed class
+            this.elements.historyContent.classList.add('collapsed');
+            
+            // Update ARIA attributes
+            this.elements.historyContent.setAttribute('aria-hidden', 'true');
+            this.elements.historyToggle.setAttribute('aria-expanded', 'false');
+            
+            // Spring animation for icon rotation
+            if (icon) {
+                icon.style.transform = 'rotate(0deg)';
+            }
+            
+            // Visual feedback with spring effect
+            this.elements.historyToggle.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.elements.historyToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            console.log('[machinor-roundtable] History collapsed');
         }
     }
 
@@ -1293,29 +1841,91 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Render plot history
+     * Load cross-device synced injection history for current chat
+     */
+    loadSyncedHistory() {
+        try {
+            // Call the global helper function to get current chat history
+            if (typeof window.getCurrentChatHistory === 'function') {
+                const syncedHistory = window.getCurrentChatHistory();
+                console.log('[machinor-roundtable] Loaded synced history:', syncedHistory.length, 'entries');
+                return syncedHistory;
+            } else {
+                console.warn('[machinor-roundtable] getCurrentChatHistory function not available yet');
+                return [];
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Error loading synced history:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Render plot history (enhanced for cross-device sync)
      */
     renderHistory() {
         if (!this.elements.historyList) return;
         
-        if (this.plotHistory.length === 0) {
+        // Load synced history first
+        const syncedHistory = this.loadSyncedHistory();
+        
+        if (syncedHistory.length === 0 && this.plotHistory.length === 0) {
             this.elements.historyList.innerHTML = '<div class="mr-history-item">No plot history yet</div>';
             return;
         }
         
-        this.elements.historyList.innerHTML = this.plotHistory.map(plot => `
-            <div class="mr-history-item" data-plot-id="${plot.id}" title="${new Date(plot.timestamp).toLocaleString()}">
-                ${plot.text.substring(0, 60)}${plot.text.length > 60 ? '...' : ''}
-            </div>
-        `).join('');
+        // Combine synced history with any local history
+        const combinedHistory = [
+            ...syncedHistory.map(entry => ({
+                text: entry.text,
+                timestamp: new Date(entry.timestamp).getTime(),
+                id: `synced_${entry.timestamp}`,
+                isSynced: true,
+                character: entry.character,
+                style: entry.style,
+                intensity: entry.intensity
+            })),
+            ...this.plotHistory.map(plot => ({
+                ...plot,
+                isSynced: false
+            }))
+        ];
+        
+        // Sort by timestamp (newest first)
+        combinedHistory.sort((a, b) => b.timestamp - a.timestamp);
+        
+        // Limit to history limit
+        const limitedHistory = combinedHistory.slice(0, this.historyLimit);
+        
+        this.elements.historyList.innerHTML = limitedHistory.map(plot => {
+            const timestamp = new Date(plot.timestamp).toLocaleString();
+            const character = plot.character ? ` • ${plot.character}` : '';
+            const style = plot.style && plot.style !== 'natural' ? ` • ${plot.style}` : '';
+            const syncedIcon = plot.isSynced ? '<i class="fa-solid fa-cloud" title="Cross-device synced"></i>' : '';
+            
+            return `
+                <div class="mr-history-item ${plot.isSynced ? 'synced' : ''}"
+                     data-plot-text="${encodeURIComponent(plot.text)}"
+                     title="${timestamp}${character}${style}">
+                    <div class="mr-history-text">${plot.text.substring(0, 60)}${plot.text.length > 60 ? '...' : ''}</div>
+                    <div class="mr-history-meta">
+                        ${syncedIcon}
+                        <span class="mr-history-time">${new Date(plot.timestamp).toLocaleDateString()}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
         
         // Add click handlers
         this.elements.historyList.querySelectorAll('.mr-history-item').forEach(item => {
             item.addEventListener('click', () => {
-                const plotId = /** @type {HTMLElement} */ (item).dataset.plotId;
-                const plot = this.plotHistory.find(p => p.id === plotId);
-                if (plot) {
-                    this.displayCurrentPlot(plot.text, 'ready');
+                const plotText = decodeURIComponent(/** @type {HTMLElement} */ (item).dataset.plotText);
+                if (plotText) {
+                    // Clear editing state for synced entries
+                    this.isEditingPlot = false;
+                    this.editingPlotId = null;
+                    
+                    this.displayCurrentPlot(plotText, 'ready');
                     // @ts-ignore - toastr is a global library
                     toastr.info('Plot loaded from history', 'Machinor Roundtable');
                 }
@@ -1329,11 +1939,16 @@ export class PlotPreviewManager {
     async generateNewPlot() {
         console.log('[machinor-roundtable] Generating new plot...');
         
+        // CRITICAL FIX: Show "Generating..." status during plot creation
+        this.updateStatus('pending');
+        this.clearAutoApproveTimer(); // Prevent auto-inject during generation
+        
         try {
             // Use the imported helper functions
             const character = getCurrentCharacter();
             
             if (!character) {
+                this.updateStatus('ready'); // Reset status on error
                 // @ts-ignore - toastr is a global library
                 toastr.warning('No character selected', 'Machinor Roundtable');
                 return;
@@ -1348,11 +1963,66 @@ export class PlotPreviewManager {
                 this.displayCurrentPlot(plotContext, 'ready');
                 // @ts-ignore - toastr is a global library
                 toastr.success('New plot generated', 'Machinor Roundtable');
+            } else {
+                this.updateStatus('ready'); // Reset status if no plot generated
             }
         } catch (error) {
             console.error('[machinor-roundtable] Failed to generate new plot:', error);
+            this.updateStatus('ready'); // Reset status on error
             // @ts-ignore - toastr is a global library
             toastr.error('Failed to generate plot', 'Machinor Roundtable');
+        }
+    }
+
+    /**
+     * Generate new plot with current Plot Style/Intensity options (for Skip button)
+     */
+    async generateNewPlotWithOptions() {
+        console.log('[machinor-roundtable] Generating new plot with options...');
+        
+        // CRITICAL FIX: Show "Generating..." status during plot creation
+        this.updateStatus('pending');
+        this.clearAutoApproveTimer(); // Prevent auto-inject during generation
+        
+        try {
+            // Use the imported helper functions
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                this.updateStatus('ready'); // Reset status on error
+                // @ts-ignore - toastr is a global library
+                toastr.warning('No character selected', 'Machinor Roundtable');
+                return;
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Get Plot Style and Intensity from settings
+            const plotStyle = $('#mr_plot_style').val() || 'natural';
+            const plotIntensity = $('#mr_plot_intensity').val() || 'moderate';
+            console.log('[machinor-roundtable] New Plot Style:', plotStyle, 'Plot Intensity:', plotIntensity);
+            
+            // Combine options for plot generation
+            const plotOptions = {
+                style: plotStyle,
+                intensity: plotIntensity
+            };
+            
+            // Generate plot using the plot engine with options
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
+            
+            if (plotContext) {
+                this.displayCurrentPlot(plotContext, 'ready');
+                // @ts-ignore - toastr is a global library
+                toastr.success('New plot generated with style: ' + plotStyle, 'Machinor Roundtable');
+            } else {
+                this.updateStatus('ready'); // Reset status if no plot generated
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to generate new plot with options:', error);
+            this.updateStatus('ready'); // Reset status on error
+            // @ts-ignore - toastr is a global library
+            toastr.error('Failed to generate plot with options', 'Machinor Roundtable');
         }
     }
 
@@ -1380,10 +2050,56 @@ export class PlotPreviewManager {
                 this.displayNextPlot(plotContext);
                 // @ts-ignore - toastr is a global library
                 toastr.info('Next plot preview generated', 'Machinor Roundtable');
+            } else {
+                this.displayNextPlot('No plot generated');
             }
         } catch (error) {
             console.error('[machinor-roundtable] Failed to generate next plot:', error);
-            this.displayNextPlot('Generation failed');
+            this.displayNextPlot('Generation failed: ' + error.message);
+        }
+    }
+    
+    /**
+     * Generate next plot preview with current Plot Style/Intensity options
+     */
+    async generateNextPlotWithOptions() {
+        console.log('[machinor-roundtable] Generating next plot with options...');
+        
+        try {
+            // Use the imported helper functions
+            const character = getCurrentCharacter();
+            
+            if (!character) {
+                this.displayNextPlot('No character selected');
+                return;
+            }
+            
+            const chatHistory = this.getRecentChatHistory();
+            
+            // Get Plot Style and Intensity from settings
+            const plotStyle = $('#mr_plot_style').val() || 'natural';
+            const plotIntensity = $('#mr_plot_intensity').val() || 'moderate';
+            console.log('[machinor-roundtable] Next Plot Style:', plotStyle, 'Plot Intensity:', plotIntensity);
+            
+            // Combine options for plot generation
+            const plotOptions = {
+                style: plotStyle,
+                intensity: plotIntensity
+            };
+            
+            // Generate plot using the plot engine with options
+            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
+            
+            if (plotContext) {
+                this.displayNextPlot(plotContext);
+                // @ts-ignore - toastr is a global library
+                toastr.info('Next plot preview generated with style: ' + plotStyle, 'Machinor Roundtable');
+            } else {
+                this.displayNextPlot('No plot generated');
+            }
+        } catch (error) {
+            console.error('[machinor-roundtable] Failed to generate next plot with options:', error);
+            this.displayNextPlot('Generation failed: ' + error.message);
         }
     }
 

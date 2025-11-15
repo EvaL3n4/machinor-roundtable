@@ -1,9 +1,9 @@
-/* Machinor Roundtable - iOS Liquid Glass Settings Pink Purple Theme */
+/* Machinor Roundtable - Premium iOS Liquid Glass Settings */
 
 /* Import iOS Font Stack */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* iOS Liquid Glass Design System - Pink Purple Theme - Settings */
+/* iOS Liquid Glass Design System - Premium Settings */
 :root {
     /* Core Pink Purple Palette */
     --mr-bg-primary: #0a0a0a;
@@ -22,7 +22,6 @@
     --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
     --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
     --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
-    --mr-header-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
     
     /* iOS Typography System */
     --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
@@ -41,7 +40,6 @@
     /* iOS Liquid Glass Shadows */
     --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
     --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
-    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
     --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
     --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
     --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
@@ -60,9 +58,9 @@
     --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Main Settings Container - iOS Liquid Glass */
+/* Main Settings Container - Premium iOS Liquid Glass */
 .machinor-roundtable-settings {
-    margin: 20px 0;
+    margin: 16px 0;
     padding: 0;
 }
 
@@ -76,6 +74,9 @@
     overflow: hidden;
     font-family: var(--mr-font-family);
     position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
 }
 
 .mr-settings-container::before {
@@ -85,9 +86,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, 
-        rgba(255, 105, 180, 0.03) 0%, 
-        rgba(218, 112, 214, 0.03) 50%, 
+    background: linear-gradient(135deg,
+        rgba(255, 105, 180, 0.03) 0%,
+        rgba(218, 112, 214, 0.03) 50%,
         rgba(186, 85, 211, 0.03) 100%);
     pointer-events: none;
     z-index: -1;
@@ -106,15 +107,16 @@
     z-index: -1;
 }
 
-/* iOS Liquid Glass Settings Header */
+/* Settings Header - Integrated Design */
 .mr-settings-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24px;
-    background: var(--mr-header-gradient);
+    padding: 20px 24px;
+    background: none;
+    border: none;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .mr-settings-header::before {
@@ -124,8 +126,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    animation: mr-shimmer 3s infinite;
+    background: var(--mr-accent-soft);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border-radius: var(--mr-radius-lg) var(--mr-radius-lg) 0 0;
 }
 
 .mr-settings-header::after {
@@ -136,40 +141,43 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.1) 0%,
-        transparent 30%,
-        transparent 70%,
-        rgba(255, 255, 255, 0.08) 100%);
+        rgba(255, 255, 255, 0.02) 0%,
+        rgba(255, 255, 255, 0.05) 100%);
     pointer-events: none;
+    border-radius: var(--mr-radius-lg) var(--mr-radius-lg) 0 0;
 }
 
-@keyframes mr-shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+.mr-settings-header:hover::before {
+    opacity: 0.3;
 }
 
 .mr-settings-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    color: white;
+    color: var(--mr-text-primary);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     letter-spacing: -0.02em;
 }
 
 .mr-settings-header h3::before {
-    content: '⚙️';
-    font-size: 24px;
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: var(--mr-accent-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
+    flex-shrink: 0;
 }
 
 .mr-version {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--mr-text-muted);
     font-weight: 500;
     position: relative;
     z-index: 1;
@@ -180,9 +188,9 @@
     -webkit-backdrop-filter: blur(10px);
 }
 
-/* Settings Content - iOS Scroll Area */
+/* Settings Content - Natural Flow */
 .mr-settings-content {
-    padding: 24px;
+    padding: 20px;
     max-height: 70vh;
     overflow-y: auto;
     position: relative;
@@ -203,10 +211,41 @@
     border-radius: 3px;
 }
 
-/* iOS Liquid Glass Settings Section */
+/* Integrated Section Headers - Seamless Flow */
+.mr-section-header {
+    margin: 0 0 16px 0;
+    padding: 0 0 12px 0;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mr-section-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mr-text-primary);
+    font-family: var(--mr-font-family);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+}
+
+.mr-section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background: var(--mr-accent-gradient);
+    border-radius: 1px;
+}
+
+/* Settings Sections - Clean Glass Container */
 .mr-settings-section {
-    margin-bottom: 32px;
-    padding: 24px;
+    margin-bottom: 20px;
+    padding: 20px;
     background: var(--mr-bg-glass-strong);
     backdrop-filter: blur(25px) saturate(180%);
     -webkit-backdrop-filter: blur(25px) saturate(180%);
@@ -241,30 +280,31 @@
     opacity: 1;
 }
 
-.mr-settings-section h4 {
-    margin: 0 0 20px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--mr-text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-family: var(--mr-font-family);
+/* Form Elements Within Settings */
+.mr-settings-section .mr-toggle-item,
+.mr-settings-section .mr-form-group {
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
 }
 
-.mr-settings-section h4::before {
-    content: '';
-    width: 4px;
-    height: 16px;
-    background: var(--mr-accent-gradient);
-    border-radius: 2px;
+.mr-settings-section .mr-btn-primary,
+.mr-settings-section .mr-btn-secondary {
+    margin: 0 0 8px 0;
+    width: 100%;
+}
+
+.mr-settings-section .mr-btn-secondary:last-child {
+    margin-bottom: 0;
 }
 
 /* iOS Form Groups */
 .mr-form-group {
     margin-bottom: 20px;
+}
+
+.mr-form-group:last-child {
+    margin-bottom: 0;
 }
 
 .mr-form-group label {
@@ -358,12 +398,11 @@
     padding: 8px;
 }
 
-/* iOS Toggle Switch - Modern iOS Style */
+/* iOS Toggle Switch - Premium Style */
 .mr-toggle-item {
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 16px;
     padding: 16px;
     background: var(--mr-bg-glass-elevated);
     backdrop-filter: blur(20px);
@@ -455,7 +494,7 @@
     line-height: 1.4;
 }
 
-/* iOS Liquid Glass Buttons */
+/* Premium iOS Liquid Glass Buttons */
 .mr-btn-primary, .mr-btn-secondary {
     padding: 12px 24px;
     border: none;
@@ -514,37 +553,25 @@
     box-shadow: var(--mr-shadow-glass);
 }
 
-.mr-btn-primary.full-width, .mr-btn-secondary.full-width {
-    width: 100%;
-    margin-top: 12px;
-}
-
-/* iOS Status Info - Glass Cards */
+/* Status Info - Seamless Integration */
 .mr-status-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 16px;
     margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid var(--mr-border-glass);
-}
-
-.mr-status-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 16px;
+    padding: 20px;
+    border-radius: var(--mr-radius-md);
     background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: var(--mr-radius-sm);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid var(--mr-border-glass);
-    transition: var(--mr-transition);
+    box-shadow: var(--mr-shadow-glass);
+    transition: var(--mr-transition-spring);
     position: relative;
     overflow: hidden;
 }
 
-.mr-status-item::before {
+.mr-status-info::before {
     content: '';
     position: absolute;
     top: 0;
@@ -554,16 +581,32 @@
     background: var(--mr-accent-soft);
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 
-.mr-status-item:hover {
-    border-color: var(--mr-border-pink);
+.mr-status-info:hover {
     transform: translateY(-2px);
-    box-shadow: var(--mr-shadow-glass);
+    box-shadow: var(--mr-shadow-glass-strong);
+    border-color: var(--mr-border-pink);
 }
 
-.mr-status-item:hover::before {
-    opacity: 0.5;
+.mr-status-info:hover::before {
+    opacity: 0.3;
+}
+
+.mr-status-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: var(--mr-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: var(--mr-transition);
+    position: relative;
+    overflow: hidden;
 }
 
 .mr-status-label {
@@ -614,119 +657,40 @@
     color: #f59e0b !important;
 }
 
-/* Responsive Design */
+/* Mobile Responsive Design */
 @media (max-width: 768px) {
     .mr-settings-content {
         padding: 16px;
     }
     
     .mr-settings-section {
+        margin-bottom: 16px;
         padding: 16px;
     }
     
-    .mr-status-info {
-        grid-template-columns: 1fr;
+    .mr-section-header {
+        margin: 20px 0 10px 0;
     }
     
     .mr-toggle-item {
         padding: 12px;
     }
     
+    .mr-form-group {
+        margin-bottom: 16px;
+    }
+    
+    .mr-form-group:last-child {
+        margin-bottom: 0;
+    }
+    
     .mr-btn-primary, .mr-btn-secondary {
         padding: 10px 20px;
         font-size: 13px;
     }
-}
-
-/* Legacy Support */
-.machinor-roundtable-settings .inline-drawer-content {
-    padding: 10px;
-}
-
-.mr-section {
-    margin: 15px 0;
-    padding: 10px;
-    background: var(--mr-bg-glass);
-    border-radius: var(--mr-radius-sm);
-    border: 1px solid var(--mr-border-glass);
-}
-
-.mr-section label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-    color: var(--mr-text-primary);
-}
-
-.mr-section input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-xs);
-    color: var(--mr-text-primary);
-    font-size: 14px;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition);
-}
-
-.mr-section input[type="number"]:focus {
-    outline: none;
-    border-color: var(--mr-accent-primary);
-    box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.1);
-}
-
-.mr-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.mr-toggle input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-}
-
-.mr-toggle label {
-    margin: 0;
-    cursor: pointer;
-}
-
-#mr_manual_trigger {
-    width: 100%;
-    margin: 10px 0;
-}
-
-.mr-status {
-    margin-top: 20px;
-    padding: 10px;
-    background: var(--mr-bg-glass);
-    border-radius: var(--mr-radius-sm);
-    border: 1px solid var(--mr-border-glass);
-    text-align: center;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.mr-status p {
-    margin: 5px 0;
-    color: var(--mr-text-primary);
-}
-
-.mr-status p:first-child {
-    color: var(--mr-accent-primary);
-    font-weight: 500;
-}
-
-#mr_status {
-    color: var(--mr-accent-primary);
-    font-weight: 500;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mr-section {
-        margin: 10px 0;
-        padding: 8px;
+    
+    .mr-status-info {
+        grid-template-columns: 1fr;
+        padding: 16px;
     }
 }

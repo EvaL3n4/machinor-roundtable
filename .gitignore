@@ -1,0 +1,5 @@
+# Ignore design system documentation
+*.md
+!README.md
+# Ignore testing files
+test*.js
