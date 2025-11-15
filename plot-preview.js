@@ -882,36 +882,7 @@ export class PlotPreviewManager {
             this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
         }
         
-        // Advanced options toggle - Enhanced for mobile with iOS haptic feedback
-        const advancedToggle = document.getElementById('mr_advanced_toggle');
-        if (advancedToggle) {
-            // Use both click and touchstart for maximum compatibility
-            advancedToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.toggleAdvancedOptions();
-            });
-            
-            // Enhanced touch handling for iOS devices
-            advancedToggle.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // iOS-style haptic feedback simulation
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
-                }
-                
-                this.toggleAdvancedOptions();
-            }, { passive: false });
-            
-            // Prevent long-press context menu on mobile
-            advancedToggle.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-            });
-            
-            console.log('[machinor-roundtable] Advanced options toggle bound for mobile with haptic feedback');
-        }
+        // No longer needed - Advanced Options is now a permanent section
         
         console.log('[machinor-roundtable] Plot Preview events bound');
     }
@@ -1195,98 +1166,6 @@ export class PlotPreviewManager {
             this.elements.intelContent.classList.add('collapsed');
             this.elements.intelToggle.querySelector('i').className = 'fa-solid fa-chevron-down';
         }
-    }
-
-    /**
-     * Toggle advanced options panel with iOS spring animations
-     */
-    toggleAdvancedOptions() {
-        const advancedContent = document.getElementById('mr_advanced_content');
-        const advancedToggle = document.getElementById('mr_advanced_toggle');
-        
-        if (!advancedContent || !advancedToggle) {
-            console.warn('[machinor-roundtable] Advanced toggle elements not found:', {
-                content: !!advancedContent,
-                toggle: !!advancedToggle,
-                contentId: 'mr_advanced_content',
-                toggleId: 'mr_advanced_toggle'
-            });
-            return;
-        }
-        
-        // Check both class state AND inline display style for comprehensive state detection
-        const isCollapsed = advancedContent.classList.contains('collapsed') ||
-                           (advancedContent.style.display === 'none');
-        
-        // Enhanced selector to find the icon - check multiple approaches
-        let toggleIcon = advancedToggle.querySelector('.mr-advanced-toggle i');
-        if (!toggleIcon) {
-            toggleIcon = advancedToggle.querySelector('span i');
-        }
-        if (!toggleIcon) {
-            toggleIcon = advancedToggle.querySelector('i');
-        }
-        
-        console.log('[machinor-roundtable] Toggling advanced options:', {
-            isCollapsed: isCollapsed,
-            hasIcon: !!toggleIcon,
-            iconClasses: toggleIcon?.className || 'none',
-            toggleClasses: advancedToggle.className,
-            contentClasses: advancedContent.className,
-            displayStyle: advancedContent.style.display
-        });
-        
-        // iOS Spring Animation for the toggle button itself
-        advancedToggle.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        
-        if (isCollapsed) {
-            // Expanding - remove collapsed class and ensure display is not none
-            advancedContent.classList.remove('collapsed');
-            advancedContent.style.display = 'block'; // Ensure it's visible
-            advancedContent.setAttribute('aria-expanded', 'true');
-            
-            // Update ARIA attributes for accessibility
-            advancedContent.setAttribute('aria-hidden', 'false');
-            advancedToggle.setAttribute('aria-expanded', 'true');
-            
-            // Animate icon rotation with iOS spring effect
-            if (toggleIcon) {
-                toggleIcon.style.transform = 'rotate(180deg)';
-            }
-            
-            // iOS-style visual feedback with spring animation
-            advancedToggle.style.transform = 'scale(0.92)';
-            setTimeout(() => {
-                advancedToggle.style.transform = 'scale(1)';
-            }, 100);
-            
-            console.log('[machinor-roundtable] Advanced options expanded with iOS animation');
-        } else {
-            // Collapsing - add collapsed class and hide with display none
-            advancedContent.classList.add('collapsed');
-            advancedContent.style.display = 'none'; // Force hide
-            advancedContent.setAttribute('aria-expanded', 'false');
-            
-            // Update ARIA attributes for accessibility
-            advancedContent.setAttribute('aria-hidden', 'true');
-            advancedToggle.setAttribute('aria-expanded', 'false');
-            
-            // Animate icon rotation with iOS spring effect
-            if (toggleIcon) {
-                toggleIcon.style.transform = 'rotate(0deg)';
-            }
-            
-            // iOS-style visual feedback with spring animation
-            advancedToggle.style.transform = 'scale(0.92)';
-            setTimeout(() => {
-                advancedToggle.style.transform = 'scale(1)';
-            }, 100);
-            
-            console.log('[machinor-roundtable] Advanced options collapsed with iOS animation');
-        }
-        
-        // Force reflow to ensure animation starts
-        advancedToggle.offsetHeight;
     }
 
     /**
@@ -1759,6 +1638,11 @@ export class PlotPreviewManager {
         
         if (this.elements.modal) {
             this.elements.modal.style.display = 'block';
+            
+            // Ensure proper z-index for mobile - higher than plot preview
+            if (this.isMobile) {
+                this.elements.modal.style.zIndex = '5000';
+            }
         }
         
         if (this.elements.editorText) {
