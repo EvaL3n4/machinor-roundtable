@@ -1519,15 +1519,22 @@ export class PlotPreviewManager {
             console.log('[machinor-roundtable] Skipping history add - editing existing plot');
         }
         
-        // Trigger injection through chat injector
-        // This is a simplified version - in practice, you'd integrate with the actual injection system
-        console.log('[machinor-roundtable] Plot approved and injected:', this.currentPlot);
+        // Save injection to history for cross-device sync
+        if (typeof window.addInjectionToHistory === 'function') {
+            const context = getContext();
+            const character = context?.characters?.[context?.characterId];
+            window.addInjectionToHistory(this.currentPlot, {
+                character: character?.name || 'Unknown Character',
+                style: 'manual',
+                intensity: 'manual'
+            });
+        }
+        
+        console.log('[machinor-roundtable] Plot approved and prepared for injection:', this.currentPlot);
         
         // @ts-ignore - toastr is a global library
-        toastr.success('Plot injected successfully', 'Machinor Roundtable');
+        toastr.success('Plot prepared - will inject on next generation', 'Machinor Roundtable');
         
-        // Keep the plot displayed and stay in injected state for editing
-        // Don't clear the plot or return to pending status
         console.log('[machinor-roundtable] Plot remains in injected state for editing');
     }
 

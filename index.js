@@ -237,6 +237,8 @@ function clearCurrentChatHistory() {
 }
 
 // Make functions globally accessible for cross-file communication
+// CRITICAL FIX: Expose extension_settings globally for consistent access across all modules
+window.extension_settings = extension_settings;
 window.getCurrentChatId = getCurrentChatId;
 window.addInjectionToHistory = addInjectionToHistory;
 window.getCurrentChatHistory = getCurrentChatHistory;
@@ -337,10 +339,12 @@ let plotPreview = null;
 let stIntegration = null;
 let narrativeArc = null;
 
-// Default settings
+/**
+ * Default settings for the extension
+ * Now simplified: only inject when user generates (no frequency logic)
+ */
 const defaultSettings = {
     enabled: false,
-    injectionFrequency: 7, // Default: inject plot every 7 exchanges
     debugMode: false,
     currentTemplate: "universal-development",
     // Cross-device synced injection history
@@ -433,7 +437,6 @@ function loadSettings() {
     
     // Update UI elements
     $("#mr_enabled").prop("checked", extension_settings[extensionName].enabled);
-    $("#mr_frequency").val(extension_settings[extensionName].injectionFrequency);
     $("#mr_debug").prop("checked", extension_settings[extensionName].debugMode);
     $("#mr_history_limit").val(extension_settings[extensionName].historyLimit || 5);
     $("#mr_plot_style").val(extension_settings[extensionName].plotStyle || 'natural');
@@ -448,7 +451,6 @@ function bindEvents() {
     // Check if elements exist before binding
     const elements = {
         mr_enabled: $("#mr_enabled"),
-        mr_frequency: $("#mr_frequency"),
         mr_debug: $("#mr_debug"),
         mr_history_limit: $("#mr_history_limit"),
         mr_plot_style: $("#mr_plot_style"),
@@ -460,7 +462,6 @@ function bindEvents() {
     
     console.log(`[${extensionName}] Elements found:`, {
         mr_enabled: elements.mr_enabled.length,
-        mr_frequency: elements.mr_frequency.length,
         mr_debug: elements.mr_debug.length,
         mr_history_limit: elements.mr_history_limit.length,
         mr_plot_style: elements.mr_plot_style.length,
@@ -476,14 +477,6 @@ function bindEvents() {
         console.log(`[${extensionName}] Bound mr_enabled event`);
     } else {
         console.error(`[${extensionName}] mr_enabled element not found!`);
-    }
-    
-    // Frequency input
-    if (elements.mr_frequency.length > 0) {
-        elements.mr_frequency.on("input", onFrequencyChange);
-        console.log(`[${extensionName}] Bound mr_frequency event`);
-    } else {
-        console.error(`[${extensionName}] mr_frequency element not found!`);
     }
     
     // Debug mode toggle
@@ -548,20 +541,17 @@ function bindEvents() {
 function onEnabledToggle(event) {
     const value = Boolean($(event.target).prop("checked"));
     extension_settings[extensionName].enabled = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Enabled:`, value);
-}
-
-function onFrequencyChange(event) {
-    const value = parseInt($(event.target).val()) || 7;
-    extension_settings[extensionName].injectionFrequency = value;
-    saveSettingsDebounced();
-    console.log(`[${extensionName}] Frequency set to:`, value, "exchanges");
 }
 
 function onDebugToggle(event) {
     const value = Boolean($(event.target).prop("checked"));
     extension_settings[extensionName].debugMode = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Debug mode:`, value);
 }
@@ -569,6 +559,8 @@ function onDebugToggle(event) {
 function onHistoryLimitChange(event) {
     const value = parseInt($(event.target).val()) || 5;
     extension_settings[extensionName].historyLimit = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] History limit set to:`, value);
 }
@@ -576,6 +568,8 @@ function onHistoryLimitChange(event) {
 function onPlotStyleChange(event) {
     const value = $(event.target).val() || 'natural';
     extension_settings[extensionName].plotStyle = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Plot style set to:`, value);
 }
@@ -583,6 +577,8 @@ function onPlotStyleChange(event) {
 function onPlotIntensityChange(event) {
     const value = $(event.target).val() || 'moderate';
     extension_settings[extensionName].plotIntensity = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Plot intensity set to:`, value);
 }

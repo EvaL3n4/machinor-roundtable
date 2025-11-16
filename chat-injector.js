@@ -1,4 +1,11 @@
-// Machinor Roundtable - Chat Injection System
+/**
+ * Machinor Roundtable - Simple Plot Context Injection System
+ * 
+ * ARCHITECTURE: Only injects plot context when user generates a prompt.
+ * No frequency logic, no manual injection, no complex loading checks.
+ * Simply: Listen → Generate → Inject → Done
+ */
+
 import { getContext } from "../../../extensions.js";
 // @ts-ignore
 import { eventSource, event_types, saveChatConditional } from "../../../../script.js";
@@ -15,154 +22,127 @@ export class ChatInjector {
     constructor(plotEngine, plotPreview = null) {
         this.plotEngine = plotEngine;
         this.plotPreview = plotPreview;
-        this.injectionCounter = 0;
-        this.lastInjectionTurn = 0;
         this.isProcessing = false;
     }
 
     /**
      * Initialize the injection system
+     * Simple setup - just listens for generation events
      */
     initialize() {
-        // Listen for chat generation events
-        eventSource.on(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, this.handlePreGeneration.bind(this));
+        console.log('[machinor-roundtable] 🔧 Initializing simple plot injection system');
         
-        // Listen for message sent events to track conversation turns
-        eventSource.on(event_types.MESSAGE_SENT, this.handleMessageSent.bind(this));
-        
-        // ST Integration Events
-        this.setupSTIntegrationEvents();
-        
-        console.log(`[machinor-roundtable] Chat injector initialized with ST integration`);
-    }
-
-    /**
-     * Setup ST integration event listeners
-     */
-    setupSTIntegrationEvents() {
-        // Listen for character changes
-        eventSource.on('character_selected', (data) => {
-            console.log(`[machinor-roundtable] Character changed, resetting injection tracking`);
-            this.reset();
-            
-            // Refresh plot engine with new character context if available
-            if (this.plotEngine?.stIntegration) {
-                this.plotEngine.stIntegration.analyzeActiveCharacters();
-            }
-        });
-
-        // Listen for chat changes
-        eventSource.on('chat_changed', (data) => {
-            console.log(`[machinor-roundtable] Chat changed, clearing plot cache`);
-            this.reset();
-            
-            // Clear plot cache and refresh context
-            if (this.plotEngine?.clearCache) {
-                this.plotEngine.clearCache();
-            }
-        });
-
-        // Listen for group changes (important for multi-character scenarios)
-        eventSource.on('group_changed', (data) => {
-            console.log(`[machinor-roundtable] Group changed, updating multi-character context`);
-            this.reset();
-        });
-
-        // Listen for world changes (if using world info)
-        if (typeof eventSource.on === 'function' && eventSource.listenerCount) {
-            eventSource.on('world_changed', (data) => {
-                console.log(`[machinor-roundtable] World changed, refreshing integration data`);
-                if (this.plotEngine?.stIntegration) {
-                    this.plotEngine.stIntegration.loadWorldInfo();
-                }
-            });
+        // Check if eventSource and event_types are available
+        if (!eventSource || !event_types) {
+            console.error('[machinor-roundtable] ❌ eventSource or event_types not available');
+            return;
         }
-
-        console.log(`[machinor-roundtable] ST integration events setup complete`);
+        
+        // Listen for the generation event - this is when user is sending a prompt
+        eventSource.on(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, this.handleGenerationEvent.bind(this));
+        
+        console.log('[machinor-roundtable] ✅ Simple injection system initialized - will inject on every generation');
+        console.log('[machinor-roundtable] Event listener bound to:', event_types.GENERATE_BEFORE_COMBINE_PROMPTS);
     }
 
     /**
-     * Handle pre-generation event to inject plot context
+     * Handle generation event - only inject when user is generating
+     * 
+     * This is the ONLY injection point. No frequency logic, no manual injection,
+     * no complex checks. Just: user generates → inject plot context.
      */
-    async handlePreGeneration(data) {
+    async handleGenerationEvent(data) {
         const context = getContext();
-        const settings = context.extension_settings?.machinor_roundtable;
+        // Import the settings from the main extension file - FIX: Use correct key format
+        const settings = window.extension_settings?.['machinor-roundtable'];
         
-        console.log('[machinor-roundtable] handlePreGeneration called, enabled:', settings?.enabled);
+        console.log('[machinor-roundtable] 🎯 Generation event received - checking if injection should occur');
         
-        // CRITICAL FIX: Check if chat context is properly loaded
-        if (!this.isChatContextReady()) {
-            console.log('[machinor-roundtable] Chat context not ready yet, deferring injection');
-            return; // Wait for context to be ready
+        // CRITICAL FIX: Only inject when there's actual user content to modify
+        // Check if this is a real user generation, not system loading
+        const isRealUserGeneration = (
+            data &&
+            (data.prompt || data.messages || data.text) &&
+            (data.prompt?.trim()?.length > 0 || data.messages?.length > 0 || data.text?.trim()?.length > 0)
+        );
+        
+        if (!isRealUserGeneration) {
+            console.log('[machinor-roundtable] 🔍 Not a real user generation (likely chat loading), skipping injection');
+            return;
         }
+        
+        console.log('[machinor-roundtable] ✅ Confirmed real user generation - proceeding with injection');
+        console.log('[machinor-roundtable] Settings check:', settings);
         
         if (!settings?.enabled) {
             console.log('[machinor-roundtable] Extension disabled, skipping injection');
-            return; // Extension is disabled
+            return;
         }
 
         if (this.isProcessing) {
-            console.log(`[machinor-roundtable] Already processing, skipping injection`);
+            console.log('[machinor-roundtable] Already processing, skipping to avoid duplicates');
             return;
         }
 
         try {
             this.isProcessing = true;
-            console.log('[machinor-roundtable] Starting injection process...');
-            
-            // Check if we should inject based on frequency
-            if (!this.shouldInject(settings.injectionFrequency)) {
-                console.log(`[machinor-roundtable] Skipping injection - frequency not met`);
-                this.isProcessing = false;
-                return;
-            }
+            console.log('[machinor-roundtable] Starting plot context injection...');
 
             // Get character data
             const character = this.getCurrentCharacter();
             if (!character) {
-                console.log(`[machinor-roundtable] No character selected, skipping injection`);
-                this.isProcessing = false;
+                console.log('[machinor-roundtable] No character selected, skipping injection');
                 return;
             }
 
-            // Get recent chat history
+            // Get recent chat history for context
             const chatHistory = this.getRecentChatHistory();
             console.log('[machinor-roundtable] Chat history length:', chatHistory.length);
             
-            // Generate plot context
-            console.log(`[machinor-roundtable] Generating plot context for injection...`);
-            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory);
+            // Generate plot context with better error handling
+            console.log('[machinor-roundtable] Generating plot context...');
+            let plotContext;
+            try {
+                plotContext = await this.plotEngine.generatePlotContext(character, chatHistory);
+            } catch (error) {
+                console.error('[machinor-roundtable] Failed to generate plot context:', error);
+                return;
+            }
             
             if (!plotContext || plotContext.trim() === '') {
-                console.error(`[machinor-roundtable] Generated plot context is empty`);
-                this.isProcessing = false;
+                console.error('[machinor-roundtable] Generated plot context is empty');
                 return;
             }
 
-            console.log('[machinor-roundtable] Plot context generated:', plotContext);
+            console.log('[machinor-roundtable] Plot context generated, length:', plotContext.length);
             
-            // Inject the plot context
-            this.injectPlotContext(data, plotContext, settings.debugMode);
+            // Inject the plot context into the generation data
+            const injectionSuccess = this.injectPlotContext(data, plotContext, settings.debugMode);
             
-            // Update injection tracking
-            this.lastInjectionTurn = this.injectionCounter;
-            
-            // Save injection to history for cross-device sync
-            this.saveInjectionToHistory(plotContext, {
-                character: character.name || 'Unknown Character',
-                style: this.getCurrentPlotStyle(),
-                intensity: this.getCurrentPlotIntensity()
-            });
-            
-            // Update plot preview status if available
-            if (this.plotPreview) {
-                this.plotPreview.displayCurrentPlot(plotContext, 'injected');
+            if (injectionSuccess) {
+                console.log('[machinor-roundtable] ✅ Plot context successfully injected');
+                
+                // Update plot preview if available
+                if (this.plotPreview && typeof this.plotPreview.displayCurrentPlot === 'function') {
+                    this.plotPreview.displayCurrentPlot(plotContext, 'injected');
+                    console.log('[machinor-roundtable] ✅ Plot preview updated');
+                }
+                
+                // Save injection to history for tracking
+                if (typeof window.addInjectionToHistory === 'function') {
+                    window.addInjectionToHistory(plotContext, {
+                        character: character?.name || 'Unknown Character',
+                        style: settings.plotStyle || 'natural',
+                        intensity: settings.plotIntensity || 'moderate'
+                    });
+                    console.log('[machinor-roundtable] ✅ Injection saved to history');
+                }
+            } else {
+                console.error('[machinor-roundtable] ❌ Plot context injection failed');
             }
             
-            console.log(`[machinor-roundtable] Plot context injected successfully`);
-            
         } catch (error) {
-            console.error(`[machinor-roundtable] Failed to inject plot context:`, error);
+            console.error('[machinor-roundtable] Failed to inject plot context:', error);
             
             // Show error notification
             if (typeof toastr !== 'undefined') {
@@ -175,137 +155,39 @@ export class ChatInjector {
     }
 
     /**
-     * Handle message sent events to track conversation turns
-     */
-    handleMessageSent(data) {
-        if (data.is_user) {
-            this.injectionCounter++;
-            console.log(`[machinor-roundtable] User message sent - turn count: ${this.injectionCounter}`);
-        }
-    }
-
-    /**
-     * Check if we should inject based on frequency settings
-     */
-    shouldInject(frequency) {
-        const exchangesSinceLastInjection = this.injectionCounter - this.lastInjectionTurn;
-        return exchangesSinceLastInjection >= frequency;
-    }
-
-    /**
-     * Check if the current chat context is ready for injections
-     * @returns {boolean} True if context is ready, false otherwise
-     */
-    isChatContextReady() {
-        try {
-            const context = getContext();
-            
-            // Check if context exists
-            if (!context) {
-                return false;
-            }
-            
-            // Check if character is selected
-            if (context.characterId === undefined || context.characterId === null) {
-                return false;
-            }
-            
-            // Check if chat exists and has content
-            if (!context.chat || context.chat.length === 0) {
-                return false;
-            }
-            
-            // Check if characters array exists
-            if (!context.characters || !Array.isArray(context.characters)) {
-                return false;
-            }
-            
-            // Check if the current character exists in the characters array
-            if (!context.characters[context.characterId]) {
-                return false;
-            }
-            
-            console.log('[machinor-roundtable] ✅ Chat context is ready for injections');
-            return true;
-            
-        } catch (error) {
-            console.error('[machinor-roundtable] Error checking chat context readiness:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Get the current character data (enhanced for multi-character support)
+     * Get the current character data
+     * FIX: Use consistent character detection method like index.js
      */
     getCurrentCharacter() {
-        const context = getContext();
-        
-        // Check if we're in a group chat
-        if (context.groupId) {
-            // For group chats, try to focus on the most active character or first character
-            const group = context.groups?.find(g => g.id === context.groupId);
-            if (group && group.members.length > 0) {
-                // For now, focus on the first character - can be enhanced later
-                const mainCharId = group.members[0];
-                const character = context.characters?.find(c => c.avatar === mainCharId);
-                
-                if (character && extension_settings[extensionName]?.debugMode) {
-                    debugLog(`Group chat detected, focusing on character: ${character.name}`);
-                }
-                
-                return character;
+        try {
+            const context = getContext();
+            if (!context) {
+                console.log('[machinor-roundtable] getCurrentCharacter: No context available');
+                return null;
             }
-        }
-        
-        // Regular character chat
-        const singleChar = context.character;
-        if (singleChar && extension_settings[extensionName]?.debugMode) {
-            debugLog(`Single character chat: ${singleChar.name}`);
-        }
-        
-        return singleChar;
-    }
 
-    /**
-     * Get all active characters in current context (for multi-character scenarios)
-     */
-    getActiveCharacters() {
-        const context = getContext();
-        
-        if (!context) return [];
-        
-        const characters = [];
-        
-        // Check if we're in a group chat
-        if (context.groupId && context.groups && context.characters) {
-            const group = context.groups.find(g => g.id === context.groupId);
-            if (group && group.members) {
-                group.members.forEach(memberId => {
-                    const character = context.characters.find(c => c.avatar === memberId);
-                    if (character) {
-                        characters.push({
-                            ...character,
-                            isGroupMember: true,
-                            groupPosition: group.members.indexOf(memberId)
-                        });
-                    }
-                });
+            console.log('[machinor-roundtable] getCurrentCharacter: Context check', {
+                hasCharacterId: context.characterId !== undefined,
+                hasCharacters: !!context.characters,
+                groupId: context.groupId
+            });
+            
+            // Check if we have a characterId and characters array
+            if (context.characterId === undefined || !context.characters) {
+                console.log('[machinor-roundtable] getCurrentCharacter: No characterId or characters array');
+                return null;
             }
-        } else {
-            // Single character scenario
-            if (context.character) {
-                characters.push({
-                    ...context.character,
-                    isGroupMember: false
-                });
-            }
+            
+            // Find the current character by ID (same method as index.js)
+            const character = context.characters[context.characterId];
+            
+            console.log('[machinor-roundtable] getCurrentCharacter:', character ? character.name : "No character found");
+            
+            return character || null;
+        } catch (error) {
+            console.error('[machinor-roundtable] Error getting current character:', error);
+            return null;
         }
-        
-        if (extension_settings[extensionName]?.debugMode) {
-            debugLog(`Active characters: ${characters.length}`, characters.map(c => c.name));
-        }
-        
-        return characters;
     }
 
     /**
@@ -330,34 +212,90 @@ export class ChatInjector {
 
     /**
      * Inject plot context into the generation data
+     * Enhanced to handle multiple SillyTavern data structures
      */
     injectPlotContext(data, plotContext, debugMode) {
-        // Create a system message with the plot context
-        const systemMessage = {
-            role: "system",
-            content: plotContext
-        };
+        console.log('[machinor-roundtable] Starting plot context injection...');
+        console.log('[machinor-roundtable] Data structure before injection:', {
+            hasPrompt: !!data.prompt,
+            hasMessages: !!data.messages,
+            hasChat: !!data.chat,
+            promptLength: data.prompt ? data.prompt.length : 0,
+            messagesLength: data.messages ? data.messages.length : 0,
+            keys: Object.keys(data || {})
+        });
 
-        // Add to the prompt if it exists
-        if (data.prompt) {
-            // Insert the plot context before the main prompt
+        // Method 1: Try to inject into prompt field (SillyTavern's preferred method)
+        if (data.prompt && typeof data.prompt === 'string') {
+            const originalPrompt = data.prompt;
             data.prompt = `${plotContext}\n\n${data.prompt}`;
-        } else if (data.messages && Array.isArray(data.messages)) {
-            // For message-based APIs, insert as a system message
-            data.messages.unshift(systemMessage);
+            
+            console.log(`[machinor-roundtable] ✅ Successfully injected into prompt field`);
+            console.log(`[machinor-roundtable] Original prompt length: ${originalPrompt.length}`);
+            console.log(`[machinor-roundtable] New prompt length: ${data.prompt.length}`);
+            console.log(`[machinor-roundtable] Plot context added at the beginning`);
+            
+            if (debugMode) {
+                this.showDebugNotification(`Injected ${plotContext.length} chars into prompt`);
+            }
+            
+            return true;
         }
 
-        // Log injection for debugging
-        console.log(`[machinor-roundtable] Injected plot context:`, plotContext);
+        // Method 2: Fallback for message-based APIs
+        if (data.messages && Array.isArray(data.messages)) {
+            const systemMessage = {
+                role: "system",
+                content: plotContext
+            };
+            data.messages.unshift(systemMessage);
+            
+            console.log(`[machinor-roundtable] ✅ Successfully injected as system message`);
+            console.log(`[machinor-roundtable] Messages array length: ${data.messages.length}`);
+            
+            if (debugMode) {
+                this.showDebugNotification(`Added system message with ${plotContext.length} chars`);
+            }
+            
+            return true;
+        }
+
+        // Method 3: Handle chat-based structures
+        if (data.chat && typeof data.chat === 'object') {
+            // SillyTavern might use different data structures
+            if (data.chat.prompt) {
+                const originalPrompt = data.chat.prompt;
+                data.chat.prompt = `${plotContext}\n\n${data.chat.prompt}`;
+                
+                console.log(`[machinor-roundtable] ✅ Successfully injected into chat.prompt`);
+                return true;
+            }
+        }
+
+        // Method 4: Last resort - try to modify data directly
+        if (typeof data === 'object' && data !== null) {
+            console.log('[machinor-roundtable] 🔄 Attempting direct data modification...');
+            
+            // Try common prompt fields
+            const promptFields = ['prompt', 'text', 'content', 'message'];
+            for (const field of promptFields) {
+                if (data[field] && typeof data[field] === 'string') {
+                    const originalValue = data[field];
+                    data[field] = `${plotContext}\n\n${data[field]}`;
+                    console.log(`[machinor-roundtable] ✅ Successfully injected into data.${field}`);
+                    return true;
+                }
+            }
+        }
+
+        console.error('[machinor-roundtable] ❌ Unable to inject plot context - no suitable data structure found');
+        console.error('[machinor-roundtable] Available data structure:', JSON.stringify(data, null, 2));
         
         if (debugMode) {
-            this.showDebugNotification(plotContext);
+            this.showDebugNotification('Injection failed - no suitable data structure');
         }
         
-        // Update plot preview if available
-        if (this.plotPreview) {
-            this.plotPreview.displayCurrentPlot(plotContext, 'injected');
-        }
+        return false; // Indicate failure
     }
 
     /**
@@ -366,9 +304,9 @@ export class ChatInjector {
     showDebugNotification(plotContext) {
         // @ts-ignore
         toastr.info(
-            `Plot context injected: "${plotContext}"`,
+            `Plot context injected: "${plotContext.substring(0, 50)}..."`,
             "Machinor Roundtable - Debug",
-            { timeOut: 5000 }
+            { timeOut: 3000 }
         );
     }
 
@@ -382,14 +320,11 @@ export class ChatInjector {
     }
 
     /**
-     * Reset injection tracking
+     * Reset injection tracking (simplified)
      */
     reset() {
-        this.injectionCounter = 0;
-        this.lastInjectionTurn = 0;
-        this.manualPlotContext = null;
-        this.forceInjectNext = false;
-        console.log(`[machinor-roundtable] Injection tracking reset`);
+        this.isProcessing = false;
+        console.log(`[machinor-roundtable] Simple injection reset`);
     }
 
     /**
@@ -397,50 +332,8 @@ export class ChatInjector {
      */
     getStatus() {
         return {
-            injectionCounter: this.injectionCounter,
-            lastInjectionTurn: this.lastInjectionTurn,
-            exchangesSinceLastInjection: this.injectionCounter - this.lastInjectionTurn,
             isProcessing: this.isProcessing,
             cacheSize: this.plotEngine.getCacheSize()
         };
-    }
-
-    /**
-     * Get current plot style from UI
-     */
-    getCurrentPlotStyle() {
-        try {
-            return $('#mr_plot_style').val() || 'natural';
-        } catch (error) {
-            return 'natural';
-        }
-    }
-
-    /**
-     * Get current plot intensity from UI
-     */
-    getCurrentPlotIntensity() {
-        try {
-            return $('#mr_plot_intensity').val() || 'moderate';
-        } catch (error) {
-            return 'moderate';
-        }
-    }
-
-    /**
-     * Save injection to history for cross-device sync
-     * This method calls the global helper function from index.js
-     */
-    saveInjectionToHistory(plotContext, metadata) {
-        try {
-            // Call the global function from index.js
-            if (typeof window.addInjectionToHistory === 'function') {
-                window.addInjectionToHistory(plotContext, metadata);
-            } else {
-                console.warn('[machinor-roundtable] addInjectionToHistory function not available yet');
-            }
-        } catch (error) {
-            console.error('[machinor-roundtable] Error saving injection to history:', error);
-        }
     }
 }
