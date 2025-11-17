@@ -23,6 +23,8 @@ export class ChatInjector {
         this.plotEngine = plotEngine;
         this.plotPreview = plotPreview;
         this.isProcessing = false;
+        this.turnCounter = 0;
+        this.lastGenerationTurn = 0;
     }
 
     /**
@@ -46,20 +48,14 @@ export class ChatInjector {
     }
 
     /**
-     * Handle generation event - only inject when user is generating
-     * 
-     * This is the ONLY injection point. No frequency logic, no manual injection,
-     * no complex checks. Just: user generates → inject plot context.
+     * Handle generation event - implements frequency-based plot generation
      */
     async handleGenerationEvent(data) {
         const context = getContext();
-        // Import the settings from the main extension file - FIX: Use correct key format
         const settings = window.extension_settings?.['machinor-roundtable'];
         
         console.log('[machinor-roundtable] 🎯 Generation event received - checking if injection should occur');
         
-        // CRITICAL FIX: Only inject when there's actual user content to modify
-        // Check if this is a real user generation, not system loading
         const isRealUserGeneration = (
             data &&
             (data.prompt || data.messages || data.text) &&
@@ -84,22 +80,31 @@ export class ChatInjector {
             return;
         }
 
+        // NEW: Frequency-based generation logic
+        this.turnCounter++;
+        const frequency = settings.frequency || 3; // Default to every 3 turns
+        const shouldGenerateNew = (this.turnCounter - this.lastGenerationTurn) >= frequency;
+        
+        if (!shouldGenerateNew) {
+            console.log(`[machinor-roundtable] ⏭️ Skipping generation - only every ${frequency} turns (currently turn ${this.turnCounter})`);
+            return;
+        }
+        
+        console.log(`[machinor-roundtable] 🎯 Generating new plot on turn ${this.turnCounter} (frequency: ${frequency})`);
+
         try {
             this.isProcessing = true;
             console.log('[machinor-roundtable] Starting plot context injection...');
 
-            // Get character data
             const character = this.getCurrentCharacter();
             if (!character) {
                 console.log('[machinor-roundtable] No character selected, skipping injection');
                 return;
             }
 
-            // Get recent chat history for context
             const chatHistory = this.getRecentChatHistory();
             console.log('[machinor-roundtable] Chat history length:', chatHistory.length);
             
-            // Generate plot context with better error handling
             console.log('[machinor-roundtable] Generating plot context...');
             let plotContext;
             try {
@@ -116,19 +121,19 @@ export class ChatInjector {
 
             console.log('[machinor-roundtable] Plot context generated, length:', plotContext.length);
             
-            // Inject the plot context into the generation data
+            // Update turn counter for last generation
+            this.lastGenerationTurn = this.turnCounter;
+            
             const injectionSuccess = this.injectPlotContext(data, plotContext, settings.debugMode);
             
             if (injectionSuccess) {
                 console.log('[machinor-roundtable] ✅ Plot context successfully injected');
                 
-                // Update plot preview if available
                 if (this.plotPreview && typeof this.plotPreview.displayCurrentPlot === 'function') {
                     this.plotPreview.displayCurrentPlot(plotContext, 'injected');
                     console.log('[machinor-roundtable] ✅ Plot preview updated');
                 }
                 
-                // Save injection to history for tracking
                 if (typeof window.addInjectionToHistory === 'function') {
                     window.addInjectionToHistory(plotContext, {
                         character: character?.name || 'Unknown Character',
@@ -144,9 +149,7 @@ export class ChatInjector {
         } catch (error) {
             console.error('[machinor-roundtable] Failed to inject plot context:', error);
             
-            // Show error notification
             if (typeof toastr !== 'undefined') {
-                // @ts-ignore - toastr is a global library
                 toastr.error(`Plot injection failed: ${error.message}`, 'Machinor Roundtable');
             }
         } finally {

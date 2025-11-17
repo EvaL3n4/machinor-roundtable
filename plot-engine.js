@@ -36,8 +36,6 @@ PLOT CONTEXT:`;
 
 export class PlotEngine {
     constructor(stIntegration = null, narrativeArc = null) {
-        this.cache = new Map();
-        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
         this.stIntegration = stIntegration;
         this.narrativeArc = narrativeArc;
     }
@@ -57,21 +55,13 @@ export class PlotEngine {
         console.log('[machinor-roundtable] Guidance option present:', !!options.guidance);
         console.log('[machinor-roundtable] Full options:', options);
         
-        // Check cache first to avoid duplicate LLM calls
-        const cacheKey = this.generateCacheKey(character, chatHistory, options.template || '', options.style || '', options.intensity || '', options.direction || '');
-        
-        if (this.cache.has(cacheKey)) {
-            console.log('[machinor-roundtable] ✅ Using cached result');
-            return this.cache.get(cacheKey);
-        }
-        
         // Get the best prompt for LLM call based on available data
         const promptData = this.buildBestPrompt(character, chatHistory, options);
         
         try {
-            console.log('[machinor-roundtable] 🎯 Making single LLM call with comprehensive prompt');
+            console.log('[machinor-roundtable] 🎯 Making LLM call (no caching - unlimited regenerations)');
             
-            // SINGLE LLM CALL - No duplicates!
+            // LLM CALL - Always fresh, no caching
             const plotContext = await generateQuietPrompt({
                 quietPrompt: promptData.prompt,
                 skipWIAN: true,
@@ -81,11 +71,8 @@ export class PlotEngine {
             
             const cleanedContext = this.cleanPlotContext(plotContext);
             
-            // Cache the result
-            this.cache.set(cacheKey, cleanedContext);
-            
             console.log('[machinor-roundtable] Final result:', cleanedContext);
-            console.log('[machinor-roundtable] ===== PLOT GENERATION END (OPTIMIZED) =====');
+            console.log('[machinor-roundtable] ===== PLOT GENERATION END (NO CACHE) =====');
             return cleanedContext;
             
         } catch (error) {
@@ -95,8 +82,6 @@ export class PlotEngine {
             const fallbackContext = this.getFallbackContext(character, options.style || 'natural');
             console.log('[machinor-roundtable] Using fallback context:', fallbackContext);
             
-            // Cache the fallback too
-            this.cache.set(cacheKey, fallbackContext);
             return fallbackContext;
         }
     }
@@ -548,17 +533,6 @@ export class PlotEngine {
         return cleaned;
     }
 
-    /**
-     * Generate a cache key for the current context
-     */
-    generateCacheKey(character, chatHistory, template, style, intensity, direction) {
-        const charKey = `${character.name}-${character.create_date || 'unknown'}`;
-        const chatKey = chatHistory.length > 0 ?
-            `${chatHistory[chatHistory.length - 1].send_date || 'no-date'}` :
-            'empty';
-        const dirKey = direction ? `-${direction}` : '';
-        return `${charKey}-${chatKey}-${template}-${style}-${intensity}${dirKey}`;
-    }
 
     /**
      * Get a compelling fallback context when generation fails
@@ -602,17 +576,9 @@ export class PlotEngine {
     }
 
     /**
-     * Clear the cache
-     */
-    clearCache() {
-        this.cache.clear();
-        console.log(`[machinor-roundtable] Cache cleared`);
-    }
-
-    /**
-     * Get cache size for debugging
+     * No cache system - this method is kept for compatibility but always returns 0
      */
     getCacheSize() {
-        return this.cache.size;
+        return 0;
     }
 }

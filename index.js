@@ -341,12 +341,13 @@ let narrativeArc = null;
 
 /**
  * Default settings for the extension
- * Now simplified: only inject when user generates (no frequency logic)
+ * Updated with frequency setting for turn-based generation
  */
 const defaultSettings = {
     enabled: false,
     debugMode: false,
     currentTemplate: "universal-development",
+    frequency: 3, // Generate plot every N turns (1 = every turn)
     // Cross-device synced injection history
     chatHistories: {} // { [chatId]: [{text, timestamp, character, style, intensity}] }
 };
@@ -435,9 +436,10 @@ function loadSettings() {
         Object.assign(extension_settings[extensionName], defaultSettings);
     }
     
-    // Update UI elements
+    // Update UI elements (added frequency setting, removed old countdown settings)
     $("#mr_enabled").prop("checked", extension_settings[extensionName].enabled);
     $("#mr_debug").prop("checked", extension_settings[extensionName].debugMode);
+    $("#mr_frequency").val(extension_settings[extensionName].frequency || 3);
     $("#mr_history_limit").val(extension_settings[extensionName].historyLimit || 5);
     $("#mr_plot_style").val(extension_settings[extensionName].plotStyle || 'natural');
     $("#mr_plot_intensity").val(extension_settings[extensionName].plotIntensity || 'moderate');
@@ -452,22 +454,22 @@ function bindEvents() {
     const elements = {
         mr_enabled: $("#mr_enabled"),
         mr_debug: $("#mr_debug"),
+        mr_frequency: $("#mr_frequency"),
         mr_history_limit: $("#mr_history_limit"),
         mr_plot_style: $("#mr_plot_style"),
         mr_plot_intensity: $("#mr_plot_intensity"),
         mr_manual_trigger: $("#mr_manual_trigger"),
-        mr_clear_cache: $("#mr_clear_cache"),
         mr_reset_settings: $("#mr_reset_settings")
     };
     
     console.log(`[${extensionName}] Elements found:`, {
         mr_enabled: elements.mr_enabled.length,
         mr_debug: elements.mr_debug.length,
+        mr_frequency: elements.mr_frequency.length,
         mr_history_limit: elements.mr_history_limit.length,
         mr_plot_style: elements.mr_plot_style.length,
         mr_plot_intensity: elements.mr_plot_intensity.length,
         mr_manual_trigger: elements.mr_manual_trigger.length,
-        mr_clear_cache: elements.mr_clear_cache.length,
         mr_reset_settings: elements.mr_reset_settings.length
     });
     
@@ -485,6 +487,14 @@ function bindEvents() {
         console.log(`[${extensionName}] Bound mr_debug event`);
     } else {
         console.error(`[${extensionName}] mr_debug element not found!`);
+    }
+    
+    // Frequency input
+    if (elements.mr_frequency.length > 0) {
+        elements.mr_frequency.on("input", onFrequencyChange);
+        console.log(`[${extensionName}] Bound mr_frequency event`);
+    } else {
+        console.error(`[${extensionName}] mr_frequency element not found!`);
     }
     
     // History limit input
@@ -517,14 +527,6 @@ function bindEvents() {
         console.log(`[${extensionName}] Bound mr_manual_trigger event`);
     } else {
         console.error(`[${extensionName}] mr_manual_trigger element not found!`);
-    }
-    
-    // Clear cache button
-    if (elements.mr_clear_cache.length > 0) {
-        elements.mr_clear_cache.on("click", onClearCache);
-        console.log(`[${extensionName}] Bound mr_clear_cache event`);
-    } else {
-        console.error(`[${extensionName}] mr_clear_cache element not found!`);
     }
     
     // Reset settings button
@@ -574,6 +576,15 @@ function onPlotStyleChange(event) {
     console.log(`[${extensionName}] Plot style set to:`, value);
 }
 
+function onFrequencyChange(event) {
+    const value = parseInt($(event.target).val()) || 3;
+    extension_settings[extensionName].frequency = value;
+    // CRITICAL FIX: Update global reference to maintain consistency
+    window.extension_settings = extension_settings;
+    saveSettingsDebounced();
+    console.log(`[${extensionName}] Frequency set to:`, value);
+}
+
 function onPlotIntensityChange(event) {
     const value = $(event.target).val() || 'moderate';
     extension_settings[extensionName].plotIntensity = value;
@@ -581,24 +592,6 @@ function onPlotIntensityChange(event) {
     window.extension_settings = extension_settings;
     saveSettingsDebounced();
     console.log(`[${extensionName}] Plot intensity set to:`, value);
-}
-
-function onClearCache() {
-    console.log(`[${extensionName}] Clear cache button clicked`);
-    
-    if (!plotEngine) {
-        console.log(`[${extensionName}] Plot engine not initialized`);
-        // @ts-ignore - toastr is a global library
-        toastr.error("Extension not fully initialized", "Machinor Roundtable");
-        return;
-    }
-    
-    plotEngine.clearCache();
-    updateStatusDisplay();
-    
-    // @ts-ignore - toastr is a global library
-    toastr.info("Plot cache cleared", "Machinor Roundtable");
-    console.log(`[${extensionName}] Cache cleared successfully`);
 }
 
 function onResetSettings() {
@@ -623,12 +616,6 @@ function onResetSettings() {
 }
 
 function updateStatusDisplay() {
-    if (plotEngine) {
-        const cacheSize = plotEngine.getCacheSize();
-        $("#mr_cache_size").text(cacheSize);
-        console.log(`[${extensionName}] Updated cache size display:`, cacheSize);
-    }
-    
     const plotCount = extension_settings[extensionName].plotCount || 0;
     $("#mr_plot_count").text(plotCount);
     console.log(`[${extensionName}] Updated plot count display:`, plotCount);
@@ -663,7 +650,6 @@ async function generateAndDisplayPlot() {
         // CRITICAL FIX: Set pending status first to show "Generating..." during async operation
         if (plotPreview && typeof plotPreview.updateStatus === 'function') {
             plotPreview.updateStatus('pending');
-            plotPreview.clearAutoApproveTimer(); // Prevent auto-inject during generation
             debugLog("✅ Set pending status for plot generation");
         } else {
             debugLog("⚠️ plotPreview not available for status update");

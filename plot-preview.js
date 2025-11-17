@@ -78,10 +78,6 @@ export class PlotPreviewManager {
         this.chatInjector = chatInjector;
         /** @type {boolean} */
         this.isCollapsed = true;
-        /** @type {number|null} */
-        this.autoApproveTimer = null;
-        /** @type {number} */
-        this.autoApproveTimeout = 5000; // Default 5 seconds
         /** @type {string|null} */
         this.currentPlot = null;
         /** @type {string|null} */
@@ -94,8 +90,6 @@ export class PlotPreviewManager {
         this.recentDirections = [];
         /** @type {number} */
         this.maxRecentDirections = 10;
-        /** @type {boolean} */
-        this.isPaused = false;
         /** @type {boolean} */
         this.isManualEntry = false;
         /** @type {boolean} */
@@ -145,8 +139,6 @@ export class PlotPreviewManager {
         this.previouslyFocusedElement = null;
         /** @type {string} */
         this.originalBodyOverflow = '';
-        /** @type {number|null} */
-        this.mobileHideTimeout = null;
         
         this.bindEvents();
         this.loadSettings();
@@ -308,7 +300,6 @@ export class PlotPreviewManager {
             
             // Settings and preferences
             recentDirections: this.recentDirections,
-            autoApproveTimeout: this.autoApproveTimeout,
             sidebarCollapsed: this.isCollapsed,
             
             // Story intelligence snapshot
@@ -596,7 +587,6 @@ export class PlotPreviewManager {
             toggleBtn: document.getElementById('mr_toggle_sidebar'),
             statusIndicator: document.getElementById('mr_status_indicator'),
             statusText: document.getElementById('mr_status_text'),
-            timerDisplay: document.getElementById('mr_approval_timer'),
             currentPlotText: document.getElementById('mr_current_plot_text'),
             nextPlotText: document.getElementById('mr_next_plot_text'),
             directionInput: /** @type {HTMLInputElement} */ (document.getElementById('mr_plot_direction')),
@@ -639,7 +629,7 @@ export class PlotPreviewManager {
             elements.sidebar.setAttribute('aria-label', 'Machinor Roundtable plot preview');
         }
  
-        // Validate all elements exist
+        // Validate all elements exist (removed timerDisplay from validation)
         for (const [key, element] of Object.entries(elements)) {
             if (!element) {
                 console.warn(`[machinor-roundtable] Element not found: ${key}`);
@@ -825,7 +815,6 @@ export class PlotPreviewManager {
         // Plot actions
         const editBtn = document.getElementById('mr_edit_plot');
         const skipBtn = document.getElementById('mr_skip_plot');
-        const pauseBtn = document.getElementById('mr_pause_plot');
         const regenerateBtn = document.getElementById('mr_regenerate_next');
         const manualBtn = document.getElementById('mr_manual_plot_btn');
         const saveBtn = document.getElementById('mr_save_plot');
@@ -833,7 +822,6 @@ export class PlotPreviewManager {
         
         if (editBtn) editBtn.addEventListener('click', () => this.editPlot());
         if (skipBtn) skipBtn.addEventListener('click', () => this.skipPlot());
-        if (pauseBtn) pauseBtn.addEventListener('click', () => this.togglePause());
         if (regenerateBtn) regenerateBtn.addEventListener('click', () => this.regenerateNextPlot());
         if (manualBtn) manualBtn.addEventListener('click', () => this.manualPlotEntry());
         
@@ -1297,7 +1285,6 @@ export class PlotPreviewManager {
         
         const settings = context.extension_settings.machinor_roundtable;
         
-        this.autoApproveTimeout = settings.approvalTimeout || 5000;
         this.historyLimit = settings.historyLimit || 5;
         this.recentDirections = settings.recentDirections || [];
         this.isCollapsed = settings.sidebarCollapsed !== false; // Default to collapsed
@@ -1310,7 +1297,7 @@ export class PlotPreviewManager {
             this.elements.sidebar.classList.add('collapsed');
         }
         
-        console.log('[machinor-roundtable] Plot Preview settings loaded');
+        console.log('[machinor-roundtable] Plot Preview settings loaded (removed auto-approve timeout)');
     }
 
     /**
@@ -1331,13 +1318,12 @@ export class PlotPreviewManager {
         
         const settings = context.extension_settings.machinor_roundtable;
         
-        settings.approvalTimeout = this.autoApproveTimeout;
         settings.historyLimit = this.historyLimit;
         settings.recentDirections = this.recentDirections;
         settings.sidebarCollapsed = this.isCollapsed;
         
         saveSettingsDebounced();
-        console.log('[machinor-roundtable] Plot Preview settings saved');
+        console.log('[machinor-roundtable] Plot Preview settings saved (removed auto-approve timeout)');
     }
 
     /**
@@ -1396,11 +1382,6 @@ export class PlotPreviewManager {
         
         this.updateStatus(status);
         
-        // Start auto-approve timer if ready and not paused
-        if (status === 'ready' && !this.isPaused) {
-            this.startAutoApproveTimer();
-        }
-        
         // Save to persistent storage
         this.savePlotToStorage(plotText, status);
         
@@ -1432,11 +1413,10 @@ export class PlotPreviewManager {
             this.elements.statusIndicator.classList.add(status);
         }
         
-        // Update status text
+        // Update status text (removed paused state)
         const statusTexts = {
             ready: 'Ready',
             pending: 'Generating...',
-            paused: 'Paused',
             injected: 'Injected'
         };
         
@@ -1448,55 +1428,7 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Start auto-approve countdown timer
-     */
-    startAutoApproveTimer() {
-        this.clearAutoApproveTimer();
-        
-        let timeLeft = Math.ceil(this.autoApproveTimeout / 1000);
-        this.updateTimerDisplay(timeLeft);
-        
-        this.autoApproveTimer = window.setInterval(() => {
-            timeLeft--;
-            this.updateTimerDisplay(timeLeft);
-            
-            if (timeLeft <= 0) {
-                this.clearAutoApproveTimer();
-                this.approveAndInject();
-            }
-        }, 1000);
-        
-        console.log('[machinor-roundtable] Auto-approve timer started');
-    }
-
-    /**
-     * Clear auto-approve timer
-     */
-    clearAutoApproveTimer() {
-        if (this.autoApproveTimer) {
-            clearInterval(this.autoApproveTimer);
-            this.autoApproveTimer = null;
-            this.updateTimerDisplay('');
-            console.log('[machinor-roundtable] Auto-approve timer cleared');
-        }
-    }
-
-    /**
-     * Update timer display
-     * @param {number|string} seconds - Seconds remaining or empty string
-     */
-    updateTimerDisplay(seconds) {
-        if (!this.elements.timerDisplay) return;
-        
-        if (typeof seconds === 'number' && seconds > 0) {
-            this.elements.timerDisplay.textContent = `Auto-inject in ${seconds}s`;
-        } else {
-            this.elements.timerDisplay.textContent = '';
-        }
-    }
-
-    /**
-     * Approve current plot and inject it
+     * Approve current plot and prepare for injection
      */
     async approveAndInject() {
         if (!this.currentPlot) {
@@ -1505,7 +1437,6 @@ export class PlotPreviewManager {
         }
         
         this.updateStatus('injected');
-        this.clearAutoApproveTimer();
         
         // Add to history (only if not editing an existing plot)
         if (!this.isEditingPlot || !this.editingPlotId) {
@@ -1564,7 +1495,6 @@ export class PlotPreviewManager {
      * Skip current plot and generate new one
      */
     skipPlot() {
-        this.clearAutoApproveTimer();
         this.currentPlot = null;
         
         if (this.elements.currentPlotText) {
@@ -1579,35 +1509,6 @@ export class PlotPreviewManager {
         // @ts-ignore - toastr is a global library
         toastr.info('Plot skipped, generating new one...', 'Machinor Roundtable');
         console.log('[machinor-roundtable] Plot skipped');
-    }
-
-    /**
-     * Toggle pause/resume auto-injection
-     */
-    togglePause() {
-        this.isPaused = !this.isPaused;
-        const pauseBtn = document.getElementById('mr_pause_plot');
-        
-        if (pauseBtn) {
-            const icon = pauseBtn.querySelector('i');
-            
-            if (this.isPaused) {
-                this.clearAutoApproveTimer();
-                this.updateStatus('paused');
-                if (icon) icon.className = 'fa-solid fa-play';
-                pauseBtn.title = 'Resume Auto-Inject';
-                // @ts-ignore - toastr is a global library
-                toastr.info('Auto-injection paused', 'Machinor Roundtable');
-            } else {
-                this.updateStatus('ready');
-                if (icon) icon.className = 'fa-solid fa-pause';
-                pauseBtn.title = 'Pause Auto-Inject';
-                // @ts-ignore - toastr is a global library
-                toastr.info('Auto-injection resumed', 'Machinor Roundtable');
-            }
-        }
-        
-        console.log('[machinor-roundtable] Pause toggled:', this.isPaused);
     }
 
     /**
@@ -1948,7 +1849,6 @@ export class PlotPreviewManager {
         
         // CRITICAL FIX: Show "Generating..." status during plot creation
         this.updateStatus('pending');
-        this.clearAutoApproveTimer(); // Prevent auto-inject during generation
         
         try {
             // Use the imported helper functions
@@ -1989,7 +1889,6 @@ export class PlotPreviewManager {
         
         // CRITICAL FIX: Show "Generating..." status during plot creation
         this.updateStatus('pending');
-        this.clearAutoApproveTimer(); // Prevent auto-inject during generation
         
         try {
             // Use the imported helper functions
@@ -2136,12 +2035,10 @@ export class PlotPreviewManager {
     getStatus() {
         return {
             isCollapsed: this.isCollapsed,
-            isPaused: this.isPaused,
             currentPlot: this.currentPlot,
             nextPlot: this.nextPlot,
             historyCount: this.plotHistory.length,
-            recentDirectionsCount: this.recentDirections.length,
-            autoApproveTimeout: this.autoApproveTimeout
+            recentDirectionsCount: this.recentDirections.length
         };
     }
 
