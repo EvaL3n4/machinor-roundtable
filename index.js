@@ -129,8 +129,12 @@ class MachinorCore {
      * Handle chat ready event
      */
     onChatReady(context) {
+        console.log(`[${extensionName}] onChatReady triggered`);
         if (this.components.chatInjector) {
+            console.log(`[${extensionName}] Calling chatInjector.initialize()`);
             this.components.chatInjector.initialize();
+        } else {
+            console.error(`[${extensionName}] chatInjector component missing!`);
         }
         if (this.components.plotPreview) {
             this.components.plotPreview.deferredInit();
@@ -141,11 +145,14 @@ class MachinorCore {
      * Load settings from SillyTavern storage
      */
     loadSettings() {
+        console.log(`[${extensionName}] Loading settings...`);
         extension_settings[extensionName] = extension_settings[extensionName] || {};
         if (Object.keys(extension_settings[extensionName]).length === 0) {
+            console.log(`[${extensionName}] Initializing default settings`);
             Object.assign(extension_settings[extensionName], defaultSettings);
         }
         this.settings = extension_settings[extensionName];
+        console.log(`[${extensionName}] Settings loaded:`, this.settings);
         this.updateSettingsUI();
     }
 
@@ -330,7 +337,8 @@ window.clearCurrentChatHistory = () => {
 
 // Initialize
 jQuery(async () => {
-    const core = new MachinorCore();
-    window.machinorRoundtable = core;
-    await core.initialize();
+    // Initialize
+    const machinorCore = new MachinorCore();
+    window.machinorRoundtable = machinorCore; // Expose globally
+    await machinorCore.initialize();
 });
