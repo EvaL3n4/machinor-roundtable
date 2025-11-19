@@ -19,57 +19,86 @@ function debugLog(message, data = null) {
 }
 
 export class ChatInjector {
-    constructor(plotEngine, plotPreview = null) {
+    constructor(plotEngine, plotPreview = null, stIntegration = null) {
         this.plotEngine = plotEngine;
         this.plotPreview = plotPreview;
+        this.stIntegration = stIntegration;
         this.isProcessing = false;
         this.turnCounter = 0;
         this.lastGenerationTurn = 0;
+        this.initializationTimestamp = null; // Track when initialization occurs
     }
 
     /**
      * Initialize the injection system
-     * Simple setup - just listens for generation events
+     * Just listens for generation events
      */
     initialize() {
         console.log('[machinor-roundtable] 🔧 Initializing simple plot injection system');
-        
+
+        // Record initialization timestamp for grace period check
+        this.initializationTimestamp = Date.now();
+
         // Check if eventSource and event_types are available
         if (!eventSource || !event_types) {
             console.error('[machinor-roundtable] ❌ eventSource or event_types not available');
             return;
         }
-        
-        // Listen for the generation event - this is when user is sending a prompt
+
+        // Listen for the generation event
         eventSource.on(event_types.GENERATE_BEFORE_COMBINE_PROMPTS, this.handleGenerationEvent.bind(this));
-        
-        console.log('[machinor-roundtable] ✅ Simple injection system initialized - will inject on every generation');
+
+        console.log('[machinor-roundtable] ✅ Simple injection system initialized');
         console.log('[machinor-roundtable] Event listener bound to:', event_types.GENERATE_BEFORE_COMBINE_PROMPTS);
     }
 
     /**
-     * Handle generation event - implements frequency-based plot generation
+     * Handle generation event
      */
     async handleGenerationEvent(data) {
         const context = getContext();
         const settings = window.extension_settings?.['machinor-roundtable'];
-        
-        console.log('[machinor-roundtable] 🎯 Generation event received - checking if injection should occur');
-        
+
+        // CRITICAL FIX: Grace period check - skip processing for 2 seconds after initialization
+        // This prevents interference with SillyTavern's initial save and setup operations
+        if (this.initializationTimestamp) {
+            const timeSinceInit = Date.now() - this.initializationTimestamp;
+            const GRACE_PERIOD_MS = 2000; // 2 seconds
+
+            if (timeSinceInit < GRACE_PERIOD_MS) {
+                console.log(`[machinor-roundtable] ⏳ Grace period active (${timeSinceInit}ms / ${GRACE_PERIOD_MS}ms) - skipping to allow ST startup to complete`);
+                return;
+            }
+        }
+
+        // CRITICAL FIX: Never inject during dry runs (causes chat integrity errors)
+        if (data?.dryRun === true) {
+            console.log('[machinor-roundtable] 🚫 Skipping injection due to dry run');
+            return;
+        }
+
+        // CRITICAL FIX: Check if chat is fully ready
+        if (this.stIntegration && !this.stIntegration.isChatReady) {
+            console.log('[machinor-roundtable] ⏳ Chat not ready yet, skipping injection');
+            return;
+        }
+
+        console.log('[machinor-roundtable] 🎯 Generation event received. Checking for readiness...');
+
         const isRealUserGeneration = (
             data &&
             (data.prompt || data.messages || data.text) &&
             (data.prompt?.trim()?.length > 0 || data.messages?.length > 0 || data.text?.trim()?.length > 0)
         );
-        
+
         if (!isRealUserGeneration) {
             console.log('[machinor-roundtable] 🔍 Not a real user generation (likely chat loading), skipping injection');
             return;
         }
-        
-        console.log('[machinor-roundtable] ✅ Confirmed real user generation - proceeding with injection');
+
+        console.log('[machinor-roundtable] ✅ Confirmed real user generation');
         console.log('[machinor-roundtable] Settings check:', settings);
-        
+
         if (!settings?.enabled) {
             console.log('[machinor-roundtable] Extension disabled, skipping injection');
             return;
@@ -84,12 +113,12 @@ export class ChatInjector {
         this.turnCounter++;
         const frequency = settings.frequency || 3; // Default to every 3 turns
         const shouldGenerateNew = (this.turnCounter - this.lastGenerationTurn) >= frequency;
-        
+
         if (!shouldGenerateNew) {
-            console.log(`[machinor-roundtable] ⏭️ Skipping generation - only every ${frequency} turns (currently turn ${this.turnCounter})`);
+            console.log(`[machinor-roundtable] ⏭️ Skipping generation (only every ${frequency} turns, currently turn ${this.turnCounter})`);
             return;
         }
-        
+
         console.log(`[machinor-roundtable] 🎯 Generating new plot on turn ${this.turnCounter} (frequency: ${frequency})`);
 
         try {
@@ -104,7 +133,7 @@ export class ChatInjector {
 
             const chatHistory = this.getRecentChatHistory();
             console.log('[machinor-roundtable] Chat history length:', chatHistory.length);
-            
+
             console.log('[machinor-roundtable] Generating plot context...');
             let plotContext;
             try {
@@ -113,27 +142,27 @@ export class ChatInjector {
                 console.error('[machinor-roundtable] Failed to generate plot context:', error);
                 return;
             }
-            
+
             if (!plotContext || plotContext.trim() === '') {
                 console.error('[machinor-roundtable] Generated plot context is empty');
                 return;
             }
 
             console.log('[machinor-roundtable] Plot context generated, length:', plotContext.length);
-            
+
             // Update turn counter for last generation
             this.lastGenerationTurn = this.turnCounter;
-            
+
             const injectionSuccess = this.injectPlotContext(data, plotContext, settings.debugMode);
-            
+
             if (injectionSuccess) {
                 console.log('[machinor-roundtable] ✅ Plot context successfully injected');
-                
+
                 if (this.plotPreview && typeof this.plotPreview.displayCurrentPlot === 'function') {
                     this.plotPreview.displayCurrentPlot(plotContext, 'injected');
                     console.log('[machinor-roundtable] ✅ Plot preview updated');
                 }
-                
+
                 if (typeof window.addInjectionToHistory === 'function') {
                     window.addInjectionToHistory(plotContext, {
                         character: character?.name || 'Unknown Character',
@@ -145,10 +174,10 @@ export class ChatInjector {
             } else {
                 console.error('[machinor-roundtable] ❌ Plot context injection failed');
             }
-            
+
         } catch (error) {
             console.error('[machinor-roundtable] Failed to inject plot context:', error);
-            
+
             if (typeof toastr !== 'undefined') {
                 toastr.error(`Plot injection failed: ${error.message}`, 'Machinor Roundtable');
             }
@@ -174,18 +203,18 @@ export class ChatInjector {
                 hasCharacters: !!context.characters,
                 groupId: context.groupId
             });
-            
+
             // Check if we have a characterId and characters array
             if (context.characterId === undefined || !context.characters) {
                 console.log('[machinor-roundtable] getCurrentCharacter: No characterId or characters array');
                 return null;
             }
-            
+
             // Find the current character by ID (same method as index.js)
             const character = context.characters[context.characterId];
-            
+
             console.log('[machinor-roundtable] getCurrentCharacter:', character ? character.name : "No character found");
-            
+
             return character || null;
         } catch (error) {
             console.error('[machinor-roundtable] Error getting current character:', error);
@@ -199,7 +228,7 @@ export class ChatInjector {
     getRecentChatHistory() {
         const context = getContext();
         const chat = context.chat;
-        
+
         if (!chat || chat.length === 0) {
             return [];
         }
@@ -232,16 +261,16 @@ export class ChatInjector {
         if (data.prompt && typeof data.prompt === 'string') {
             const originalPrompt = data.prompt;
             data.prompt = `${plotContext}\n\n${data.prompt}`;
-            
+
             console.log(`[machinor-roundtable] ✅ Successfully injected into prompt field`);
             console.log(`[machinor-roundtable] Original prompt length: ${originalPrompt.length}`);
             console.log(`[machinor-roundtable] New prompt length: ${data.prompt.length}`);
             console.log(`[machinor-roundtable] Plot context added at the beginning`);
-            
+
             if (debugMode) {
                 this.showDebugNotification(`Injected ${plotContext.length} chars into prompt`);
             }
-            
+
             return true;
         }
 
@@ -252,52 +281,30 @@ export class ChatInjector {
                 content: plotContext
             };
             data.messages.unshift(systemMessage);
-            
+
             console.log(`[machinor-roundtable] ✅ Successfully injected as system message`);
             console.log(`[machinor-roundtable] Messages array length: ${data.messages.length}`);
-            
+
             if (debugMode) {
                 this.showDebugNotification(`Added system message with ${plotContext.length} chars`);
             }
-            
+
             return true;
         }
 
-        // Method 3: Handle chat-based structures
-        if (data.chat && typeof data.chat === 'object') {
-            // SillyTavern might use different data structures
-            if (data.chat.prompt) {
-                const originalPrompt = data.chat.prompt;
-                data.chat.prompt = `${plotContext}\n\n${data.chat.prompt}`;
-                
-                console.log(`[machinor-roundtable] ✅ Successfully injected into chat.prompt`);
-                return true;
-            }
-        }
+        // Method 3: Handle chat-based structures (REMOVED - RISKY)
+        // Previous implementation modified data.chat.prompt which could be the chat array
 
-        // Method 4: Last resort - try to modify data directly
-        if (typeof data === 'object' && data !== null) {
-            console.log('[machinor-roundtable] 🔄 Attempting direct data modification...');
-            
-            // Try common prompt fields
-            const promptFields = ['prompt', 'text', 'content', 'message'];
-            for (const field of promptFields) {
-                if (data[field] && typeof data[field] === 'string') {
-                    const originalValue = data[field];
-                    data[field] = `${plotContext}\n\n${data[field]}`;
-                    console.log(`[machinor-roundtable] ✅ Successfully injected into data.${field}`);
-                    return true;
-                }
-            }
-        }
+        // Method 4: Last resort (REMOVED - RISKY)
+        // Direct modification of unknown objects can cause serialization issues
 
-        console.error('[machinor-roundtable] ❌ Unable to inject plot context - no suitable data structure found');
-        console.error('[machinor-roundtable] Available data structure:', JSON.stringify(data, null, 2));
-        
+        console.warn('[machinor-roundtable] ⚠️ Unable to inject plot context - no suitable standard data structure found (prompt or messages)');
+        console.warn('[machinor-roundtable] Available keys:', Object.keys(data || {}));
+
         if (debugMode) {
-            this.showDebugNotification('Injection failed - no suitable data structure');
+            this.showDebugNotification('Injection failed - standard structures missing');
         }
-        
+
         return false; // Indicate failure
     }
 

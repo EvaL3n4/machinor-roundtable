@@ -4,62 +4,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* iOS Liquid Glass Design System - Pink Purple Theme */
-:root {
-    /* Core Pink Purple Palette */
-    --mr-bg-primary: #0a0a0a;
-    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
-    --mr-bg-glass: rgba(255, 192, 203, 0.08);
-    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
-    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
-    
-    /* Pink Purple Accent System */
-    --mr-accent-primary: #ff69b4;      /* Hot Pink */
-    --mr-accent-secondary: #da70d6;    /* Orchid */
-    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
-    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
-    
-    /* Liquid Glass Gradients */
-    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
-    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
-    --mr-header-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    
-    /* iOS Typography System */
-    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    --mr-text-primary: #f8f9fa;
-    --mr-text-secondary: #e9ecef;
-    --mr-text-tertiary: #dee2e6;
-    --mr-text-muted: #adb5bd;
-    --mr-text-accent: #ff69b4;
-    
-    /* iOS Liquid Glass Borders */
-    --mr-border-glass: rgba(255, 255, 255, 0.12);
-    --mr-border-pink: rgba(255, 105, 180, 0.2);
-    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
-    --mr-border-accent: rgba(218, 112, 214, 0.25);
-    
-    /* iOS Liquid Glass Shadows */
-    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
-    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
-    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
-    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
-    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
-    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
-    
-    /* iOS Radius Scale */
-    --mr-radius-lg: 20px;
-    --mr-radius-md: 16px;
-    --mr-radius-sm: 12px;
-    --mr-radius-xs: 8px;
-    --mr-radius-full: 50px;
-    
-    /* iOS Animation System */
-    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-mobile-drawer-transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
-}
+/* iOS Liquid Glass Design System - Inherits from style.css */
+/* :root variables are defined in style.css to ensure consistency */
 
 /* Premium iOS Liquid Glass Sidebar Container */
 .mr-plot-sidebar {
@@ -71,9 +17,7 @@
     max-height: 85vh;
     max-height: 85dvh;
     /* Premium iOS Liquid Glass Background */
-    background: linear-gradient(135deg,
-        rgba(255, 192, 203, 0.12) 0%,
-        rgba(255, 192, 203, 0.08) 100%);
+    background: var(--mr-bg-glass);
     backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
     -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
     border: none;
@@ -104,10 +48,10 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg,
-        rgba(255, 105, 180, 0.08) 0%,
-        rgba(218, 112, 214, 0.05) 25%,
-        rgba(186, 85, 211, 0.05) 50%,
-        rgba(25, 25, 35, 0.8) 100%);
+            rgba(255, 105, 180, 0.08) 0%,
+            rgba(218, 112, 214, 0.05) 25%,
+            rgba(186, 85, 211, 0.05) 50%,
+            rgba(25, 25, 35, 0.8) 100%);
     border-radius: 0 var(--mr-radius-lg) var(--mr-radius-lg) 0;
     pointer-events: none;
     z-index: -1;
@@ -121,7 +65,7 @@
     right: 0;
     bottom: 0;
     background: radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.08) 0%, transparent 50%);
+        radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.08) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
 }
@@ -167,8 +111,8 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.02) 0%,
-        rgba(255, 255, 255, 0.05) 100%);
+            rgba(255, 255, 255, 0.02) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
     pointer-events: none;
     border-radius: var(--mr-radius-md) var(--mr-radius-md) 0 0;
 }
@@ -226,6 +170,27 @@
         0 8px 25px rgba(255, 105, 180, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     overflow: hidden;
+}
+
+.mr-mobile-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    opacity: 0; /* Hidden initially to prevent flash */
+    font-size: 20px;
 }
 
 .mr-toggle-btn::before {
@@ -362,21 +327,25 @@
         transform: scale(1);
         opacity: 1;
     }
+
     25% {
         box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
         transform: scale(1.15);
         opacity: 0.9;
     }
+
     50% {
         box-shadow: 0 0 0 16px rgba(255, 255, 255, 0.05);
         transform: scale(1.25);
         opacity: 0.8;
     }
+
     70% {
         box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
         transform: scale(1.3);
         opacity: 0.7;
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
         transform: scale(1);
@@ -390,13 +359,16 @@
 }
 
 @keyframes mr-ready-glow {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px rgba(0, 255, 136, 0.4),
-                    0 0 40px rgba(0, 255, 136, 0.2);
+            0 0 40px rgba(0, 255, 136, 0.2);
     }
+
     50% {
         box-shadow: 0 0 30px rgba(0, 255, 136, 0.6),
-                    0 0 60px rgba(0, 255, 136, 0.3);
+            0 0 60px rgba(0, 255, 136, 0.3);
     }
 }
 
@@ -405,12 +377,15 @@
 }
 
 @keyframes mr-pending-shimmer {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
     }
+
     50% {
         box-shadow: 0 0 25px rgba(255, 149, 0, 0.7),
-                    0 0 35px rgba(255, 149, 0, 0.3);
+            0 0 35px rgba(255, 149, 0, 0.3);
     }
 }
 
@@ -419,10 +394,13 @@
 }
 
 @keyframes mr-paused-breathe {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px rgba(255, 59, 48, 0.4);
         transform: scale(1);
     }
+
     50% {
         box-shadow: 0 0 30px rgba(255, 59, 48, 0.6);
         transform: scale(1.05);
@@ -439,11 +417,13 @@
         opacity: 0;
         box-shadow: 0 0 0 0 rgba(255, 105, 180, 0);
     }
+
     50% {
         transform: scale(1.3);
         opacity: 1;
         box-shadow: 0 0 40px rgba(255, 105, 180, 0.8);
     }
+
     100% {
         transform: scale(1);
         opacity: 1;
@@ -583,16 +563,21 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.4) 50%, 
-        transparent 100%);
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            transparent 100%);
     animation: mr-shimmer-progress 2.5s infinite;
 }
 
 @keyframes mr-shimmer-progress {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .mr-arc-details {
@@ -1050,8 +1035,13 @@
 }
 
 @keyframes mr-fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .mr-modal-content {
@@ -1149,7 +1139,8 @@
 }
 
 /* iOS Liquid Glass Buttons */
-.mr-btn-primary, .mr-btn-secondary {
+.mr-btn-primary,
+.mr-btn-secondary {
     padding: 12px 24px;
     border: none;
     border-radius: var(--mr-radius-sm);
@@ -1166,7 +1157,8 @@
     overflow: hidden;
 }
 
-.mr-btn-primary::before, .mr-btn-secondary::before {
+.mr-btn-primary::before,
+.mr-btn-secondary::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1177,7 +1169,8 @@
     transition: left 0.5s ease;
 }
 
-.mr-btn-primary:hover::before, .mr-btn-secondary:hover::before {
+.mr-btn-primary:hover::before,
+.mr-btn-secondary:hover::before {
     left: 100%;
 }
 
@@ -1202,7 +1195,8 @@
     border-color: var(--mr-accent-primary);
 }
 
-.mr-btn-primary.full-width, .mr-btn-secondary.full-width {
+.mr-btn-primary.full-width,
+.mr-btn-secondary.full-width {
     width: 100%;
     margin-top: 12px;
 }
@@ -1393,10 +1387,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 105, 180, 0.08), 
-        transparent);
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 105, 180, 0.08),
+            transparent);
     transition: left 0.6s ease;
 }
 
@@ -1470,10 +1464,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.2), 
-        transparent);
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
     transition: left 0.5s ease;
 }
 
@@ -1498,59 +1492,63 @@
 }
 
 @keyframes mr-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-/* Mobile Responsive - Complete iOS Liquid Glass Redesign */
-@media (max-width: 600px) {
-    /* iOS Liquid Glass Mobile Modal Container */
+/* Mobile Responsive - iOS Bottom Sheet Redesign */
+@media (max-width: 768px) {
+
+    /* iOS Bottom Sheet Container */
     .mr-plot-sidebar {
         position: fixed !important;
-        top: 0 !important;
+        top: 15dvh !important;
+        /* Anchor to top for stability */
         left: 0 !important;
         right: 0 !important;
-        bottom: 0 !important;
-        transform: none !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: 85dvh !important;
+        /* Dynamic viewport height */
+        max-height: 85vh !important;
+        /* Fallback */
         border: none !important;
-        border-radius: 0 !important;
-        
+        border-radius: 24px 24px 0 0 !important;
+
         /* Center the modal content properly */
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-start !important;
         align-items: stretch !important;
-        
+
         /* Authentic iOS Liquid Glass Background */
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.05) 0%,
-                rgba(218, 112, 214, 0.05) 20%,
-                rgba(186, 85, 211, 0.05) 40%,
-                rgba(25, 25, 35, 0.9) 100%);
-        backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-        -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-        
-        /* iOS Shadows and Elevation */
+        background: rgba(30, 30, 40, 0.9) !important;
+        backdrop-filter: blur(50px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(50px) saturate(180%) !important;
+
+        /* iOS Shadows */
         box-shadow:
-            0 25px 50px -12px rgba(255, 105, 180, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        
+            0 -10px 40px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.1);
+
         overscroll-behavior: contain;
-        z-index: 3602;
-        
-        /* iOS Modal Animation States */
+        z-index: 9999 !important;
+        /* Ensure it's on top of everything */
+
+        /* iOS Sheet Animation States */
         opacity: 0 !important;
-        transform: translateY(100vh) scale(0.95);
+        transform: translateY(100%) !important;
         pointer-events: none;
-        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s ease;
+        will-change: transform, opacity;
+
         /* iOS Safe Area Support */
-        padding-top: max(env(safe-area-inset-top), 20px);
+        padding-top: 0;
         padding-right: max(env(safe-area-inset-right), 16px);
         padding-bottom: max(env(safe-area-inset-bottom), 20px);
         padding-left: max(env(safe-area-inset-left), 16px);
@@ -1561,11 +1559,11 @@
         z-index: 5000 !important;
         padding: 20px;
         box-sizing: border-box;
-        background: rgba(0, 0, 0, 0.8) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
     }
-    
+
     .mr-modal-content {
         position: relative !important;
         top: auto !important;
@@ -1573,57 +1571,50 @@
         transform: none !important;
         width: 100% !important;
         max-width: none !important;
-        margin: 0 !important;
+        margin: auto !important;
         border-radius: 20px;
-        max-height: calc(100vh - 40px) !important;
+        max-height: 80vh !important;
         overflow-y: auto !important;
-        
+
         /* iOS Liquid Glass for mobile modal */
-        background: linear-gradient(135deg,
-            rgba(255, 192, 203, 0.15) 0%,
-            rgba(255, 192, 203, 0.08) 100%);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow:
-            0 20px 60px rgba(255, 105, 180, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        background: rgba(40, 40, 50, 0.9) !important;
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
     }
-    
+
     .mr-modal-body {
         padding: 20px !important;
-        max-height: calc(100vh - 200px) !important;
+        max-height: 50vh !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
     }
-    
+
     .mr-modal-body textarea {
-        min-height: 200px !important;
-        max-height: calc(100vh - 300px) !important;
-        font-size: 16px !important; /* Prevents zoom on iOS */
+        min-height: 150px !important;
+        max-height: none !important;
+        font-size: 16px !important;
+        /* Prevents zoom on iOS */
         padding: 16px !important;
+        background: rgba(0, 0, 0, 0.2) !important;
     }
 
-    /* iOS Modal Visible State */
+    /* iOS Sheet Visible State */
     .mr-plot-sidebar.mobile-visible {
         opacity: 1 !important;
-        transform: translateY(0) scale(1);
+        transform: translateY(0) !important;
         pointer-events: auto;
-        animation: iosModalAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        
-        /* Subtle hardware acceleration that doesn't interfere with animations */
-        will-change: opacity, transform;
     }
 
-    /* iOS Modal Hidden State */
+    /* iOS Sheet Hidden State */
     .mr-plot-sidebar.mobile-hidden {
         opacity: 0 !important;
-        transform: translateY(100vh) scale(0.95);
+        transform: translateY(100%) !important;
         pointer-events: none;
-        animation: iosModalDisappear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
-    /* iOS Modal Content Container */
+    /* iOS Sheet Content Container */
     .mr-plot-sidebar.mobile-visible .mr-sidebar-content {
         opacity: 1 !important;
         pointer-events: auto !important;
@@ -1637,33 +1628,27 @@
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 16px 16px 40px 16px !important;
+        padding: 0 20px 40px 20px !important;
         gap: 16px;
         align-items: stretch;
         width: 100% !important;
         box-sizing: border-box;
-        
-        /* Fix ghosting during transitions */
-        backface-visibility: hidden !important;
-        -webkit-backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
-        will-change: opacity, transform !important;
     }
 
     /* iOS Action Button Layout */
     .mr-plot-actions {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 10px;
         margin-bottom: 20px;
     }
 
     .mr-action-btn {
-        min-height: 44px;
+        min-height: 48px;
         min-width: 80px;
-        max-width: 120px;
         flex: 1 1 auto;
-        padding: 12px 14px;
-        font-size: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: 14px;
     }
 
     /* Hide Desktop Toggle Button */
@@ -1671,33 +1656,27 @@
         display: none !important;
     }
 
-    /* iOS Liquid Glass Header */
+    /* iOS Liquid Glass Header - Drag Handle Style */
     .mr-sidebar-header {
-        padding: 24px 20px 20px 20px !important;
+        padding: 24px 20px 16px 20px !important;
         padding-right: 60px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.15) 0%,
-                rgba(218, 112, 214, 0.15) 50%,
-                rgba(186, 85, 211, 0.15) 100%);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-radius: 20px 20px 0 0;
-        margin: -16px -20px 20px -20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         position: relative;
+        flex-shrink: 0;
     }
 
+    /* Drag Handle Indicator */
     .mr-sidebar-header::before {
         content: '';
         position: absolute;
-        top: 8px;
+        top: 10px;
         left: 50%;
         transform: translateX(-50%);
-        width: 36px;
+        width: 40px;
         height: 5px;
         background: rgba(255, 255, 255, 0.3);
-        border-radius: 2.5px;
+        border-radius: 3px;
     }
 
     /* iOS Liquid Glass Close Button */
@@ -1706,146 +1685,53 @@
         align-items: center;
         justify-content: center;
         position: absolute;
-        top: 28px;
+        top: 20px;
         right: 20px;
-        width: 44px !important;
-        height: 44px !important;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: 36px !important;
+        height: 36px !important;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: none;
         border-radius: 50%;
-        color: white;
-        font-size: 18px;
-        font-weight: 300;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 16px;
         cursor: pointer;
         z-index: 10;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        box-shadow: 0 4px 16px rgba(255, 105, 180, 0.2);
+        transition: background 0.2s;
     }
 
     .mr-mobile-close-btn:active {
-        transform: scale(0.95);
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+        background: rgba(255, 255, 255, 0.2);
     }
 
     /* iOS Enhanced Advanced Section */
     .mr-advanced-section {
         flex-shrink: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border-radius: 16px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 255, 255, 0.08) 0%,
-                rgba(255, 255, 255, 0.05) 100%);
-        backdrop-filter: blur(25px) saturate(200%);
-        -webkit-backdrop-filter: blur(25px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow:
-            0 8px 32px rgba(255, 105, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        width: 100% !important;
-        max-width: none !important;
-        position: relative;
-    }
-
-    /* iOS Advanced Header Touch Target */
-    .mr-advanced-header {
-        min-height: 44px !important;
-        padding: 16px 20px !important;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0.02) 0%,
-            rgba(255, 255, 255, 0.05) 100%);
-        position: relative;
-    }
-
-    .mr-advanced-header:active {
-        background: rgba(255, 105, 180, 0.1);
-        transform: scale(0.98);
-    }
-
-    /* iOS Advanced Toggle Button */
-    .mr-advanced-toggle {
-        min-width: 44px !important;
-        min-height: 44px !important;
-        width: 44px !important;
-        height: 44px !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        cursor: pointer;
-    }
-
-    .mr-advanced-toggle:active {
-        transform: scale(0.92);
-        background: rgba(255, 105, 180, 0.2);
-        border-color: rgba(255, 105, 180, 0.3);
-    }
-
-    .mr-advanced-toggle i {
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    /* iOS Enhanced Advanced Section - Simple Box Layout */
-    .mr-advanced-section {
-        flex-shrink: 0 !important;
         margin: 16px 0 !important;
         padding: 16px !important;
-        border-radius: 16px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 192, 203, 0.12) 0%,
-                rgba(255, 192, 203, 0.08) 100%);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow:
-            0 8px 25px rgba(255, 105, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-radius: 18px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         width: 100% !important;
         max-width: none !important;
         box-sizing: border-box;
-        position: relative;
     }
-    
+
     /* iOS Section Header */
     .mr-section-header {
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
-    
+
     .mr-section-header h4 {
         margin: 0;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        color: var(--mr-text-primary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: var(--mr-font-family);
-    }
-    
-    .mr-section-header h4::before {
-        font-size: 16px;
-    }
-    
-    .mr-section-header h4 i {
-        color: var(--mr-accent-primary);
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 }
 
@@ -1855,10 +1741,12 @@
         opacity: 0;
         transform: translateY(100vh) scale(0.95);
     }
+
     60% {
         opacity: 1;
         transform: translateY(-10px) scale(1.02);
     }
+
     100% {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -1870,10 +1758,12 @@
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+
     40% {
         opacity: 0.8;
         transform: translateY(-5px) scale(0.98);
     }
+
     100% {
         opacity: 0;
         transform: translateY(100vh) scale(0.95);
@@ -2013,7 +1903,7 @@
         pointer-events: none;
         transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 3601;
-        
+
         /* iOS-style animation states */
         transform: scale(1.1);
     }
@@ -2216,10 +2106,12 @@
         opacity: 0;
         transform: scale(1.1);
     }
+
     60% {
         opacity: 0.8;
         transform: scale(1.02);
     }
+
     100% {
         opacity: 1;
         transform: scale(1);
@@ -2231,10 +2123,12 @@
         opacity: 1;
         transform: scale(1);
     }
+
     40% {
         opacity: 0.7;
         transform: scale(1.05);
     }
+
     100% {
         opacity: 0;
         transform: scale(1.1);
@@ -2249,7 +2143,7 @@
     transform: none !important;
 }
 
-.mr-mobile-portal > * {
+.mr-mobile-portal>* {
     pointer-events: auto;
     transform: none !important;
 }
@@ -2281,6 +2175,7 @@
         font-size: 11px;
     }
 }
+
 /* Seamless Advanced Section - Matches Plot Preview Container */
 .mr-advanced-section {
     margin-bottom: 24px;
@@ -2359,7 +2254,8 @@
 
 /* Advanced Header - Integrated without Hard Borders */
 .mr-advanced-header {
-    display: none; /* Hide the old advanced header completely */
+    display: none;
+    /* Hide the old advanced header completely */
 }
 
 .mr-advanced-toggle {
@@ -2413,6 +2309,7 @@
 
 /* Mobile Seamless Advanced Options - Natural Flow */
 @media (max-width: 768px) {
+
     /* Mobile Advanced Section - Match plot container */
     .mr-advanced-section {
         margin-bottom: 24px;
@@ -2694,9 +2591,19 @@
 }
 
 @keyframes mr-shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
 }
 
 /* Seamless Quick Actions - Natural Flow */

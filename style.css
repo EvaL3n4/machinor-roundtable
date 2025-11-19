@@ -5,57 +5,62 @@
 
 /* iOS Liquid Glass Design System - Pink Purple Theme - Base */
 :root {
-    /* Core Pink Purple Palette */
-    --mr-bg-primary: #0a0a0a;
-    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
-    --mr-bg-glass: rgba(255, 192, 203, 0.08);
-    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
-    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
-    
-    /* Pink Purple Accent System */
-    --mr-accent-primary: #ff69b4;      /* Hot Pink */
-    --mr-accent-secondary: #da70d6;    /* Orchid */
-    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
-    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
-    
-    /* Liquid Glass Gradients */
-    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
-    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
-    
-    /* iOS Typography System */
-    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    --mr-text-primary: #f8f9fa;
-    --mr-text-secondary: #e9ecef;
-    --mr-text-tertiary: #dee2e6;
-    --mr-text-muted: #adb5bd;
-    --mr-text-accent: #ff69b4;
-    
-    /* iOS Liquid Glass Borders */
-    --mr-border-glass: rgba(255, 255, 255, 0.12);
-    --mr-border-pink: rgba(255, 105, 180, 0.2);
-    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
-    --mr-border-accent: rgba(218, 112, 214, 0.25);
-    
-    /* iOS Liquid Glass Shadows */
-    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
-    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
-    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
-    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
-    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
-    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
-    
-    /* iOS Radius Scale */
-    --mr-radius-lg: 20px;
-    --mr-radius-md: 16px;
-    --mr-radius-sm: 12px;
-    --mr-radius-xs: 8px;
-    
-    /* iOS Animation System */
-    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Core Modern Dark Palette */
+    --mr-bg-primary: #121212;
+    --mr-bg-secondary: #1e1e1e;
+    --mr-bg-tertiary: #252525;
+
+    /* Modern Glass System - Cleaner, Darker */
+    --mr-bg-glass: rgba(30, 30, 35, 0.85);
+    --mr-bg-glass-strong: rgba(30, 30, 35, 0.95);
+    --mr-bg-glass-elevated: rgba(40, 40, 45, 0.9);
+
+    /* Modern Accent System - Cyan/Teal */
+    --mr-accent-primary: #00bcd4;
+    /* Cyan */
+    --mr-accent-secondary: #0097a7;
+    /* Dark Cyan */
+    --mr-accent-tertiary: #00838f;
+    /* Deep Cyan */
+    --mr-accent-quaternary: #006064;
+    /* Darkest Cyan */
+
+    /* Modern Gradients */
+    --mr-accent-gradient: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+    --mr-accent-soft: linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(0, 151, 167, 0.1));
+    --mr-accent-glow: linear-gradient(135deg, rgba(0, 188, 212, 0.2), rgba(0, 151, 167, 0.2));
+
+    /* Modern Typography System */
+    --mr-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mr-text-primary: #ffffff;
+    --mr-text-secondary: #b0b0b0;
+    --mr-text-tertiary: #808080;
+    --mr-text-muted: #606060;
+    --mr-text-accent: #00bcd4;
+
+    /* Modern Borders */
+    --mr-border-glass: rgba(255, 255, 255, 0.08);
+    --mr-border-accent: rgba(0, 188, 212, 0.3);
+    --mr-border-subtle: rgba(255, 255, 255, 0.05);
+
+    /* Modern Shadows - Deep & Soft */
+    --mr-shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --mr-shadow-glass-strong: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --mr-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+    --mr-shadow-md: 0 10px 20px rgba(0, 0, 0, 0.4);
+    --mr-shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.3);
+
+    /* Radius Scale - Slightly tighter for modern look */
+    --mr-radius-lg: 16px;
+    --mr-radius-md: 12px;
+    --mr-radius-sm: 8px;
+    --mr-radius-xs: 4px;
+    --mr-radius-full: 50px;
+
+    /* Animation System */
+    --mr-transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --mr-transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --mr-transition-fast: all 0.15s ease-out;
 }
 
 /* Main Extension Container - iOS Liquid Glass */
@@ -326,9 +331,20 @@
 }
 
 @keyframes mr-status-pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.2); }
-    100% { opacity: 1; transform: scale(1); }
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 #mr_status {
@@ -345,21 +361,21 @@
     .machinor-roundtable-settings .inline-drawer-content {
         padding: 16px;
     }
-    
+
     .mr-section {
         margin: 16px 0;
         padding: 16px;
     }
-    
+
     .mr-toggle {
         padding: 10px;
     }
-    
+
     #mr_manual_trigger {
         padding: 10px 20px;
         font-size: 13px;
     }
-    
+
     .mr-status {
         padding: 12px;
         margin-top: 16px;
@@ -421,10 +437,21 @@ body {
 }
 
 /* iOS Text Utilities */
-.text-primary { color: var(--mr-text-primary); }
-.text-secondary { color: var(--mr-text-secondary); }
-.text-muted { color: var(--mr-text-muted); }
-.text-accent { color: var(--mr-text-accent); }
+.text-primary {
+    color: var(--mr-text-primary);
+}
+
+.text-secondary {
+    color: var(--mr-text-secondary);
+}
+
+.text-muted {
+    color: var(--mr-text-muted);
+}
+
+.text-accent {
+    color: var(--mr-text-accent);
+}
 
 /* iOS Animation Classes */
 .spring-hover:hover {
@@ -443,12 +470,13 @@ body {
 
 /* iOS Mobile Touch Optimizations */
 @media (hover: none) and (pointer: coarse) {
+
     .mr-section:hover,
     .mr-toggle:hover,
     .mr-status:hover {
         transform: none;
     }
-    
+
     .mr-section:active,
     .mr-toggle:active,
     #mr_manual_trigger:active {

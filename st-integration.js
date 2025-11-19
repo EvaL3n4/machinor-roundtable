@@ -1,5 +1,6 @@
 // Machinor Roundtable - SillyTavern Deep Integration Module
 import { getContext } from "../../../extensions.js";
+import { eventSource, event_types, this_chid, characters, chat, isChatSaving, chat_metadata } from "../../../../script.js";
 
 /**
  * SillyTavern Integration Manager
@@ -12,7 +13,10 @@ export class STIntegrationManager {
         this.multiCharacterMode = false;
         this.characterRelationships = new Map();
         this.contextData = null;
-        
+        this.chatInjector = null; // Will be set later
+        this.plotPreview = null; // Will be set later
+        this.isChatReady = false;
+
         console.log('[Machinor Roundtable] ST Integration Manager initialized');
     }
 
@@ -20,9 +24,28 @@ export class STIntegrationManager {
      * Initialize ST integration and start listening to events
      */
     initialize() {
-        this.loadWorldInfo();
+        // Don't load world info immediately - it will be loaded lazily when needed
+        // This prevents early getContext() calls that might interfere with ST initialization
         this.setupEventListeners();
         console.log('[Machinor Roundtable] ST Integration initialized');
+    }
+
+    /**
+     * Set the chat injector to be initialized when chat is ready
+     * @param {Object} chatInjector - The ChatInjector instance
+     */
+    setChatInjector(chatInjector) {
+        this.chatInjector = chatInjector;
+        console.log('[Machinor Roundtable] ChatInjector registered with ST Integration');
+    }
+
+    /**
+     * Set the plot preview to be initialized when chat is ready
+     * @param {Object} plotPreview - The PlotPreviewManager instance
+     */
+    setPlotPreview(plotPreview) {
+        this.plotPreview = plotPreview;
+        console.log('[Machinor Roundtable] PlotPreview registered with ST Integration');
     }
 
     /**
@@ -37,7 +60,7 @@ export class STIntegrationManager {
             }
 
             this.contextData = context;
-            
+
             // Check if world info is available in the context
             if (context.worlds && context.worldInfo) {
                 this.worldInfo = context.worldInfo;
@@ -70,7 +93,7 @@ export class STIntegrationManager {
         if (!this.worldInfo) {
             this.loadWorldInfo();
         }
-        
+
         if (!this.worldInfo || Object.keys(this.worldInfo).length === 0) {
             return null;
         }
@@ -89,14 +112,14 @@ export class STIntegrationManager {
         Object.entries(this.worldInfo).forEach(([key, entry]) => {
             try {
                 const info = typeof entry === 'string' ? JSON.parse(entry) : entry;
-                
+
                 // Categorize world info entries
                 if (info.content) {
                     const content = info.content.toLowerCase();
                     const entryKey = key.toLowerCase();
-                    
+
                     // Simple categorization based on content and key
-                    if (content.includes('location') || content.includes('place') || 
+                    if (content.includes('location') || content.includes('place') ||
                         entryKey.includes('location') || entryKey.includes('place')) {
                         worldContext.locations.push({
                             name: info.name || key,
@@ -104,28 +127,28 @@ export class STIntegrationManager {
                             key: key
                         });
                     } else if (content.includes('item') || content.includes('object') ||
-                              entryKey.includes('item') || entryKey.includes('object')) {
+                        entryKey.includes('item') || entryKey.includes('object')) {
                         worldContext.items.push({
                             name: info.name || key,
                             description: info.content,
                             key: key
                         });
                     } else if (content.includes('organization') || content.includes('group') ||
-                              entryKey.includes('organization') || entryKey.includes('group')) {
+                        entryKey.includes('organization') || entryKey.includes('group')) {
                         worldContext.organizations.push({
                             name: info.name || key,
                             description: info.content,
                             key: key
                         });
                     } else if (content.includes('lore') || content.includes('history') ||
-                              entryKey.includes('lore') || entryKey.includes('history')) {
+                        entryKey.includes('lore') || entryKey.includes('history')) {
                         worldContext.lore.push({
                             name: info.name || key,
                             description: info.content,
                             key: key
                         });
                     } else if (content.includes('rule') || content.includes('law') ||
-                              entryKey.includes('rule') || entryKey.includes('law')) {
+                        entryKey.includes('rule') || entryKey.includes('law')) {
                         worldContext.rules.push({
                             name: info.name || key,
                             description: info.content,
@@ -157,11 +180,11 @@ export class STIntegrationManager {
         if (!context) return [];
 
         const characters = [];
-        
+
         // Check for group chat
         if (context.groupId && context.groups && context.characters) {
             this.multiCharacterMode = true;
-            
+
             // Find the current group
             const group = context.groups.find(g => g.id === context.groupId);
             if (group && group.members) {
@@ -213,7 +236,7 @@ export class STIntegrationManager {
                 return 'mentor';
             }
         }
-        
+
         return 'member';
     }
 
@@ -248,7 +271,7 @@ export class STIntegrationManager {
      */
     extractPersonalityTraits(character) {
         const traits = [];
-        
+
         if (character.personality) {
             // Parse personality description for traits
             const personalityText = character.personality.toLowerCase();
@@ -275,7 +298,7 @@ export class STIntegrationManager {
      */
     extractBackstory(character) {
         const backstory = [];
-        
+
         if (character.description) {
             // Look for backstory indicators
             const description = character.description.toLowerCase();
@@ -305,7 +328,7 @@ export class STIntegrationManager {
      */
     extractMotivations(character) {
         const motivations = [];
-        
+
         if (character.personality || character.description) {
             const text = `${character.personality || ''} ${character.description || ''}`.toLowerCase();
             const motivationKeywords = [
@@ -329,7 +352,7 @@ export class STIntegrationManager {
      */
     extractFears(character) {
         const fears = [];
-        
+
         if (character.personality || character.description) {
             const text = `${character.personality || ''} ${character.description || ''}`.toLowerCase();
             const fearKeywords = [
@@ -359,7 +382,7 @@ export class STIntegrationManager {
 
         if (character.personality) {
             const personality = character.personality.toLowerCase();
-            
+
             // Formality detection
             if (personality.includes('formal') || personality.includes('proper')) {
                 pattern.formality = 'formal';
@@ -400,12 +423,12 @@ export class STIntegrationManager {
      */
     assessArcPotential(character) {
         let score = 0;
-        
+
         if (character.personality) score += 1;
         if (character.description) score += 2;
         if (character.backstory) score += 2;
         if (character.scenario) score += 1;
-        
+
         // Higher score means more development potential
         if (score >= 5) return 'high';
         if (score >= 3) return 'medium';
@@ -437,9 +460,185 @@ export class STIntegrationManager {
                 this.currentWorldId = null;
                 this.loadWorldInfo();
             });
+
+            // CRITICAL FIX: Listen for chat load events to manage readiness state
+            eventSource.on('chat_id_changed', (chatId) => {
+                console.log('[Machinor Roundtable] Chat ID changed:', chatId);
+                // Trigger readiness check which will call onChatReady when ready
+                this.checkChatReadiness('Chat ID Changed');
+            });
+
+            // Also listen for the generic chat_loaded event if available
+            if (typeof event_types !== 'undefined' && event_types.CHAT_LOADED) {
+                eventSource.on(event_types.CHAT_LOADED, () => {
+                    console.log('[Machinor Roundtable] Chat loaded event received');
+                    this.checkChatReadiness();
+                });
+            }
         }
 
         console.log('[Machinor Roundtable] ST event listeners setup complete');
+
+        // Start passive readiness check - will poll until chat is fully ready
+        // This doesn't interfere with ST, it just waits patiently
+        this.checkChatReadiness('Initial Load');
+    }
+
+    /**
+     * Check if chat is fully ready and loaded
+     * @param {string} source - Optional source identifier for debugging
+     */
+    checkChatReadiness(source = 'Initial Check') {
+        // Reset state initially
+        this.isChatReady = false;
+
+        // Use a small timeout to allow ST to finish its internal processing
+        setTimeout(() => {
+            const context = getContext();
+
+            // Robust check using core variables directly where possible
+            const checks = {
+                this_chid: typeof this_chid !== 'undefined',
+                character: characters[this_chid] !== undefined,
+                chat: Array.isArray(chat),
+                notSaving: !isChatSaving,
+                metadata: chat_metadata !== undefined && chat_metadata !== null,
+                integrity: chat_metadata?.integrity !== undefined
+            };
+            const isCoreReady = Object.values(checks).every(v => v);
+
+            // Check if we have a valid chat ID and character
+            if (isCoreReady && context && context.chatId && context.characterId !== undefined) {
+                this.isChatReady = true;
+                console.log('[Machinor Roundtable] ✅ Chat is ready. ID:', context.chatId);
+                this.onChatReady(context);
+            } else {
+                // Log which specific check is failing
+                const failedChecks = Object.entries(checks).filter(([k, v]) => !v).map(([k]) => k);
+                console.log(`[Machinor Roundtable] ⏳ Chat not ready (${source}). Waiting for: ${failedChecks.join(', ')}`);
+
+                // Poll a few times if not ready yet (useful for initial load)
+                let attempts = 0;
+                const maxAttempts = 60; // Increased to 30s to handle slow cold loads
+                const pollInterval = setInterval(() => {
+                    attempts++;
+                    const updatedContext = getContext();
+
+                    const isNowReady =
+                        typeof this_chid !== 'undefined' &&
+                        characters[this_chid] !== undefined &&
+                        Array.isArray(chat) &&
+                        !isChatSaving &&
+                        chat_metadata && chat_metadata.integrity &&
+                        updatedContext &&
+                        updatedContext.chatId &&
+                        updatedContext.characterId !== undefined;
+
+                    if (isNowReady) {
+                        this.onChatReady(updatedContext);
+                        clearInterval(pollInterval);
+                    } else if (attempts >= maxAttempts) {
+                        console.log('[Machinor Roundtable] ❌ Chat readiness check timed out');
+                        clearInterval(pollInterval);
+                        // Even if polling times out, we still set ready when chat_id_changed fires
+                        return;
+                    }
+                }, 500);
+            }
+        }, 200);
+    }
+
+    /**
+     * Called when chat is confirmed ready
+     * Uses stability checking instead of fixed timeout
+     */
+    onChatReady(context) {
+        this.isChatReady = true;
+        console.log('[Machinor Roundtable] ✅ Chat detected. ID:', context.chatId);
+
+        // Start stability checking instead of fixed timeout
+        this.waitForChatStability();
+    }
+
+    /**
+     * Wait for chat to be fully loaded and stable before initializing
+     * Polls context.chat and waits for message count to stabilize
+     */
+    waitForChatStability() {
+        let lastMessageCount = -1;
+        let stableCount = 0;
+        const STABLE_CHECKS_REQUIRED = 3; // Messages must be stable for 3 checks
+        const CHECK_INTERVAL = 300; // Check every 300ms
+
+        const stabilityCheck = setInterval(() => {
+            // Use direct chat array access for more reliability
+            const currentMessageCount = Array.isArray(chat) ? chat.length : 0;
+
+            // Empty chat means ST is still in preload phase
+            if (currentMessageCount === 0) {
+                console.log('[Machinor Roundtable] ⏳ Chat empty, waiting for messages to load...');
+                lastMessageCount = 0;
+                stableCount = 0;
+                return;
+            }
+
+            // Check if message count is stable (hasn't changed)
+            if (currentMessageCount === lastMessageCount) {
+                stableCount++;
+                console.log(`[Machinor Roundtable] 📊 Chat stable: ${currentMessageCount} messages (check ${stableCount}/${STABLE_CHECKS_REQUIRED})`);
+
+                // If stable for required number of checks, we're good to go
+                if (stableCount >= STABLE_CHECKS_REQUIRED) {
+                    clearInterval(stabilityCheck);
+                    console.log('[Machinor Roundtable] ✅ Chat fully loaded and stable with', currentMessageCount, 'messages');
+
+                    // Small buffer to ensure any final saves complete
+                    setTimeout(() => {
+                        this.initializeComponents();
+                    }, 200);
+                }
+            } else {
+                // Count changed, chat is still loading
+                console.log(`[Machinor Roundtable] 📈 Chat loading: ${currentMessageCount} messages (was ${lastMessageCount})`);
+                lastMessageCount = currentMessageCount;
+                stableCount = 0;
+            }
+        }, CHECK_INTERVAL);
+
+        // Absolute safety timeout after 10 seconds
+        setTimeout(() => {
+            const context = getContext();
+            const messageCount = context?.chat?.length || 0;
+
+            // Only initialize if we haven't already
+            if (!this.chatInjector?.initializationTimestamp) {
+                clearInterval(stabilityCheck);
+                console.warn(`[Machinor Roundtable] ⚠️ Stability timeout reached after 10s with ${messageCount} messages - initializing anyway`);
+                this.initializeComponents();
+            }
+        }, 10000);
+    }
+
+    /**
+     * Initialize all extension components
+     * Called once chat is confirmed stable
+     */
+    initializeComponents() {
+        // Initialize ChatInjector
+        if (this.chatInjector) {
+            console.log('[Machinor Roundtable] 🚀 Initializing ChatInjector (stability-based)');
+            this.chatInjector.initialize();
+        } else {
+            console.warn('[Machinor Roundtable] ⚠️ ChatInjector not set, cannot initialize');
+        }
+
+        // Initialize PlotPreview
+        if (this.plotPreview && typeof this.plotPreview.deferredInit === 'function') {
+            console.log('[Machinor Roundtable] 🚀 Initializing PlotPreview (stability-based)');
+            this.plotPreview.deferredInit();
+        } else {
+            console.warn('[Machinor Roundtable] ⚠️ PlotPreview not set or deferredInit not available');
+        }
     }
 
     /**
@@ -448,7 +647,7 @@ export class STIntegrationManager {
     analyzeActiveCharacters() {
         const characters = this.getActiveCharacters();
         const analysis = {};
-        
+
         characters.forEach(character => {
             analysis[character.avatar || character.name] = this.analyzeCharacterProfile(character);
         });
@@ -463,6 +662,7 @@ export class STIntegrationManager {
     getStatus() {
         const context = getContext();
         return {
+            isChatReady: this.isChatReady,
             worldInfoAvailable: !!this.worldInfo,
             currentWorldId: this.currentWorldId,
             multiCharacterMode: this.multiCharacterMode,
