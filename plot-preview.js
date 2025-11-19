@@ -327,9 +327,8 @@ export class PlotPreviewManager {
                     setTimeout(() => {
                         const loadedPlot = this.loadPlotFromStorage();
 
-                        // CRITICAL FIX: If no plot loaded, clear the skeleton state
-                        // Check for null, undefined, or empty text
-                        if (!loadedPlot || !loadedPlot.text) {
+                        // CRITICAL FIX: Check for plotText (not text) since loadChatProfile returns { plotText, ... }
+                        if (!loadedPlot || !loadedPlot.plotText) {
                             console.log('[machinor-roundtable] No stored plot found, resetting to ready state');
                             this.updateStatus('ready');
                             if (this.elements.currentPlotText) {
@@ -337,6 +336,8 @@ export class PlotPreviewManager {
                             }
                             // Re-enable buttons for empty state
                             this.setButtonsEnabled(true);
+                        } else {
+                            console.log('[machinor-roundtable] ✅ Plot already loaded from storage, skipping reset');
                         }
 
                         this.renderHistory();

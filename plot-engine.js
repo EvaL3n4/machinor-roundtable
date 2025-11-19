@@ -54,13 +54,13 @@ export class PlotEngine {
         console.log('[machinor-roundtable] Template option present:', !!options.template);
         console.log('[machinor-roundtable] Guidance option present:', !!options.guidance);
         console.log('[machinor-roundtable] Full options:', options);
-        
+
         // Get the best prompt for LLM call based on available data
         const promptData = this.buildBestPrompt(character, chatHistory, options);
-        
+
         try {
             console.log('[machinor-roundtable] 🎯 Making LLM call (no caching - unlimited regenerations)');
-            
+
             // LLM CALL - Always fresh, no caching
             const plotContext = await generateQuietPrompt({
                 quietPrompt: promptData.prompt,
@@ -68,30 +68,30 @@ export class PlotEngine {
                 removeReasoning: true,
                 trimToSentence: false
             });
-            
+
             const cleanedContext = this.cleanPlotContext(plotContext);
-            
+
             console.log('[machinor-roundtable] Final result:', cleanedContext);
             console.log('[machinor-roundtable] ===== PLOT GENERATION END (NO CACHE) =====');
             return cleanedContext;
-            
+
         } catch (error) {
             console.error('[machinor-roundtable] LLM call failed, using fallback:', error);
-            
+
             // Use fallback context on error
             const fallbackContext = this.getFallbackContext(character, options.style || 'natural');
             console.log('[machinor-roundtable] Using fallback context:', fallbackContext);
-            
+
             return fallbackContext;
         }
     }
-    
+
     /**
      * Build the best possible prompt based on available data (single LLM call)
      */
     buildBestPrompt(character, chatHistory, options = {}) {
         console.log('[machinor-roundtable] Building comprehensive prompt for single LLM call');
-        
+
         // Start with base character and chat data
         let prompt = PLOT_GENERATION_PROMPT
             .replace('{{char}}', character.name || 'Character')
@@ -99,7 +99,7 @@ export class PlotEngine {
             .replace('{{description}}', character.description || 'Not specified')
             .replace('{{scenario}}', character.scenario || 'Not specified')
             .replace('{{recent_chat}}', this.extractRecentContext(chatHistory));
-        
+
         // Add narrative arc context if available
         if (this.narrativeArc) {
             console.log('[machinor-roundtable] Adding narrative arc context');
@@ -109,38 +109,35 @@ export class PlotEngine {
                 prompt += `\n\nSTORY ARC CONTEXT:\n${arcText}`;
             }
         }
-        
+
         // Add ST integration data if available
         if (this.stIntegration) {
             console.log('[machinor-roundtable] Adding ST integration context');
-            
-            const characterAnalysis = this.stIntegration.analyzeCharacterProfile(character);
+
+            // PERFORMANCE: Character analysis removed (expensive LLM call)
+            // The LLM can intuit character traits from {{description}} and {{personality}}
+
             const worldContext = this.stIntegration.getWorldInfo();
             const activeCharacters = this.stIntegration.getActiveCharacters();
-            
-            if (characterAnalysis) {
-                const analysisText = this.formatCharacterAnalysis(characterAnalysis);
-                prompt += `\n\nCHARACTER ANALYSIS:\n${analysisText}`;
-            }
-            
+
             if (worldContext && Object.keys(worldContext).some(key => worldContext[key]?.length > 0)) {
                 const worldText = this.formatWorldContext(worldContext);
                 prompt += `\n\nWORLD CONTEXT:\n${worldText}`;
             }
-            
+
             if (activeCharacters.length > 1) {
                 const multiCharText = this.formatMultiCharacterContext(character, activeCharacters);
                 prompt += `\n\nGROUP DYNAMICS:\n${multiCharText}`;
             }
         }
-        
+
         // Add template guidance if provided
         if (options.guidance && options.template) {
             console.log('[machinor-roundtable] Adding template guidance');
             const templateGuidanceText = this.formatTemplateGuidance(options.template, options.guidance);
             prompt += `\n\nTEMPLATE GUIDANCE:\n${templateGuidanceText}`;
         }
-        
+
         // Add style and intensity guidance
         const intensityDescriptions = {
             subtle: 'lightly atmospheric, gentle undertones',
@@ -148,7 +145,7 @@ export class PlotEngine {
             strong: 'compelling story momentum with clear direction',
             dramatic: 'intense plot pressure with high emotional stakes and urgent conflicts'
         };
-        
+
         const styleDescriptions = {
             natural: 'organic story development with realistic character reactions',
             dramatic: 'high-stakes situations with intense emotional weight',
@@ -157,36 +154,36 @@ export class PlotEngine {
             adventure: 'exciting challenges with heroic growth and discovery',
             comedy: 'light-hearted situations with amusing complications'
         };
-        
+
         // Add story momentum guidance
         const momentumGuidance = this.generateMomentumGuidance(options);
         if (momentumGuidance) {
             prompt += `\n\nSTORY MOMENTUM:\n${momentumGuidance}`;
         }
-        
+
         // Apply style and intensity replacements
         prompt = prompt
             .replace('{{style}}', styleDescriptions[options.style] || styleDescriptions.natural)
             .replace('{{intensity}}', intensityDescriptions[options.intensity] || intensityDescriptions.moderate)
             .replace('{{direction}}', options.direction || 'Let the story unfold with compelling natural progression');
-        
+
         console.log('[machinor-roundtable] Built comprehensive prompt for single LLM call');
         return { prompt };
     }
-    
+
     /**
      * Build unified arc context for comprehensive prompting
      */
     buildUnifiedArcContext(character, chatHistory, options = {}) {
         try {
             if (!this.narrativeArc) return null;
-            
+
             // Get plot suggestions to understand current arc state
             const arcSuggestions = this.narrativeArc.getPlotSuggestions(character, chatHistory, options);
-            
+
             if (arcSuggestions.length > 0) {
                 const suggestion = arcSuggestions[0];
-                
+
                 return {
                     hasActiveArc: !!this.narrativeArc.currentArc,
                     arcType: this.narrativeArc.currentArc?.type || null,
@@ -197,7 +194,7 @@ export class PlotEngine {
                     availableChoices: arcSuggestions.length
                 };
             }
-            
+
             return null;
         } catch (error) {
             console.error('[machinor-roundtable] Error building arc context:', error);
@@ -215,7 +212,7 @@ export class PlotEngine {
             strong: 'strong, clearly guiding the narrative',
             dramatic: 'dramatic, major plot-driving'
         };
-        
+
         const styleDescriptions = {
             natural: 'natural and organic',
             dramatic: 'dramatic and intense',
@@ -246,12 +243,12 @@ export class PlotEngine {
             'mystery_hook': 'Mystery Template: Mystery Hook',
             'conflict_rises': 'Conflict Template: Conflict Rises'
         };
-        
+
         const templateName = templateDisplayNames[template] || `Template: ${template}`;
-        
+
         // Enhanced template-specific guidance for compelling narratives
         const templateGuidance = this.getTemplateSpecificGuidance(template);
-        
+
         return `${templateName}\n\nCore Narrative Direction: ${guidance}\n\n${templateGuidance}\n\nEXECUTION FOCUS: Create a plot context that immediately establishes dramatic tension, character motivation, and clear story momentum. This should feel like a pivotal moment that changes everything for the character.`;
     }
 
@@ -265,7 +262,7 @@ export class PlotEngine {
             'mystery_hook': 'Reveal a clue, secret, or unexplained event that creates urgent questions. Focus on something that suggests larger consequences and demands investigation. Create suspense that pushes the story toward revelation.',
             'conflict_rises': 'Escalate existing tensions or introduce a major obstacle that forces characters into difficult positions. Focus on conflict that creates impossible choices or high-stakes decisions. Build dramatic pressure that cannot be ignored.'
         };
-        
+
         return guidanceMap[template] || 'Focus on creating compelling narrative momentum that drives the story forward with purpose and emotional weight.';
     }
 
@@ -274,23 +271,23 @@ export class PlotEngine {
      */
     formatCharacterAnalysis(analysis) {
         let text = '';
-        
+
         if (analysis.traits?.length > 0) {
             text += `Personality traits: ${analysis.traits.join(', ')}\n`;
         }
-        
+
         if (analysis.motivations?.length > 0) {
             text += `Core motivations: ${analysis.motivations.join(', ')}\n`;
         }
-        
+
         if (analysis.fears?.length > 0) {
             text += `Fears/concerns: ${analysis.fears.join(', ')}\n`;
         }
-        
+
         if (analysis.arcPotential) {
             text += `Development potential: ${analysis.arcPotential}\n`;
         }
-        
+
         return text || 'No additional character analysis available.';
     }
 
@@ -299,27 +296,27 @@ export class PlotEngine {
      */
     formatWorldContext(worldContext) {
         let text = '';
-        
+
         if (worldContext.locations?.length > 0) {
             text += `Notable locations: ${worldContext.locations.map(l => l.name).join(', ')}\n`;
         }
-        
+
         if (worldContext.organizations?.length > 0) {
             text += `Organizations/groups: ${worldContext.organizations.map(o => o.name).join(', ')}\n`;
         }
-        
+
         if (worldContext.items?.length > 0) {
             text += `Important items: ${worldContext.items.map(i => i.name).join(', ')}\n`;
         }
-        
+
         if (worldContext.lore?.length > 0) {
             text += `World lore: ${worldContext.lore.length} entries available\n`;
         }
-        
+
         if (worldContext.rules?.length > 0) {
             text += `World rules: ${worldContext.rules.length} rules established\n`;
         }
-        
+
         return text || 'No specific world context available.';
     }
 
@@ -329,16 +326,16 @@ export class PlotEngine {
     formatMultiCharacterContext(currentCharacter, activeCharacters) {
         const others = activeCharacters.filter(c => c !== currentCharacter);
         if (others.length === 0) return 'Single character scenario.';
-        
+
         let text = `Group includes ${others.length} other characters: `;
         text += others.map(c => c.name).join(', ');
-        
+
         // Add simple group dynamics
         const roles = others.map(c => c.groupRole).filter(Boolean);
         if (roles.length > 0) {
             text += `\nGroup roles: ${roles.join(', ')}`;
         }
-        
+
         return text;
     }
 
@@ -347,31 +344,31 @@ export class PlotEngine {
      */
     formatArcContext(arcContext) {
         let text = '';
-        
+
         if (arcContext.arcName) {
             text += `Current arc: ${arcContext.arcName}`;
         }
-        
+
         if (arcContext.arcProgress > 0) {
             text += `\nProgress: ${arcContext.arcProgress}% complete`;
         }
-        
+
         if (arcContext.currentPhase) {
             text += `\nCurrent phase: ${arcContext.currentPhase}`;
         }
-        
+
         if (arcContext.currentPhaseDescription) {
             text += `\nPhase focus: ${arcContext.currentPhaseDescription}`;
         }
-        
+
         if (arcContext.arcGuidance) {
             text += `\nArc direction: ${arcContext.arcGuidance}`;
         }
-        
+
         if (arcContext.availableChoices > 1) {
             text += `\nStory choices available: ${arcContext.availableChoices} options to explore`;
         }
-        
+
         return text || 'No active story arc - focus on compelling character development.';
     }
 
@@ -380,7 +377,7 @@ export class PlotEngine {
      */
     generateMomentumGuidance(options) {
         const guidance = [];
-        
+
         // Add momentum based on style and intensity
         if (options.style === 'dramatic' && options.intensity === 'dramatic') {
             guidance.push('Create urgent conflicts that demand immediate character response');
@@ -391,7 +388,7 @@ export class PlotEngine {
         } else if (options.style === 'mysterious') {
             guidance.push('Plant intriguing clues that hint at larger revelations');
         }
-        
+
         // Add arc momentum if available
         if (options.arcContext && options.arcContext.hasActiveArc) {
             const progress = options.arcContext.arcProgress || 0;
@@ -403,7 +400,7 @@ export class PlotEngine {
                 guidance.push('Late arc phase: Build toward climactic moments and resolution');
             }
         }
-        
+
         // Add template momentum if available
         if (options.template && options.guidance) {
             if (options.template === 'conflict_rises') {
@@ -414,7 +411,7 @@ export class PlotEngine {
                 guidance.push('Present intriguing unknowns that demand investigation and discovery');
             }
         }
-        
+
         return guidance.length > 0 ? guidance.join('\n- ') : '';
     }
 
@@ -428,7 +425,7 @@ export class PlotEngine {
             strong: 'strong, clearly guiding the narrative',
             dramatic: 'dramatic, major plot-driving'
         };
-        
+
         const styleDescriptions = {
             natural: 'natural and organic',
             dramatic: 'dramatic and intense',
@@ -479,21 +476,21 @@ export class PlotEngine {
 
         // PHASE 1: Remove ONLY known AI processing artifacts
         // These are guaranteed to be unwanted meta-processing content
-        
+
         // 1. Remove internal AI processing markers
         cleaned = cleaned.replace(/<breflect>[\s\S]*?<\/breflect>/gi, '');
-        
+
         // 2. Remove AI reasoning and thought process markers
         cleaned = cleaned.replace(/\[\s*The AI (?:embodies|acts as|is playing|responds as)[\s\S]*?\]/gi, '');
         cleaned = cleaned.replace(/\[\s*AI (?:response|action|behavior)[\s\S]*?\]/gi, '');
         cleaned = cleaned.replace(/\[\s*(?:Thought|Reasoning|Planning|Processing)[:\s][\s\S]*?\]/gi, '');
-        
+
         // 3. Remove system messages and meta-instructions
         cleaned = cleaned.replace(/Start Reply With[:\s]*/gi, '');
         cleaned = cleaned.replace(/\[\s*Start[^\]]*?\]/gi, '');
         cleaned = cleaned.replace(/\[\s*system[^\]]*?\]/gi, '');
         cleaned = cleaned.replace(/\[\s*instruction[^\]]*?\]/gi, '');
-        
+
         // 4. Remove XML tags and malformed artifacts (SillyTavern integration issues)
         cleaned = cleaned.replace(/<\w+[^>]*>/g, ''); // Remove opening XML tags
         cleaned = cleaned.replace(/<\/\w+>/g, ''); // Remove closing XML tags
@@ -501,21 +498,21 @@ export class PlotEngine {
         cleaned = cleaned.replace(/<\w+[^>]*$/g, ''); // Remove unclosed XML tags at end
         cleaned = cleaned.replace(/^[<\w+\s]*>/g, ''); // Remove leading XML artifacts
         cleaned = cleaned.replace(/<\w+[^>]*$/gm, ''); // Remove malformed XML at line ends
-        
+
         // 5. Remove internal/meta processing markers
         cleaned = cleaned.replace(/\[\s*internal[^\]]*?\]/gi, '');
-        
+
         // PHASE 2: Clean up formatting (keep everything else as potential narrative)
         cleaned = cleaned.replace(/^["']|["']$/g, '').trim(); // Remove surrounding quotes
         cleaned = cleaned.replace(/\n\s*\n/g, '\n').trim(); // Remove excessive line breaks
         cleaned = cleaned.replace(/\s+/g, ' '); // Normalize spaces
-        
+
         // PHASE 3: Remove only empty brackets (content was already removed above)
         cleaned = cleaned.replace(/\[\s*\]/g, '');
-        
+
         // PHASE 4: No validation - preserve all content after artifact removal
         // The user wants to keep original outputs rather than fallbacks
-        
+
         // PHASE 5: Preserve bracket format if present, or add if content looks like narrative
         if (!cleaned.match(/^\[.*\]$/)) {
             // Add brackets if content looks like narrative context
@@ -523,12 +520,12 @@ export class PlotEngine {
                 cleaned.match(/[A-Z][a-z]/) || // Has capitalized words (proper names or sentence start)
                 cleaned.match(/(?:is|was|feels|thinks|looks|seems|appears|becomes|sees|hears|knows|believes|wants|needs|hopes|fears|hopes|wishes|dreams|remembers|forgets|decides|chooses|chooses|tries|attempts|plans|hopes|expects|awaits|waits|continues|stops|starts|begins|ends|opens|closes|moves|stands|sits|lies|lays|walks|runs|drives|flies|travels|explores|discovers|finds|searches|seeks|hunts|chases|runs|escapes|hid|hide|hides|waits|observes|watching|watches|listens|hear|hears|speaks|talks|says|answers|replies|responds|reacts|acts|behaves|changes|transforms|evolves|develops|grows|learns|studies|teaches|shows|demonstrates|explains|describes|tells|asks|questions|wonders|considers|ponders|reflects|thinks|dreams|imagines|envisions|visualizes|pictures|sees|foresees|predicts|expects|hopes|believes|trusts|depends|relies|relied|depended)/i) ||
                 cleaned.match(/[.!?]/); // Has sentence punctuation
-            
+
             if (hasNarrativeStructure) {
                 cleaned = `[${cleaned}]`;
             }
         }
-        
+
         console.log('[machinor-roundtable] Cleaned output result:', cleaned);
         return cleaned;
     }
@@ -570,7 +567,7 @@ export class PlotEngine {
                 `[${character.name || 'Character'} discovers that the most serious moments often contain the most humor]`
             ]
         };
-        
+
         const fallbacks = styleFallbacks[style] || styleFallbacks.natural;
         return fallbacks[Math.floor(Math.random() * fallbacks.length)];
     }

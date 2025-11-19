@@ -130,22 +130,48 @@ export class ChatInjector {
 
             console.log('[Machinor Roundtable] Generation check:', { shouldRefresh });
 
+            // CRITICAL FIX: Check preview FIRST, before any generation decision
+            let previewPlot = null;
             if (this.plotPreview && typeof this.plotPreview.getCurrentPlot === 'function') {
-                const currentPlot = this.plotPreview.getCurrentPlot();
+                previewPlot = this.plotPreview.getCurrentPlot();
+                console.log('[Machinor Roundtable] 🔍 Preview check:', {
+                    hasPreview: !!previewPlot,
+                    hasText: !!previewPlot?.text,
+                    status: previewPlot?.status,
+                    textPreview: previewPlot?.text?.substring(0, 50) + '...'
+                });
+            } else {
+                console.log('[Machinor Roundtable] ⚠️ Preview not available or getCurrentPlot not defined');
+            }
 
-                if (currentPlot && currentPlot.text) {
-                    if (currentPlot.status === 'ready' || currentPlot.status === 'restored') {
-                        console.log('[Machinor Roundtable] ♻️ Using pending previewed plot (Manual/Restored)');
-                        plotContext = currentPlot.text;
-                        isNewGeneration = false;
-                    } else if (shouldRefresh) {
-                        console.log('[Machinor Roundtable] 🔄 Frequency trigger hit, ignoring old plot');
-                        // plotContext remains null, forcing generation below
-                    } else {
-                        console.log('[Machinor Roundtable] ♻️ Reusing previous plot (Frequency skip)');
-                        plotContext = currentPlot.text;
-                        isNewGeneration = false;
-                    }
+            if (previewPlot && previewPlot.text) {
+                // Preview has a plot - decide whether to use it or generate new
+                const isReadyOrRestored = previewPlot.status === 'ready' || previewPlot.status === 'restored';
+
+                if (isReadyOrRestored) {
+                    // Manual override or restored from storage - always use
+                    console.log('[Machinor Roundtable] ♻️ Using pending previewed plot (Manual/Restored)');
+                    plotContext = previewPlot.text;
+                    isNewGeneration = false;
+                } else if (shouldRefresh) {
+                    // Frequency trigger - generate new even if we have old plot
+                    console.log('[Machinor Roundtable] 🔄 Frequency trigger hit, ignoring old plot');
+                    // plotContext remains null, forcing generation below
+                } else {
+                    // No trigger, just reuse existing plot
+                    console.log('[Machinor Roundtable] ♻️ Reusing previous plot (Frequency skip)');
+                    plotContext = previewPlot.text;
+                    isNewGeneration = false;
+                }
+            } else {
+                // No plot in preview - check if we should generate
+                if (shouldRefresh || !previewPlot) {
+                    console.log('[Machinor Roundtable] 📝 No preview plot available, will generate');
+                    // plotContext remains null, forcing generation below
+                } else {
+                    console.log('[Machinor Roundtable] ⚠️ Preview exists but no text, skipping injection');
+                    // Don't generate, don't inject
+                    return;
                 }
             }
 

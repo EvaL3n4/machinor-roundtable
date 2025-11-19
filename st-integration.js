@@ -348,112 +348,20 @@ export class STIntegrationManager {
     }
 
     /**
-     * Deep character profile analysis
+     * PERFORMANCE: Character analysis methods removed
+     * These methods performed expensive text analysis that didn't significantly
+     * improve plot quality. The LLM can intuit character traits from the
+     * {{description}} and {{personality}} macros provided in the prompt.
+     * 
+     * Removed methods:
+     * - analyzeCharacterProfile()
+     * - extractPersonalityTraits()
+     * - extractBackstory()
+     * - extractMotivations()
+     * - extractFears()
+     * - analyzeSpeechPattern()
+     * - getCharacterRelationships()
+     * - assessArcPotential()
+     * - analyzeActiveCharacters()
      */
-    analyzeCharacterProfile(character) {
-        if (!character) return null;
-
-        return {
-            traits: this.extractPersonalityTraits(character),
-            backstory: this.extractBackstory(character),
-            motivations: this.extractMotivations(character),
-            fears: this.extractFears(character),
-            speechPattern: this.analyzeSpeechPattern(character),
-            relationships: this.getCharacterRelationships(character),
-            arcPotential: this.assessArcPotential(character)
-        };
-    }
-
-    extractPersonalityTraits(character) {
-        const traits = [];
-        if (character.personality) {
-            const personalityText = character.personality.toLowerCase();
-            const commonTraits = ['kind', 'cruel', 'brave', 'cowardly', 'loyal', 'betrayer', 'mysterious', 'outgoing', 'shy', 'confident', 'intelligent', 'wise', 'foolish', 'patient', 'impatient', 'generous', 'selfish', 'honest', 'deceitful', 'optimistic', 'pessimistic', 'calm', 'anxious', 'creative', 'practical', 'dreamer', 'realist'];
-            commonTraits.forEach(trait => {
-                if (personalityText.includes(trait)) traits.push(trait);
-            });
-        }
-        return traits;
-    }
-
-    extractBackstory(character) {
-        const backstory = [];
-        if (character.description) {
-            const description = character.description.toLowerCase();
-            const patterns = [/was\s+(\w+)/g, /used\s+to\s+(\w+)/g, /formerly\s+(\w+)/g, /worked\s+as\s+(\w+)/g, /came\s+from\s+(\w+)/g, /lost\s+(\w+)/g, /found\s+(\w+)/g];
-            patterns.forEach(pattern => {
-                let match;
-                while ((match = pattern.exec(description)) !== null) {
-                    backstory.push(match[0]);
-                }
-            });
-        }
-        return backstory;
-    }
-
-    extractMotivations(character) {
-        const motivations = [];
-        if (character.personality || character.description) {
-            const text = `${character.personality || ''} ${character.description || ''}`.toLowerCase();
-            const keywords = ['want', 'desire', 'need', 'goal', 'ambition', 'dream', 'seek', 'search', 'pursue', 'achieve', 'prove', 'protect', 'avenge', 'save', 'help', 'serve', 'rule', 'lead'];
-            keywords.forEach(keyword => {
-                if (text.includes(keyword)) motivations.push(keyword);
-            });
-        }
-        return motivations;
-    }
-
-    extractFears(character) {
-        const fears = [];
-        if (character.personality || character.description) {
-            const text = `${character.personality || ''} ${character.description || ''}`.toLowerCase();
-            const keywords = ['fear', 'afraid', 'scared', 'terrified', 'hate', 'avoid', 'dread', 'worried', 'anxious', 'panic', 'frightened'];
-            keywords.forEach(keyword => {
-                if (text.includes(keyword)) fears.push(keyword);
-            });
-        }
-        return fears;
-    }
-
-    analyzeSpeechPattern(character) {
-        const pattern = { formality: 'unknown', emotion: 'neutral', complexity: 'medium' };
-        if (character.personality) {
-            const p = character.personality.toLowerCase();
-            if (p.includes('formal') || p.includes('proper')) pattern.formality = 'formal';
-            else if (p.includes('casual') || p.includes('relaxed')) pattern.formality = 'casual';
-
-            if (p.includes('cheerful') || p.includes('happy')) pattern.emotion = 'positive';
-            else if (p.includes('gloomy') || p.includes('sad')) pattern.emotion = 'negative';
-            else if (p.includes('angry') || p.includes('hostile')) pattern.emotion = 'aggressive';
-
-            if (p.includes('simple') || p.includes('direct')) pattern.complexity = 'simple';
-            else if (p.includes('complex') || p.includes('detailed')) pattern.complexity = 'complex';
-        }
-        return pattern;
-    }
-
-    getCharacterRelationships(character) {
-        const key = character.avatar || character.name;
-        return this.characterRelationships.get(key) || {};
-    }
-
-    assessArcPotential(character) {
-        let score = 0;
-        if (character.personality) score += 1;
-        if (character.description) score += 2;
-        if (character.backstory) score += 2;
-        if (character.scenario) score += 1;
-        if (score >= 5) return 'high';
-        if (score >= 3) return 'medium';
-        return 'low';
-    }
-
-    analyzeActiveCharacters() {
-        const characters = this.getActiveCharacters();
-        const analysis = {};
-        characters.forEach(character => {
-            analysis[character.avatar || character.name] = this.analyzeCharacterProfile(character);
-        });
-        return analysis;
-    }
 }
