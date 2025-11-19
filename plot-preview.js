@@ -175,23 +175,14 @@ export class PlotPreviewManager {
 
         if (this.elements.currentPlotText) {
             this.elements.currentPlotText.innerHTML = `
-                <div class="mr-skeleton-loader" style="padding: 16px 0;">
-                    <div style="
-                        width: 70%;
-                        height: 16px;
-                        background: linear-gradient(90deg, rgba(255,105,180,0.08) 0%, rgba(218,112,214,0.12) 50%, rgba(255,105,180,0.08) 100%);
-                        background-size: 200% 100%;
-                        animation: shimmer 2s infinite;
-                        border-radius: 4px;
-                        margin: 0 auto;
-                    "></div>
+                <div class="mr-skeleton-container" style="padding: 0;">
+                    <div class="mr-skeleton-content">
+                        <div class="mr-skeleton-text"></div>
+                        <div class="mr-skeleton-text"></div>
+                        <div class="mr-skeleton-text short"></div>
+                        <div class="mr-skeleton-text"></div>
+                    </div>
                 </div>
-                <style>
-                    @keyframes shimmer {
-                        0% { background-position: -200% 0; }
-                        100% { background-position: 200% 0; }
-                    }
-                </style>
             `;
         }
         if (this.elements.statusText) {

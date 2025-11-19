@@ -1638,18 +1638,22 @@
 
     /* iOS Action Button Layout */
     .mr-plot-actions {
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        margin-bottom: 16px;
+        justify-content: space-between;
     }
 
     .mr-action-btn {
-        min-height: 48px;
-        min-width: 80px;
-        flex: 1 1 auto;
-        padding: 12px 16px;
-        font-size: 14px;
-        border-radius: 14px;
+        min-height: 36px;
+        min-width: 0;
+        flex: 1;
+        padding: 8px 4px;
+        font-size: 12px;
+        border-radius: 10px;
+        white-space: nowrap;
     }
 
     /* Hide Desktop Toggle Button */
@@ -2000,8 +2004,8 @@
             0 8px 25px rgba(255, 105, 180, 0.12),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        max-height: 200px !important;
-        overflow: hidden;
+        min-height: 100px;
+        height: auto !important;
     }
 
     .mr-current-plot:active {
@@ -2012,9 +2016,9 @@
     }
 
     .mr-current-plot .mr-plot-text {
-        max-height: 80px !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
         font-size: 13px !important;
         line-height: 1.4 !important;
     }
@@ -2069,7 +2073,7 @@
     .mr-quick-actions {
         display: flex;
         gap: 12px;
-        padding: 20px;
+        padding: 12px;
         background:
             linear-gradient(135deg,
                 rgba(255, 255, 255, 0.05) 0%,
@@ -2077,8 +2081,10 @@
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         border-radius: 16px;
-        margin: 0 -20px;
+        margin: 0 0 16px 0;
         border-top: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .mr-quick-actions .mr-action-btn {
@@ -2334,17 +2340,19 @@
         padding: 16px 12px;
     }
 
-    /* Mobile Quick Actions - Vertical Stack */
+    /* Mobile Quick Actions - Side-by-Side */
     .mr-quick-actions {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
     }
 
     .mr-quick-actions .mr-action-btn {
-        width: 100%;
-        min-height: 48px;
-        padding: 14px 18px;
-        font-size: 13px;
+        width: auto;
+        flex: 1;
+        min-height: 36px;
+        padding: 8px 4px;
+        font-size: 12px;
+        white-space: nowrap;
     }
 
     /* Mobile History Section */
@@ -2861,4 +2869,91 @@
 .mr-history-item.synced .mr-history-time {
     color: var(--mr-accent-primary);
     font-weight: 500;
+}
+
+/* Enhanced Skeleton Loader System */
+.mr-skeleton-container {
+    padding: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mr-skeleton-header {
+    height: 24px;
+    width: 40%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-skeleton-bar {
+    height: 8px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-skeleton-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mr-skeleton-text {
+    height: 12px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mr-skeleton-text.short {
+    width: 70%;
+}
+
+.mr-skeleton-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.mr-skeleton-btn {
+    height: 36px;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer Animation */
+.mr-skeleton-header::after,
+.mr-skeleton-bar::after,
+.mr-skeleton-text::after,
+.mr-skeleton-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.08) 50%,
+            transparent 100%);
+    transform: translateX(-100%);
+    animation: mr-shimmer 1.5s infinite;
+}
+
+@keyframes mr-shimmer {
+    100% {
+        transform: translateX(100%);
+    }
 }
