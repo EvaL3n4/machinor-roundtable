@@ -173,8 +173,8 @@ export class PlotPreviewManager {
         if (this.elements.currentPlotText) {
             this.elements.currentPlotText.innerHTML = `
                 <div class="mr-skeleton-loader" style="animation: pulse 1.5s ease-in-out infinite;">
-                    <div class="mr-skeleton-line" style="width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 8px;"></div>
-                    <div class="mr-skeleton-line" style="width: 75%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 8px;"></div>
+                    <div class="mr-skeleton-line" style="width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 4px;"></div>
+                    <div class="mr-skeleton-line" style="width: 75%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 4px;"></div>
                     <div class="mr-skeleton-line" style="width: 85%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
                 </div>
             `;
@@ -245,15 +245,26 @@ export class PlotPreviewManager {
         this.contextCheckInterval = setInterval(() => {
             const context = getContext();
 
-            // Wait for character ID, chat ID, AND chat array to be populated
-            if (context && context.characterId !== undefined && context.chatId && Array.isArray(context.chat) && context.chat.length > 0) {
+            // Wait for character ID and chat ID (chat array can be empty for new chats)
+            if (context && context.characterId !== undefined && context.chatId) {
                 if (!this.contextLoadedOnce) {
                     console.log('[machinor-roundtable] 🎯 Context fully ready via polling (Initial Load)');
                     this.contextLoadedOnce = true;
 
                     // Give ST time to complete its initial save, then activate event listeners
                     setTimeout(() => {
-                        this.loadPlotFromStorage();
+                        const loadedPlot = this.loadPlotFromStorage();
+
+                        // CRITICAL FIX: If no plot loaded, clear the skeleton state
+                        // Check for null, undefined, or empty text
+                        if (!loadedPlot || !loadedPlot.text) {
+                            console.log('[machinor-roundtable] No stored plot found, resetting to ready state');
+                            this.updateStatus('ready');
+                            if (this.elements.currentPlotText) {
+                                this.elements.currentPlotText.innerHTML = '<div class="mr-placeholder-text">No plot generated yet. Start chatting or use Manual Trigger.</div>';
+                            }
+                        }
+
                         this.renderHistory();
                         console.log('[machinor-roundtable] ✅ Initial load complete, activating event listeners...');
                         activateEventListeners();
@@ -625,13 +636,43 @@ export class PlotPreviewManager {
             return;
         }
 
-        // Save to cross-device system
-        if (typeof window.addPlotPreviewToHistory === 'function') {
-            window.addPlotPreviewToHistory(plotText, status);
+        // Save to localStorage (Primary)
+        this.saveChatProfile(plotText, status);
+
+        // Lazy Sync to Settings (Secondary/Backup)
+        // Only sync if we have a valid chat ID and core is available
+        if (window.machinorRoundtable && typeof window.machinorRoundtable.syncPlotToSettings === 'function') {
+            const context = getContext();
+            if (context && context.chatId) {
+                window.machinorRoundtable.syncPlotToSettings(context.chatId, {
+                    text: plotText,
+                    status: status
+                });
+            }
+        }
+    }
+
+    /**
+     * Get the current plot data for injection
+     * @returns {Object|null} { text, status } or null
+     */
+    getCurrentPlot() {
+        if (!this.currentPlot) return null;
+
+        // Determine status from UI if possible, or use internal tracking
+        let status = 'unknown';
+        if (this.elements.statusText) {
+            const text = this.elements.statusText.textContent?.toLowerCase() || '';
+            if (text.includes('ready')) status = 'ready';
+            else if (text.includes('injected')) status = 'injected';
+            else if (text.includes('restored')) status = 'restored';
+            else if (text.includes('pending')) status = 'pending';
         }
 
-        // Also save to localStorage for backward compatibility
-        this.saveChatProfile(plotText, status);
+        return {
+            text: this.currentPlot,
+            status: status
+        };
     }
 
     /**
@@ -639,24 +680,6 @@ export class PlotPreviewManager {
      * @returns {Object|null} Loaded plot data or null
      */
     loadPlotFromStorage() {
-        // Try to load from cross-device system first
-        if (typeof window.getCurrentPlotPreview === 'function') {
-            const syncedPreview = window.getCurrentPlotPreview();
-            if (syncedPreview) {
-                console.log('[machinor-roundtable] ✅ Loaded plot from cross-device storage:', syncedPreview.text.substring(0, 50) + '...');
-
-                // CRITICAL FIX: Skip save during initial load to prevent chat corruption
-                this.displayCurrentPlot(syncedPreview.text, 'ready', true);
-
-                // Add visual indicator
-                if (this.elements.statusText) {
-                    this.elements.statusText.innerHTML = `Ready <i class="fa-solid fa-cloud" title="Loaded from cross-device storage"></i>`;
-                }
-
-                return syncedPreview;
-            }
-        }
-
         // Fallback to localStorage system
         return this.loadChatProfile();
     }
@@ -1535,25 +1558,12 @@ export class PlotPreviewManager {
         // Add to history (only if not editing an existing plot)
         if (!this.isEditingPlot || !this.editingPlotId) {
             this.addToHistory(this.currentPlot);
-
-            // Save to plot preview history for cross-device sync
-            if (typeof window.addPlotPreviewToHistory === 'function') {
-                window.addPlotPreviewToHistory(this.currentPlot, 'injected');
-            }
         } else {
             console.log('[machinor-roundtable] Skipping history add - editing existing plot');
         }
 
-        // Save injection to history for cross-device sync
-        if (typeof window.addInjectionToHistory === 'function') {
-            const context = getContext();
-            const character = context?.characters?.[context?.characterId];
-            window.addInjectionToHistory(this.currentPlot, {
-                character: character?.name || 'Unknown Character',
-                style: 'manual',
-                intensity: 'manual'
-            });
-        }
+        // Save the injected state and history to storage (Lazy Sync)
+        this.saveChatProfile(this.currentPlot, 'injected');
 
         console.log('[machinor-roundtable] Plot approved and prepared for injection:', this.currentPlot);
 
