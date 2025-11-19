@@ -189,7 +189,8 @@
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-    opacity: 0; /* Hidden initially to prevent flash */
+    opacity: 0;
+    /* Hidden initially to prevent flash */
     font-size: 20px;
 }
 
@@ -2819,7 +2820,7 @@
 
 .mr-history-item.synced {
     border-left: 3px solid var(--mr-accent-primary);
-    background: linear-gradient(135deg, var(--mr-bg-tertiary) 0%, rgba(var(--mr-accent-rgb), 0.05) 100%);
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.05) 0%, rgba(255, 105, 180, 0.02) 100%);
 }
 
 .mr-history-item.synced::before {
@@ -2827,11 +2828,15 @@
     position: absolute;
     top: 0;
     right: 0;
+    left: auto;
+    /* Ensure it doesn't float left */
     width: 0;
     height: 0;
     border-style: solid;
     border-width: 0 20px 20px 0;
     border-color: transparent var(--mr-accent-primary) transparent transparent;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .mr-history-text {

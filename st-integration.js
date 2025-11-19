@@ -73,6 +73,11 @@ export class STIntegrationManager {
             eventSource.on('chat_changed', (data) => {
                 console.log('[Machinor Roundtable] Chat changed, updating context...');
                 this.loadWorldInfo();
+
+                // If we weren't ready (e.g. ignored empty chat), check again now that content might be here
+                if (!this.isChatReady) {
+                    this.checkChatReadiness('Chat Changed');
+                }
             });
 
             // Listen for world changes
@@ -111,6 +116,13 @@ export class STIntegrationManager {
         // Use a microtask to allow current stack to finish
         queueMicrotask(() => {
             const context = getContext();
+
+            // Ignore empty chats (initial load dummy chat)
+            if (context && context.chat && context.chat.length === 0) {
+                console.log(`[Machinor Roundtable] ⏳ Ignoring empty chat (${source})`);
+                this.isChatReady = false;
+                return;
+            }
 
             // Robust check using core variables
             const isCoreReady =

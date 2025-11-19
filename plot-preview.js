@@ -170,13 +170,28 @@ export class PlotPreviewManager {
      * Show skeleton/loading state while waiting for chat to be ready
      */
     showSkeletonState() {
+        // Disable action buttons during loading
+        this.setButtonsEnabled(false);
+
         if (this.elements.currentPlotText) {
             this.elements.currentPlotText.innerHTML = `
-                <div class="mr-skeleton-loader" style="animation: pulse 1.5s ease-in-out infinite;">
-                    <div class="mr-skeleton-line" style="width: 90%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 4px;"></div>
-                    <div class="mr-skeleton-line" style="width: 75%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 4px;"></div>
-                    <div class="mr-skeleton-line" style="width: 85%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+                <div class="mr-skeleton-loader" style="padding: 16px 0;">
+                    <div style="
+                        width: 70%;
+                        height: 16px;
+                        background: linear-gradient(90deg, rgba(255,105,180,0.08) 0%, rgba(218,112,214,0.12) 50%, rgba(255,105,180,0.08) 100%);
+                        background-size: 200% 100%;
+                        animation: shimmer 2s infinite;
+                        border-radius: 4px;
+                        margin: 0 auto;
+                    "></div>
                 </div>
+                <style>
+                    @keyframes shimmer {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                </style>
             `;
         }
         if (this.elements.statusText) {
@@ -185,12 +200,78 @@ export class PlotPreviewManager {
     }
 
     /**
+     * Enable or disable action buttons
+     * @param {boolean} enabled - Whether buttons should be enabled
+     */
+    setButtonsEnabled(enabled) {
+        const editBtn = document.getElementById('mr_edit_plot');
+        const skipBtn = document.getElementById('mr_skip_plot');
+
+        if (editBtn) {
+            editBtn.disabled = !enabled;
+            editBtn.style.opacity = enabled ? '1' : '0.5';
+            editBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        }
+        if (skipBtn) {
+            skipBtn.disabled = !enabled;
+            skipBtn.style.opacity = enabled ? '1' : '0.5';
+            skipBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        }
+    }
+
+    /**
+     * Show skeleton/loading state for history section
+     */
+    showHistorySkeleton() {
+        if (!this.elements.historyList) return;
+
+        this.elements.historyList.innerHTML = `
+            <div class="mr-history-skeleton" style="padding: 8px 0;">
+                <div class="mr-skeleton-history-item" style="
+                    width: 100%;
+                    height: 60px;
+                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
+                    background-size: 200% 100%;
+                    animation: shimmer 2s infinite;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                "></div>
+                <div class="mr-skeleton-history-item" style="
+                    width: 100%;
+                    height: 60px;
+                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
+                    background-size: 200% 100%;
+                    animation: shimmer 2s infinite 0.15s;
+                    border-radius: 8px;
+                    margin-bottom: 8px;
+                "></div>
+                <div class="mr-skeleton-history-item" style="
+                    width: 100%;
+                    height: 60px;
+                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
+                    background-size: 200% 100%;
+                    animation: shimmer 2s infinite 0.3s;
+                    border-radius: 8px;
+                "></div>
+            </div>
+            <style>
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+            </style>
+        `;
+    }
+
+    /**
      * Deferred initialization - called by ST integration after grace period
      * This prevents extension activity during SillyTavern's startup sequence
      */
     deferredInit() {
         if (this.isInitialized) {
-            console.log('[machinor-roundtable] Plot Preview already initialized, skipping...');
+            console.log('[machinor-roundtable] Plot Preview already initialized, reloading for new chat...');
+            // Even though we're initialized, we should reload the profile for the new chat
+            this.delayedContextLoad(200, 'deferred_init_reload');
             return;
         }
 
@@ -263,6 +344,8 @@ export class PlotPreviewManager {
                             if (this.elements.currentPlotText) {
                                 this.elements.currentPlotText.innerHTML = '<div class="mr-placeholder-text">No plot generated yet. Start chatting or use Manual Trigger.</div>';
                             }
+                            // Re-enable buttons for empty state
+                            this.setButtonsEnabled(true);
                         }
 
                         this.renderHistory();
@@ -298,8 +381,33 @@ export class PlotPreviewManager {
             // Validate context is ready before attempting load
             if (context && context.characterId !== undefined && context.chatId) {
                 console.log('[machinor-roundtable] ✅ Context ready, loading stored plot...');
-                this.loadPlotFromStorage();
-                // Also refresh history display with synced data
+
+                // If this is a chat change, clear current state first AND show loading skeletons
+                if (source.includes('chat_changed') || source.includes('character_selected') || source.includes('deferred_init_reload')) {
+                    console.log('[machinor-roundtable] 🔄 Chat/Character switch detected - resetting state');
+                    this.plotHistory = [];
+                    this.currentPlot = null;
+                    this.updateStatus('pending');
+                    // Show skeletons while loading
+                    this.showSkeletonState();
+                    this.showHistorySkeleton();
+                }
+
+                // Load the plot profile for this chat
+                const loadedProfile = this.loadPlotFromStorage();
+
+                // Explicitly render history (loadChatProfile already does this, but ensure it's called)
+                if (!loadedProfile || !loadedProfile.plotText) {
+                    console.log('[machinor-roundtable] No plot for this chat, showing empty state');
+                    if (this.elements.currentPlotText) {
+                        this.elements.currentPlotText.innerHTML = '<div class="mr-placeholder-text">No plot generated yet. Start chatting or use Manual Trigger.</div>';
+                    }
+                    this.updateStatus('ready');
+                    // Re-enable buttons for empty state
+                    this.setButtonsEnabled(true);
+                }
+
+                // Always render history to ensure it's up to date
                 this.renderHistory();
             } else {
                 console.log('[machinor-roundtable] ⏳ Context not ready yet, will retry...');
@@ -1476,12 +1584,14 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Display current plot in sidebar
+     * Display current plot with enhanced visual feedback
      * @param {string} plotText - The plot text to display
-     * @param {string} status - The status to show
-     * @param {boolean} skipSave - If true, skip saving (for initial load restoration)
+     * @param {string} status - The plot status (ready, pending, injected, restored)
+     * @param {boolean} skipSave - Skip saving to storage (used during restoration)
      */
     displayCurrentPlot(plotText, status = 'ready', skipSave = false) {
+        // Re-enable buttons when plot is displayed
+        this.setButtonsEnabled(true);
         this.currentPlot = plotText;
 
         if (this.elements.currentPlotText) {
