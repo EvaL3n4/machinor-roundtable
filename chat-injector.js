@@ -217,8 +217,20 @@ export class ChatInjector {
                 // Update plot count ONLY if we actually generated a new one?
                 // Or count every injection? Usually "plot count" implies generation tokens used.
                 // Let's count only new generations.
-                if (isNewGeneration && settings) {
-                    settings.plotCount = (settings.plotCount || 0) + 1;
+                // Update counters and save settings
+                if (settings) {
+                    if (isNewGeneration) {
+                        // Reset counter on generation
+                        settings.turnsSinceLastGeneration = 0;
+                        settings.plotCount = (settings.plotCount || 0) + 1;
+                        console.log('[Machinor Roundtable] Generation complete, counter reset to 0');
+                    } else {
+                        // Increment counter if we didn't generate
+                        // Note: We increment even if we injected an existing plot
+                        settings.turnsSinceLastGeneration = (settings.turnsSinceLastGeneration || 0) + 1;
+                        console.log(`[Machinor Roundtable] Turn complete, counter incremented to ${settings.turnsSinceLastGeneration}`);
+                    }
+
                     if (window.machinorRoundtable && window.machinorRoundtable.saveSettings) {
                         window.machinorRoundtable.saveSettings();
                     }
@@ -258,27 +270,32 @@ export class ChatInjector {
 
     /**
      * Determine if we should GENERATE a new plot based on turn frequency
+     * Uses dedicated counter for reliability
      */
     shouldGenerateForTurn() {
-        const settings = window.extension_settings?.['machinor-roundtable'];
-        if (!settings) return true; // Default to generate if no settings (fallback)
+        let settings = window.extension_settings?.['machinor-roundtable'];
+
+        // Fallback to global instance if needed
+        if (!settings && window.machinorRoundtable) {
+            console.warn('[Machinor Roundtable] Settings not found in extension_settings, using global instance');
+            settings = window.machinorRoundtable.settings;
+        }
+
+        if (!settings) {
+            console.warn('[Machinor Roundtable] Settings completely missing in shouldGenerateForTurn, defaulting to FALSE');
+            return false; // Safer default to prevent unwanted overwrites
+        }
 
         const frequency = settings.frequency || 3;
         if (frequency <= 1) return true; // Every turn
 
-        const context = getContext();
-        if (!context || !context.chat) {
-            console.log('[Machinor Roundtable] No context or chat for frequency check');
-            return true; // Default to true to be safe
-        }
+        // Use dedicated counter instead of chat length
+        const currentTurns = settings.turnsSinceLastGeneration || 0;
 
-        // Count user messages to determine turn
-        const messageCount = context.chat.length;
-        const shouldGenerate = (messageCount % frequency) === 0;
+        console.log(`[Machinor Roundtable] Frequency check: ${currentTurns}/${frequency} turns (Settings found: ${!!settings})`);
 
-        console.log(`[Machinor Roundtable] Frequency check: msgCount=${messageCount}, freq=${frequency}, generate=${shouldGenerate}`);
-
-        return shouldGenerate;
+        // Generate if we've reached or exceeded the frequency target
+        return currentTurns >= frequency;
     }
 
     /**

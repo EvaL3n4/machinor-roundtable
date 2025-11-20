@@ -240,6 +240,7 @@ export class STIntegrationManager {
 
     /**
      * Get current world info for plot generation
+     * Returns raw active entries without rigid categorization
      */
     getWorldInfo() {
         if (!this.worldInfo) {
@@ -250,49 +251,27 @@ export class STIntegrationManager {
             return null;
         }
 
-        // Convert world info to a readable format for plot generation
-        const worldContext = {
-            locations: [],
-            items: [],
-            organizations: [],
-            lore: [],
-            characters: [],
-            rules: []
-        };
+        const activeEntries = [];
 
-        // Parse world info entries
+        // Simply collect all active world info entries
         Object.entries(this.worldInfo).forEach(([key, entry]) => {
             try {
-                const info = typeof entry === 'string' ? JSON.parse(entry) : entry;
+                // Handle both direct content strings and object structures
+                const content = typeof entry === 'string' ? entry : (entry.content || entry.entry || '');
+                const name = entry.name || key;
 
-                // Categorize world info entries
-                if (info.content) {
-                    const content = info.content.toLowerCase();
-                    const entryKey = key.toLowerCase();
-
-                    if (content.includes('location') || content.includes('place') ||
-                        entryKey.includes('location') || entryKey.includes('place')) {
-                        worldContext.locations.push({ name: info.name || key, description: info.content });
-                    } else if (content.includes('item') || content.includes('object') ||
-                        entryKey.includes('item') || entryKey.includes('object')) {
-                        worldContext.items.push({ name: info.name || key, description: info.content });
-                    } else if (content.includes('organization') || content.includes('group') ||
-                        entryKey.includes('organization') || entryKey.includes('group')) {
-                        worldContext.organizations.push({ name: info.name || key, description: info.content });
-                    } else if (content.includes('lore') || content.includes('history') ||
-                        entryKey.includes('lore') || entryKey.includes('history')) {
-                        worldContext.lore.push({ name: info.name || key, description: info.content });
-                    } else if (content.includes('rule') || content.includes('law') ||
-                        entryKey.includes('rule') || entryKey.includes('law')) {
-                        worldContext.rules.push({ name: info.name || key, description: info.content });
-                    }
+                if (content && content.length > 0) {
+                    activeEntries.push({
+                        name: name,
+                        content: content
+                    });
                 }
-            } catch (parseError) {
-                // Ignore parsing errors
+            } catch (err) {
+                console.warn('[Machinor Roundtable] Error processing world info entry:', key, err);
             }
         });
 
-        return worldContext;
+        return activeEntries.length > 0 ? activeEntries : null;
     }
 
     /**

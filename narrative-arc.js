@@ -19,7 +19,7 @@ export class NarrativeArcManager {
             completedPhases: [],
             arcType: 'natural'
         };
-        
+
         console.log('[Machinor Roundtable] Narrative Arc Manager initialized');
     }
 
@@ -186,80 +186,28 @@ export class NarrativeArcManager {
 
     /**
      * Suggest appropriate arc type based on character and context
+     * Simplified to avoid rigid guessing based on keywords
      */
     suggestArcType(character, chatHistory, context) {
-        const suggestions = [];
-
-        // Analyze character for genre preferences
-        const charAnalysis = this.stIntegration?.analyzeCharacterProfile(character);
-        const personality = (character?.personality || '').toLowerCase();
-        const description = (character?.description || '').toLowerCase();
-
-        // Romance suggestions
-        if (personality.includes('romantic') || personality.includes('love') || 
-            description.includes('relationship') || description.includes('romance')) {
-            suggestions.push({
-                type: 'arc_suggestion',
-                arcType: 'romance',
-                name: 'Romance Arc',
-                description: 'Develop a romantic relationship',
-                text: '[Character feels drawn to explore deeper romantic feelings]',
-                arcProgress: 0
-            });
-        }
-
-        // Adventure suggestions
-        if (personality.includes('brave') || personality.includes('adventurous') || 
-            personality.includes('explorer') || description.includes('quest')) {
-            suggestions.push({
-                type: 'arc_suggestion',
-                arcType: 'adventure',
-                name: 'Adventure Arc',
-                description: 'Embark on an exciting quest',
-                text: '[Character feels called to an important adventure]',
-                arcProgress: 0
-            });
-        }
-
-        // Mystery suggestions
-        if (personality.includes('curious') || personality.includes('detective') || 
-            description.includes('mystery') || description.includes('investigate')) {
-            suggestions.push({
-                type: 'arc_suggestion',
-                arcType: 'mystery',
-                name: 'Mystery Arc',
-                description: 'Solve an intriguing mystery',
-                text: '[Character notices clues that suggest a larger mystery]',
-                arcProgress: 0
-            });
-        }
-
-        // Friendship suggestions
-        if (personality.includes('friendly') || personality.includes('loyal') || 
-            description.includes('friend')) {
-            suggestions.push({
-                type: 'arc_suggestion',
-                arcType: 'friendship',
-                name: 'Friendship Arc',
-                description: 'Build a strong friendship',
-                text: '[Character feels inclined to form a meaningful connection]',
-                arcProgress: 0
-            });
-        }
-
-        // Default to natural progression if no strong suggestions
-        if (suggestions.length === 0) {
-            suggestions.push({
+        // Return generic suggestions that allow natural development
+        return [
+            {
                 type: 'arc_suggestion',
                 arcType: 'natural',
                 name: 'Natural Progression',
-                description: 'Let the story develop organically',
+                description: 'Let the story develop organically based on current events',
                 text: '[Character continues to develop naturally within the current situation]',
                 arcProgress: 0
-            });
-        }
-
-        return suggestions.slice(0, 2); // Limit to 2 suggestions
+            },
+            {
+                type: 'arc_suggestion',
+                arcType: 'hero_journey',
+                name: "Hero's Journey",
+                description: 'A classic structure of departure, initiation, and return',
+                text: '[Character feels called to embark on a transformative journey]',
+                arcProgress: 0
+            }
+        ];
     }
 
     /**
@@ -268,35 +216,35 @@ export class NarrativeArcManager {
     async generatePhasePlot(phase, character, chatHistory, context = {}) {
         const characterName = character?.name || 'Character';
         const phaseName = phase.name.replace('_', ' ');
-        
+
         // Run LLM character analysis first
         const characterAnalysis = await this.analyzeCharacterForPlot(character);
-        
+
         // Extract recent chat context
         const recentChat = this.extractRecentContext(chatHistory);
-        
+
         const phasePlots = {
             introduction: `[${characterName} takes in their new surroundings, aware that everything is about to change. Recent conversation suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             getting_to_know: `[${characterName} discovers layers to their situation that weren't obvious at first. The conversation patterns indicate ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             complication: `[${characterName} faces an unexpected obstacle that threatens to derail their progress. Recent developments suggest ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             tension: `[${characterName} experiences mounting pressure as stakes escalate. The conversation dynamics reveal ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             resolution: `[${characterName} reaches a pivotal moment that changes everything. The ongoing dialogue points to ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             call_to_adventure: `[${characterName} receives an irresistible summons that promises to test everything they thought they knew about themselves. Chat context suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             preparation: `[${characterName} carefully gathers what they'll need for the journey ahead, sensing that preparation now could determine success later. Recent conversation indicates ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             challenges: `[${characterName} confronts a series of trials that push them beyond their comfort zone. The ongoing dialogue reveals ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             climax: `[${characterName} faces the ultimate test that will define who they become. Recent developments point to ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             hook: `[${characterName} notices a detail that doesn't quite fit, suggesting something significant is about to be revealed. Chat analysis shows ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             investigation: `[${characterName} pieces together clues that paint an increasingly complex picture. Recent conversation patterns indicate ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             revelation: `[${characterName} uncovers a truth that changes their understanding of everything. The dialogue suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             confrontation: `[${characterName} faces the person or truth they've been seeking. Recent developments point to ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             first_meeting: `[${characterName} encounters someone who immediately catches their attention in ways they didn't expect. Chat context suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             bonding: `[${characterName} discovers shared interests and values that create an unexpected connection. Recent conversation indicates ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             test: `[${characterName}'s relationship faces a crucial test that reveals deeper truths. The ongoing dialogue reveals ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             growth: `[${characterName} emerges from their trials with a stronger, more authentic connection. Recent developments show ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             ordinary_world: `[${characterName} operates within the familiar rhythms of their established life, though subtle signs suggest change is coming. Chat analysis indicates ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             mentor: `[${characterName} encounters guidance from an unexpected source that offers new perspective. Recent conversation suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             tests: `[${characterName} faces trials that reveal their true capabilities while forging important alliances. The dialogue points to ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
@@ -313,7 +261,7 @@ export class NarrativeArcManager {
      */
     extractRecentContext(chatHistory, maxMessages = 3) {
         if (!chatHistory || chatHistory.length === 0) return '';
-        
+
         const recentMessages = chatHistory.slice(-maxMessages);
         return recentMessages.map(msg => {
             const speaker = msg.is_user ? 'User' : msg.name || 'Character';
@@ -330,12 +278,12 @@ export class NarrativeArcManager {
             const description = character?.description || '';
             const personality = character?.personality || '';
             const name = character?.name || 'Character';
-            
+
             // Skip analysis if minimal character data
             if (!description && !personality) {
                 return { labels: ['neutral'], confidence: 0.5 };
             }
-            
+
             const analysisPrompt = `Analyze this character for plot generation purposes. Based on their description and personality, identify the most relevant narrative themes and character motivations.
 
 CHARACTER: ${name}
@@ -368,26 +316,26 @@ CHARACTER ANALYSIS:`;
                 removeReasoning: true,
                 trimToSentence: false
             });
-            
+
             // Clean and parse the result
             const cleanResult = analysisResult
                 .toLowerCase()
                 .replace(/[^a-z,\s]/g, '')
                 .trim();
-            
+
             const labels = cleanResult
                 .split(',')
                 .map(label => label.trim())
                 .filter(label => label.length > 0)
                 .slice(0, 4); // Limit to 4 labels max
-            
+
             console.log(`[Narrative Arc] Character analysis for ${name}:`, labels);
-            
+
             return {
                 labels: labels.length > 0 ? labels : ['neutral'],
                 confidence: labels.length > 0 ? 0.8 : 0.5
             };
-            
+
         } catch (error) {
             console.error('[Narrative Arc] Character analysis failed:', error);
             return { labels: ['neutral'], confidence: 0.3 };
@@ -401,7 +349,7 @@ CHARACTER ANALYSIS:`;
         // Use LLM analysis labels if available, fallback to neutral
         const labels = characterAnalysis?.labels || ['neutral'];
         const hints = [];
-        
+
         // Map LLM labels to narrative hints
         const labelToHints = {
             'romantic': ['romantic tension', 'emotional connections', 'relationship dynamics'],
@@ -416,7 +364,7 @@ CHARACTER ANALYSIS:`;
             'social': ['community bonds', 'relationship building', 'group dynamics'],
             'neutral': ['natural story progression', 'character development', 'authentic reactions']
         };
-        
+
         // Convert labels to narrative hints
         labels.forEach(label => {
             const possibleHints = labelToHints[label] || [];
@@ -426,18 +374,18 @@ CHARACTER ANALYSIS:`;
                 hints.push(randomHint);
             }
         });
-        
+
         // Add conversation-based dynamics
         const hasEmotional = recentChat.includes('feel') || recentChat.includes('emotion') || recentChat.includes('heart');
         const hasConflict = recentChat.includes('problem') || recentChat.includes('challenge') || recentChat.includes('difficult');
         const hasDiscovery = recentChat.includes('learn') || recentChat.includes('discover') || recentChat.includes('realize');
         const hasConnection = recentChat.includes('understand') || recentChat.includes('connect') || recentChat.includes('bond');
-        
+
         if (hasEmotional && !hints.some(h => h.includes('emotional'))) hints.push('emotional undercurrents');
         if (hasConflict && !hints.some(h => h.includes('tension'))) hints.push('mounting tension');
         if (hasDiscovery && !hints.some(h => h.includes('reveal'))) hints.push('growing awareness');
         if (hasConnection && !hints.some(h => h.includes('relationship'))) hints.push('deepening bonds');
-        
+
         return hints.length > 0 ? hints.slice(0, 3).join(', ') : 'complex character motivations';
     }
 
@@ -446,39 +394,39 @@ CHARACTER ANALYSIS:`;
      */
     async generateBranchPlot(branch, character, chatHistory, context = {}) {
         const characterName = character?.name || 'Character';
-        
+
         // Run LLM character analysis first
         const characterAnalysis = await this.analyzeCharacterForPlot(character);
-        
+
         // Extract recent chat context
         const recentChat = this.extractRecentContext(chatHistory);
-        
+
         const branchPlots = {
             // Romance branches with contextual enhancement
             friends_to_lovers: `[${characterName} and their trusted friend share a moment that reveals deeper feelings neither expected, while recent conversation suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             enemies_to_lovers: `[${characterName} discovers unexpected vulnerability in their adversary, while chat dynamics reveal ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             strangers_to_lovers: `[${characterName} encounters someone whose presence immediately shifts their world perspective, with conversation patterns indicating ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             // Relationship development branches
             slow_burn: `[${characterName} nurtures a connection that grows stronger with each meaningful interaction, as recent dialogue shows ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             quick_connection: `[${characterName} experiences an immediate, profound bond that transcends the ordinary, while conversation suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             friendship_first: `[${characterName} builds a foundation of trust and understanding that could evolve into something deeper, as chat analysis reveals ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             // Conflict types with character consideration
             external_obstacle: `[${characterName} faces formidable opposition from circumstances beyond their control, while recent conversation points to ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             internal_conflict: `[${characterName} wrestles with doubts that threaten their confidence and direction, as dialogue patterns suggest ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             misunderstanding: `[${characterName} navigates a communication breakdown that threatens to derail progress, while chat context shows ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             // Adventure discovery types
             mysterious_map: `[${characterName} uncovers a cryptic map or clue that promises adventure and revelation, with recent conversation indicating ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             urgent_quest: `[${characterName} receives a time-sensitive call to action that cannot be ignored, as dialogue dynamics reveal ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             accidental_discovery: `[${characterName} stumbles upon something significant through pure chance, while conversation patterns suggest ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             // Challenge types with character awareness
             physical_trials: `[${characterName} faces demanding challenges that test their physical and mental endurance, as recent chat shows ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             moral_dilemmas: `[${characterName} must navigate complex ethical choices that reveal their core values, with conversation indicating ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             mystery_solving: `[${characterName} pieces together clues in a puzzle that will unlock deeper truths, while dialogue suggests ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
-            
+
             // Hero's journey specific branches
             refusal: `[${characterName} initially resists the call to adventure, citing familiar fears and comforts, as conversation reveals ${this.getContextualHint(recentChat, character, characterAnalysis)}]`,
             crossing_threshold: `[${characterName} commits to the journey despite uncertainty, with recent dialogue showing ${this.getContextualHint(recentChat, character, characterAnalysis)}]`
@@ -491,7 +439,7 @@ CHARACTER ANALYSIS:`;
      * Format branch name for display
      */
     formatBranchName(branch) {
-        return branch.split('_').map(word => 
+        return branch.split('_').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' ');
     }
@@ -501,7 +449,7 @@ CHARACTER ANALYSIS:`;
      */
     calculateArcProgress() {
         if (!this.currentArc) return 0;
-        
+
         const totalPhases = this.currentArc.template.phases.length;
         const currentProgress = this.currentArc.phaseIndex / totalPhases;
         return Math.round(currentProgress * 100);
@@ -540,7 +488,7 @@ CHARACTER ANALYSIS:`;
 
         // Move to next phase
         this.currentArc.phaseIndex++;
-        
+
         if (this.currentArc.phaseIndex >= this.currentArc.template.phases.length) {
             console.log(`[Machinor Roundtable] Arc completed: ${this.currentArc.name}`);
             this.arcHistory.push({ ...this.currentArc });
@@ -550,7 +498,7 @@ CHARACTER ANALYSIS:`;
 
         this.currentArc.currentPhase = this.currentArc.template.phases[this.currentArc.phaseIndex];
         this.storyProgress.currentPhase = this.currentArc.currentPhase.name;
-        
+
         console.log(`[Machinor Roundtable] Advanced to phase: ${this.currentArc.currentPhase.name}`);
         return true;
     }

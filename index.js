@@ -167,6 +167,11 @@ class MachinorCore {
         $("#mr_plot_style").val(this.settings.plotStyle || 'natural');
         $("#mr_plot_intensity").val(this.settings.plotIntensity || 'moderate');
         $("#mr_plot_count").text(this.settings.plotCount || 0);
+
+        // Update frequency counter display
+        const currentTurns = this.settings.turnsSinceLastGeneration || 0;
+        const frequency = this.settings.frequency || 3;
+        $("#mr_turn_progress").text(`${currentTurns} / ${frequency}`);
     }
 
     /**
@@ -195,6 +200,14 @@ class MachinorCore {
         $("#mr_frequency").on("input", (e) => {
             this.settings.frequency = parseInt($(e.target).val()) || 3;
             this.saveSettings();
+            this.updateSettingsUI(); // Update progress display immediately
+        });
+
+        $("#mr_reset_counter").on("click", () => {
+            this.settings.turnsSinceLastGeneration = 0;
+            this.saveSettings();
+            this.updateSettingsUI();
+            toastr.success('Frequency counter reset to 0', 'Machinor Roundtable');
         });
 
         $("#mr_history_limit").on("input", (e) => {

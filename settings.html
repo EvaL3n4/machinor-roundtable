@@ -39,8 +39,20 @@
                         <input type="number" id="mr_frequency" class="mr-input" min="1" max="20" value="3">
                         <span class="mr-input-suffix">turns</span>
                     </div>
-                    <span class="mr-help-text">Generate new plot every N turns (1 = every turn, 5 = every 5
-                        turns)</span>
+                    <span class="mr-help-text">Generate new plot every N turns (1 = every turn)</span>
+
+                    <!-- Frequency Counter UI -->
+                    <div class="mr-frequency-counter-container"
+                        style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="mr-counter-info">
+                            <span style="font-size: 0.9em; opacity: 0.8;">Progress:</span>
+                            <span id="mr_turn_progress" style="font-weight: bold; margin-left: 5px;">0 / 3</span>
+                        </div>
+                        <button id="mr_reset_counter" class="mr-btn-icon" title="Reset Counter"
+                            style="padding: 4px 8px; font-size: 0.9em;">
+                            <i class="fa-solid fa-rotate-right"></i> Reset
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mr-form-group">

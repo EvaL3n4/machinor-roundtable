@@ -294,30 +294,23 @@ export class PlotEngine {
     /**
      * Format world context for inclusion in prompts
      */
+    /**
+     * Format world context for inclusion in prompts
+     * Handles the simplified raw entry format
+     */
     formatWorldContext(worldContext) {
-        let text = '';
-
-        if (worldContext.locations?.length > 0) {
-            text += `Notable locations: ${worldContext.locations.map(l => l.name).join(', ')}\n`;
+        if (!Array.isArray(worldContext) || worldContext.length === 0) {
+            return 'No specific world context available.';
         }
 
-        if (worldContext.organizations?.length > 0) {
-            text += `Organizations/groups: ${worldContext.organizations.map(o => o.name).join(', ')}\n`;
-        }
+        let text = 'Active World Info:\n';
 
-        if (worldContext.items?.length > 0) {
-            text += `Important items: ${worldContext.items.map(i => i.name).join(', ')}\n`;
-        }
+        // Simply list all active entries
+        worldContext.forEach(entry => {
+            text += `- ${entry.name}: ${entry.content}\n`;
+        });
 
-        if (worldContext.lore?.length > 0) {
-            text += `World lore: ${worldContext.lore.length} entries available\n`;
-        }
-
-        if (worldContext.rules?.length > 0) {
-            text += `World rules: ${worldContext.rules.length} rules established\n`;
-        }
-
-        return text || 'No specific world context available.';
+        return text;
     }
 
     /**
