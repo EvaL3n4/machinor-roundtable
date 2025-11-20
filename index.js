@@ -248,6 +248,12 @@ class MachinorCore {
 
         try {
             const chatHistory = this.components.chatInjector.getRecentChatHistory();
+
+            // Set recursion guard on injector to prevent it from reacting to our own generation events
+            if (this.components.chatInjector) {
+                this.components.chatInjector.isGeneratingPlot = true;
+            }
+
             const plotContext = await this.components.plotEngine.generatePlotContext(
                 character,
                 chatHistory,
@@ -269,6 +275,11 @@ class MachinorCore {
             console.error(`[${extensionName}] Manual trigger failed:`, error);
             this.components.plotPreview.updateStatus('ready');
             toastr.error("Failed to generate plot", "Machinor Roundtable");
+        } finally {
+            // Always clear recursion guard
+            if (this.components.chatInjector) {
+                this.components.chatInjector.isGeneratingPlot = false;
+            }
         }
     }
 

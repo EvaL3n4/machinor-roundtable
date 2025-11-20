@@ -239,9 +239,13 @@
     transition: opacity 0.3s ease;
     display: block;
     min-height: 0;
-    max-height: none;
+    /* Critical for flex scrolling */
+    height: 100%;
+    /* Ensure it fills available space */
     box-sizing: border-box;
     width: 100%;
+    overscroll-behavior: contain;
+    /* Prevent scroll chaining */
 }
 
 .mr-plot-sidebar.collapsed .mr-sidebar-content {
