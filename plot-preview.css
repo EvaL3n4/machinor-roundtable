@@ -182,6 +182,29 @@ body #mr_plot_sidebar .mr-intel-item {
     align-items: flex-start;
 }
 
+/* Plot Status Container */
+body #mr_plot_sidebar .mr-plot-status {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid var(--mr-ff-accent-primary);
+}
+
+/* Plot Text Container */
+body #mr_plot_sidebar .mr-plot-text-container {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid var(--mr-ff-accent-primary);
+}
+
+/* Direction Input Spacing */
+body #mr_plot_sidebar .mr-direction-input {
+    margin-top: 20px;
+}
+
 body #mr_plot_sidebar .mr-intel-label {
     font-family: var(--mr-ff-font-heading);
     font-size: 11px;
@@ -365,30 +388,25 @@ body #mr_toggle_sidebar.mr-toggle-btn:hover {
 
 @media (max-width: 768px) {
 
-    /* Modal Overlay Style */
+    /* Full Screen Modal Approach (Leit's Lab Style) */
     body #mr_plot_sidebar.mr-plot-sidebar {
-        width: 95% !important;
-        /* Slightly wider on mobile */
-        max-width: 500px !important;
-        height: auto !important;
-        max-height: 75vh !important;
+        /* Full screen on mobile - no positioning conflicts */
+        width: 100% !important;
+        max-width: none !important;
+        height: 100% !important;
+        max-height: none !important;
 
-        /* Flush Bottom Positioning - Fixed */
+        /* Full screen positioning */
         position: fixed !important;
-        top: auto !important;
-        bottom: 50px !important;
-        /* Above ST toolbar */
-        left: 2.5% !important;
-        /* Center with width */
-        right: auto !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
         transform: none !important;
-        /* Remove transform to avoid conflicts */
 
-        /* Modal Appearance */
-        border-radius: 16px 16px 0 0 !important;
-        /* Rounded top only */
-        padding-bottom: 0 !important;
-        border-bottom: none !important;
+        /* Remove rounded corners */
+        border-radius: 0 !important;
+        border: none !important;
 
         /* Backdrop Simulation */
         box-shadow:
@@ -571,23 +589,56 @@ body #mr_plot_sidebar .mr-history-header:hover {
 }
 
 #mr_plot_editor_modal button {
-    padding: 8px 16px;
+    padding: 10px 20px !important;
     cursor: pointer;
-    border-radius: 4px;
-    font-family: var(--mr-ff-font-heading);
-    text-transform: uppercase;
-    font-weight: bold;
+    border-radius: 4px !important;
+    font-family: var(--mr-ff-font-heading) !important;
+    text-transform: uppercase !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #1a2f1a !important;
+    position: relative;
+    top: 0;
 }
 
 #mr_plot_editor_modal .mr-btn-primary {
-    background: var(--mr-ff-accent-primary);
-    color: var(--mr-ff-accent-primary-fg, #000);
-    /* Ensure contrast */
-    border: none;
+    background: #2a3b2a !important;
+    border: 1px solid #4a6b4a !important;
+    color: var(--mr-ff-accent-primary) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+#mr_plot_editor_modal .mr-btn-primary:hover {
+    background: #3a4f3a !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    color: #fff !important;
+    text-shadow: 0 0 8px var(--mr-ff-accent-glow) !important;
+    transform: translateY(-2px);
+}
+
+#mr_plot_editor_modal .mr-btn-primary:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a2f1a !important;
+    transform: translateY(0);
 }
 
 #mr_plot_editor_modal .mr-btn-secondary {
-    background: transparent;
-    border: 1px solid var(--mr-ff-accent-primary);
-    color: var(--mr-ff-accent-primary);
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(197, 160, 89, 0.4) !important;
+    color: var(--mr-ff-text-muted) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+#mr_plot_editor_modal .mr-btn-secondary:hover {
+    background: rgba(197, 160, 89, 0.1) !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    color: var(--mr-ff-accent-primary) !important;
+    transform: translateY(-2px);
+}
+
+#mr_plot_editor_modal .mr-btn-secondary:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a2f1a !important;
+    transform: translateY(0);
 }

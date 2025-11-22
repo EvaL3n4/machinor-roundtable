@@ -47,9 +47,11 @@
                     </div>
                 </div>
 
-                <!-- Current Plot Display -->
-                <div class="mr-plot-text" id="mr_current_plot_text">
-                    No active plot. Click generate to create one.
+                <!-- Current Plot Display with Container -->
+                <div class="mr-plot-text-container">
+                    <div class="mr-plot-text" id="mr_current_plot_text">
+                        No plot generated yet. Start chatting or use Skip, or Generate Plot Now.
+                    </div>
                 </div>
 
                 <!-- Main Action Buttons - Enhanced -->
@@ -135,7 +137,7 @@
                     </button>
                 </div>
 
-                <!-- Plot History - Minimal -->
+                <!-- Plot History - Container Style -->
                 <div class="mr-section-header">
                     <h4><i class="fa-solid fa-history"></i> Recent Plots</h4>
                 </div>
@@ -145,7 +147,10 @@
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="mr-history-content collapsed" id="mr_history_content" aria-hidden="true">
-                        <div id="mr_history_list"></div>
+                        <div class="mr-plot-status">
+                            <div class="mr-intel-label">History</div>
+                            <div id="mr_history_list" class="mr-history-list-container">No plot history yet</div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -942,8 +942,8 @@ export class PlotPreviewManager {
         const mobileToggle = document.getElementById('mr_mobile_toggle');
         this.previouslyFocusedElement = mobileToggle || (document.activeElement instanceof HTMLElement ? document.activeElement : null);
 
-        // SIMPLIFIED: Use CSS classes instead of DOM manipulation
-        this.isCollapsed = false; // Update state variable
+        // Use CSS classes - full screen approach avoids positioning conflicts
+        this.isCollapsed = false;
         this.elements.sidebar.classList.remove('collapsed');
         this.elements.sidebar.classList.remove('mobile-hidden');
         this.elements.sidebar.classList.add('mobile-visible');
@@ -956,7 +956,7 @@ export class PlotPreviewManager {
 
         this.updateMobileAccessibilityState(true);
         this.applyMobileFocusTrap();
-        console.log('[machinor-roundtable] Mobile sidebar shown (CSS-only approach)');
+        console.log('[machinor-roundtable] Mobile sidebar shown (full screen)');
     }
 
     hideMobileSidebar(skipAnimation = false) {
@@ -970,6 +970,17 @@ export class PlotPreviewManager {
         this.elements.sidebar.classList.add('mobile-hidden');
         this.mobileOverlay.classList.remove('mobile-visible');
         this.mobileOverlay.classList.add('mobile-hidden');
+
+        // Clear inline styles to prevent desktop interference
+        if (this.elements.sidebar.style.position) {
+            this.elements.sidebar.style.position = '';
+            this.elements.sidebar.style.bottom = '';
+            this.elements.sidebar.style.left = '';
+            this.elements.sidebar.style.top = '';
+            this.elements.sidebar.style.transform = '';
+            this.elements.sidebar.style.width = '';
+            this.elements.sidebar.style.maxWidth = '';
+        }
 
         document.body.style.overflow = this.originalBodyOverflow;
         mobileToggle?.classList.remove('is-active');
