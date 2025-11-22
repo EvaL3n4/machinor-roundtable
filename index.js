@@ -19,7 +19,6 @@ const defaultSettings = {
     historyLimit: 5,
     plotStyle: 'natural',
     plotIntensity: 'moderate',
-    chatHistories: {},
     previewHistories: {},
     plotCount: 0
 };
@@ -297,17 +296,17 @@ class MachinorCore {
     /**
      * Sync plot data to settings (Lazy/Debounced)
      * @param {string} chatId - The chat ID
-     * @param {Object} plotData - The plot data to sync
+     * @param {Object} profileData - The full profile data to sync
      */
-    syncPlotToSettings(chatId, plotData) {
-        if (!chatId || !plotData) return;
+    syncPlotToSettings(chatId, profileData) {
+        if (!chatId || !profileData) return;
 
         // Ensure previewHistories exists
         this.settings.previewHistories = this.settings.previewHistories || {};
 
-        // Update the setting
+        // Update the setting with full profile
         this.settings.previewHistories[chatId] = {
-            ...plotData,
+            ...profileData,
             timestamp: Date.now()
         };
 
@@ -315,49 +314,6 @@ class MachinorCore {
         this.saveSettings();
     }
 }
-
-// Global Helpers (Legacy Support)
-window.getCurrentChatId = () => {
-    const context = getContext();
-    return context?.chatId || null;
-};
-
-window.addInjectionToHistory = (plotContext, metadata = {}) => {
-    const core = window.machinorRoundtable;
-    if (!core) return;
-
-    const chatId = window.getCurrentChatId();
-    if (!chatId) return;
-
-    const history = core.settings.chatHistories[chatId] || [];
-    history.unshift({
-        text: plotContext,
-        timestamp: new Date().toISOString(),
-        ...metadata
-    });
-
-    if (history.length > core.settings.historyLimit) {
-        history.length = core.settings.historyLimit;
-    }
-
-    core.settings.chatHistories[chatId] = history;
-    core.saveSettings();
-};
-
-window.getCurrentChatHistory = () => {
-    const core = window.machinorRoundtable;
-    const chatId = window.getCurrentChatId();
-    return (core && chatId) ? (core.settings.chatHistories[chatId] || []) : [];
-};
-
-window.clearCurrentChatHistory = () => {
-    const core = window.machinorRoundtable;
-    const chatId = window.getCurrentChatId();
-    if (core && chatId && core.settings.chatHistories[chatId]) {
-        delete core.settings.chatHistories[chatId];
-        core.saveSettings();
-    }
-};
 
 // Initialize
 jQuery(async () => {

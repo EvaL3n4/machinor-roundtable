@@ -125,10 +125,25 @@ export class ChatInjector {
             // 4. Else (No plot at all), generate NEW (First Run).
 
             let plotContext = null;
-            let isNewGeneration = false;
-            const shouldRefresh = this.shouldGenerateForTurn();
+            let isNewGeneration = true;
 
-            console.log('[Machinor Roundtable] Generation check:', { shouldRefresh });
+            // Prevent recursion - if our system prompt is already in the prompt, don't trigger another generation
+            let hasSystemPrompt = false;
+            if (Array.isArray(data.prompt)) {
+                hasSystemPrompt = data.prompt.some(msg => msg.content && msg.content.includes('Narrative Architect'));
+            } else if (typeof data.prompt === 'string') {
+                hasSystemPrompt = data.prompt.includes('Narrative Architect');
+            }
+
+            if (hasSystemPrompt) {
+                console.log('[Machinor Roundtable] Skipping generation - system prompt detected');
+                return;
+            }
+
+            // Check if we should generate a new plot
+            const shouldGenerate = await this.shouldGenerateForTurn(data);
+
+            console.log('[Machinor Roundtable] Generation check:', { shouldRefresh: shouldGenerate });
 
             // CRITICAL FIX: Check preview FIRST, before any generation decision
             let previewPlot = null;
@@ -153,7 +168,7 @@ export class ChatInjector {
                     console.log('[Machinor Roundtable] ♻️ Using pending previewed plot (Manual/Restored)');
                     plotContext = previewPlot.text;
                     isNewGeneration = false;
-                } else if (shouldRefresh) {
+                } else if (shouldGenerate) {
                     // Frequency trigger - generate new even if we have old plot
                     console.log('[Machinor Roundtable] 🔄 Frequency trigger hit, ignoring old plot');
                     // plotContext remains null, forcing generation below
@@ -165,7 +180,7 @@ export class ChatInjector {
                 }
             } else {
                 // No plot in preview - check if we should generate
-                if (shouldRefresh || !previewPlot) {
+                if (shouldGenerate || !previewPlot) {
                     console.log('[Machinor Roundtable] 📝 No preview plot available, will generate');
                     // plotContext remains null, forcing generation below
                 } else {
@@ -214,18 +229,14 @@ export class ChatInjector {
                     }
                 }
 
-                // Save to history
-                if (window.addInjectionToHistory) {
-                    window.addInjectionToHistory(plotContext, {
-                        character: character.name,
-                        style: plotOptions.style,
-                        intensity: plotOptions.intensity
-                    });
+                // Save to history via PlotPreviewManager (syncs to settings)
+                if (this.plotPreview && typeof this.plotPreview.addToHistory === 'function') {
+                    // Only add if this is a new generation (avoid duplicates)
+                    if (isNewGeneration) {
+                        this.plotPreview.addToHistory(plotContext);
+                    }
                 }
 
-                // Update plot count ONLY if we actually generated a new one?
-                // Or count every injection? Usually "plot count" implies generation tokens used.
-                // Let's count only new generations.
                 // Update counters and save settings
                 if (settings) {
                     if (isNewGeneration) {
@@ -286,7 +297,7 @@ export class ChatInjector {
 
         // Fallback to global instance if needed
         if (!settings && window.machinorRoundtable) {
-            console.warn('[Machinor Roundtable] Settings not found in extension_settings, using global instance');
+            // No warning needed - this is standard behavior now
             settings = window.machinorRoundtable.settings;
         }
 

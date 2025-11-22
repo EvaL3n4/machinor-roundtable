@@ -388,54 +388,81 @@ body #mr_toggle_sidebar.mr-toggle-btn:hover {
 
 @media (max-width: 768px) {
 
-    /* Full Screen Modal Approach (Leit's Lab Style) */
+    /* Full Screen Modal - Copy Backdrop Positioning */
     body #mr_plot_sidebar.mr-plot-sidebar {
-        /* Full screen on mobile - no positioning conflicts */
-        width: 100% !important;
-        max-width: none !important;
-        height: 100% !important;
-        max-height: none !important;
-
-        /* Full screen positioning */
+        /* Match backdrop default positioning */
         position: fixed !important;
         top: 0 !important;
-        bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        transform: none !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+
+        /* No max constraints */
+        max-width: none !important;
+        max-height: none !important;
+
+        /* Animation State: Visible (Slide Up) */
+        transform: translateY(0) !important;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
 
         /* Remove rounded corners */
         border-radius: 0 !important;
         border: none !important;
 
-        /* Backdrop Simulation */
-        box-shadow:
-            0 -5px 20px rgba(0, 0, 0, 0.5),
-            0 0 0 100vmax rgba(0, 0, 0, 0.7) !important;
+        /* Z-index - Match Leit's Lab */
+        z-index: 9999 !important;
 
-        /* Ensure visibility when active */
+        /* Visibility when active */
         opacity: 1 !important;
         pointer-events: auto !important;
         display: flex !important;
         flex-direction: column !important;
+
+        /* Ensure background is opaque */
+        background-color: var(--mr-ff-bg-primary) !important;
     }
 
     /* Scrollable Content in Modal */
     body #mr_plot_sidebar .mr-sidebar-content {
         overflow-y: auto !important;
         flex: 1 !important;
-        max-height: 60vh !important;
-        /* Subtract header height */
     }
 
-    /* Collapsed State on Mobile (Hidden) */
+    /* Collapsed/Hidden State on Mobile - Slide Down */
     body #mr_plot_sidebar.mr-plot-sidebar.collapsed,
     body #mr_plot_sidebar.mr-plot-sidebar.mobile-hidden {
-        opacity: 0 !important;
+        transform: translateY(100%) !important;
         pointer-events: none !important;
-        transform: translateY(100vh) !important;
-        /* Slide DOWN when hiding */
-        bottom: -100vh !important;
+        /* Keep display flex so it can animate, just move it off screen */
+        display: flex !important;
+    }
+
+    /* Mobile Close Button */
+    .mr-mobile-close-btn {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--mr-ff-accent);
+        color: var(--mr-ff-text-primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .mr-mobile-close-btn:hover {
+        background: var(--mr-ff-accent);
+        color: var(--mr-ff-bg-primary);
     }
 
     /* Hide Desktop Toggle */
@@ -443,18 +470,15 @@ body #mr_toggle_sidebar.mr-toggle-btn:hover {
         display: none !important;
     }
 
-    /* Mobile Floating Toggle - Flush Left, Raised */
+    /* Mobile Floating Toggle */
     #mr_mobile_toggle {
         display: flex !important;
         position: fixed;
         bottom: 50px !important;
-        /* Raised to avoid ST toolbar */
         left: 0 !important;
-        right: auto;
         width: 40px !important;
         height: 40px !important;
         border-radius: 0 8px 8px 0 !important;
-        /* Rounded right side */
         background: var(--mr-ff-bg-secondary) !important;
         border: 1px solid var(--mr-ff-accent-primary) !important;
         border-left: none !important;

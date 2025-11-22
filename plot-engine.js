@@ -3,7 +3,8 @@ import { getContext } from "../../../extensions.js";
 import { generateQuietPrompt } from "../../../../script.js";
 import { STIntegrationManager } from "./st-integration.js";
 
-const PLOT_GENERATION_PROMPT = `You are a Narrative Architect. Your goal is to create compelling story hooks for immersive roleplay.
+const PLOT_GENERATION_PROMPT = `You are a Narrative Architect.Your goal is to analyze the story context and generate a plot hook for the next scene.
+[System Note: Output valid JSON only.Do not output any introductory text or markdown formatting outside the JSON block.]
 Based on the character information and recent conversation context provided, generate a dynamic plot hook that will drive the story forward.
 
 CHARACTER INFORMATION:
@@ -19,18 +20,18 @@ STORY DIRECTION:
 {{direction}}
 
 TONE:
-Focus on bold, story-driving elements that create narrative energy.
+Focus on bold, story - driving elements that create narrative energy.
 
-INSTRUCTIONS:
+    INSTRUCTIONS:
 1. Analyze the context and character.
 2. Generate a plot hook that creates dramatic tension or emotional stakes.
 3. Output MUST be a valid JSON object.
 
 JSON SCHEMA:
 {
-  "plot_hook": "The narrative hook text, written in the requested style (e.g., '[Character realizes...]')",
-  "pacing_guidance": "Internal guidance on how this plot affects the story pacing",
-  "tone_analysis": "The emotional tone of this specific hook"
+    "plot_hook": "The narrative hook text, written in the requested style (e.g., '[Character realizes...]')",
+        "pacing_guidance": "Internal guidance on how this plot affects the story pacing",
+            "tone_analysis": "The emotional tone of this specific hook"
 }
 `;
 
@@ -53,7 +54,7 @@ export class PlotEngine {
         const promptData = this.buildBestPrompt(character, chatHistory, options);
 
         try {
-            console.log('[machinor-roundtable] 🎯 Making LLM call');
+            console.log('[Machinor Roundtable] 🎯 Making LLM call');
 
             const response = await generateQuietPrompt({
                 quietPrompt: promptData.prompt,
@@ -68,8 +69,8 @@ export class PlotEngine {
                 throw new Error("Failed to parse valid plot hook from response");
             }
 
-            console.log('[machinor-roundtable] Final result:', parsed.plot_hook);
-            console.log('[machinor-roundtable] ===== PLOT GENERATION END =====');
+            console.log('[Machinor Roundtable] Final result:', parsed.plot_hook);
+            console.log('[Machinor Roundtable] ===== PLOT GENERATION END =====');
 
             // Return full object for UI insights, consumers must handle it
             return {
@@ -79,7 +80,7 @@ export class PlotEngine {
             };
 
         } catch (error) {
-            console.error('[machinor-roundtable] LLM call failed:', error);
+            console.error('[Machinor Roundtable] LLM call failed:', error);
             toastr.error("Plot generation failed. Please try again.", "Machinor Roundtable");
             return null;
         }
@@ -93,14 +94,17 @@ export class PlotEngine {
             // First try direct parse
             return JSON.parse(response);
         } catch (e) {
-            console.log('[machinor-roundtable] Direct JSON parse failed, trying extraction');
-            // Try to extract JSON object if wrapped in text
-            const match = response.match(/\{[\s\S]*\}/);
-            if (match) {
+            console.log('[Machinor Roundtable] Direct JSON parse failed, trying extraction');
+            // Try to extract JSON object if wrapped in text or markdown
+            const firstBrace = response.indexOf('{');
+            const lastBrace = response.lastIndexOf('}');
+
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                const jsonString = response.substring(firstBrace, lastBrace + 1);
                 try {
-                    return JSON.parse(match[0]);
+                    return JSON.parse(jsonString);
                 } catch (e2) {
-                    console.error('[machinor-roundtable] Extracted JSON parse failed');
+                    console.error('[Machinor Roundtable] Extracted JSON parse failed');
                 }
             }
             return null;
@@ -122,7 +126,7 @@ export class PlotEngine {
         if (this.narrativeArc) {
             const arcContext = this.buildUnifiedArcContext(character, chatHistory, options);
             if (arcContext) {
-                prompt += `\n\nSTORY ARC CONTEXT:\n${this.formatArcContext(arcContext)}`;
+                prompt += `\n\nSTORY ARC CONTEXT: \n${this.formatArcContext(arcContext)} `;
             }
         }
 
@@ -130,7 +134,7 @@ export class PlotEngine {
         if (this.stIntegration) {
             const worldContext = this.stIntegration.getWorldInfo();
             if (worldContext) {
-                prompt += `\n\nWORLD CONTEXT:\n${this.formatWorldContext(worldContext)}`;
+                prompt += `\n\nWORLD CONTEXT: \n${this.formatWorldContext(worldContext)} `;
             }
         }
 
@@ -161,7 +165,7 @@ export class PlotEngine {
         const recentMessages = chatHistory.slice(-maxMessages);
         return recentMessages.map(msg => {
             const name = msg.is_user ? 'You' : (msg.name || 'Character');
-            return `${name}: ${msg.mes}`;
+            return `${name}: ${msg.mes} `;
         }).join('\n');
     }
 
@@ -180,11 +184,11 @@ export class PlotEngine {
 
     formatArcContext(arcContext) {
         if (!arcContext) return '';
-        return `Current Arc: ${arcContext.arcType || 'None'}\nProgress: ${arcContext.arcProgress}%`;
+        return `Current Arc: ${arcContext.arcType || 'None'} \nProgress: ${arcContext.arcProgress}% `;
     }
 
     formatWorldContext(worldContext) {
         if (!Array.isArray(worldContext)) return '';
-        return worldContext.map(entry => `- ${entry.name}: ${entry.content}`).join('\n');
+        return worldContext.map(entry => `- ${entry.name}: ${entry.content} `).join('\n');
     }
 }
