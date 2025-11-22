@@ -1,124 +1,152 @@
 <div id="mr_plot_sidebar" class="mr-plot-sidebar collapsed" role="complementary" aria-hidden="true">
-    <div class="mr-sidebar-header">
-        <h3>Plot Preview</h3>
-        <button id="mr_toggle_sidebar" class="mr-toggle-btn" title="Toggle Plot Preview" aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
-            <i class="fa-solid fa-chevron-right"></i>
-        </button>
-    </div>
-    
-    <div class="mr-sidebar-content">
-        <!-- Current Plot Section -->
-        <div class="mr-current-plot">
-            <div class="mr-plot-header">
-                <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
-                <span class="mr-status-text" id="mr_status_text">Ready</span>
-            </div>
-            
-            <!-- Narrative Arc Progress - Simplified -->
-            <div class="mr-arc-progress" id="mr_arc_progress">
-                <div class="mr-arc-header">
-                    <h4>Story Arc</h4>
-                    <span class="mr-arc-type" id="mr_arc_type">Natural Progression</span>
-                </div>
-                <div class="mr-arc-bar">
-                    <div class="mr-arc-fill" id="mr_arc_fill" style="width: 0%"></div>
-                </div>
-                <div class="mr-arc-details">
-                    <span class="mr-arc-phase" id="mr_arc_phase">Not started</span>
-                    <span class="mr-arc-percentage" id="mr_arc_percentage">0%</span>
-                </div>
-            </div>
-            
-            <!-- Current Plot Display -->
-            <div class="mr-plot-text" id="mr_current_plot_text">
-                No active plot. Click generate to create one.
-            </div>
-            
-            <!-- Main Action Buttons - Enhanced -->
-            <div class="mr-plot-actions">
-                <button id="mr_edit_plot" class="mr-action-btn liquid-hover" title="Edit Plot">
-                    <i class="fa-solid fa-pen"></i> Edit
-                </button>
-                <button id="mr_skip_plot" class="mr-action-btn liquid-hover" title="Skip Plot">
-                    <i class="fa-solid fa-forward"></i> Skip
-                </button>
-            </div>
-            
-            <!-- Quick Direction Input -->
-            <div class="mr-direction-input">
-                <label for="mr_plot_direction">Direction:</label>
-                <input type="text" id="mr_plot_direction"
-                       placeholder="Make it more romantic, add conflict..."
-                       autocomplete="off">
-            </div>
+    <!-- Decorative Spine -->
+    <div class="mr-sidebar-spine"></div>
+
+    <!-- Desktop Toggle Button (Outside Inner for Visibility) -->
+    <button id="mr_toggle_sidebar" class="mr-toggle-btn mr-desktop-only" title="Toggle Plot Preview"
+        aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
+        <i class="fa-solid fa-feather-pointed"></i>
+    </button>
+
+    <div class="mr-sidebar-inner">
+        <div class="mr-sidebar-header">
+            <h3>
+                <span class="mr-header-icon">🌿</span>
+                Plot Preview
+            </h3>
         </div>
 
-        <!-- Advanced Options Section - Seamless Integration -->
-        <div class="mr-advanced-section">
-            <!-- Story Intelligence Panel -->
-            <div class="mr-section-header">
-                <h4><i class="fa-solid fa-chart-line"></i> Story Intelligence</h4>
-            </div>
-            <div class="mr-story-intel-compact" id="mr_story_intel">
-                <div class="mr-intel-item">
-                    <label>Characters:</label>
-                    <div class="mr-intel-value" id="mr_character_count">Single character</div>
+        <div class="mr-sidebar-content">
+            <!-- Current Plot Section -->
+            <div class="mr-current-plot">
+                <div class="mr-decorative-corner top-left"></div>
+                <div class="mr-decorative-corner top-right"></div>
+                <div class="mr-decorative-corner bottom-left"></div>
+                <div class="mr-decorative-corner bottom-right"></div>
+
+                <div class="mr-plot-header">
+                    <span class="mr-status-indicator ready" id="mr_status_indicator"></span>
+                    <span class="mr-status-text" id="mr_status_text">Ready</span>
                 </div>
-                <div class="mr-intel-item">
-                    <label>World:</label>
-                    <div class="mr-intel-value" id="mr_world_context">No world data</div>
+
+                <!-- Narrative Arc Progress - Simplified -->
+                <div class="mr-arc-progress" id="mr_arc_progress">
+                    <div class="mr-arc-header">
+                        <div class="mr-intel-label">Story Arc</div>
+                        <div class="mr-intel-value" id="mr_arc_type">Natural Progression</div>
+                    </div>
+                    <div class="mr-arc-bar">
+                        <div class="mr-arc-fill" id="mr_arc_fill" style="width: 0%"></div>
+                    </div>
+                    <div class="mr-arc-details">
+                        <div class="mr-intel-label">Progress</div>
+                        <div class="mr-intel-value">
+                            <span id="mr_arc_phase">Not started</span>
+                            <span id="mr_arc_percentage">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Plot Display -->
+                <div class="mr-plot-text" id="mr_current_plot_text">
+                    No active plot. Click generate to create one.
+                </div>
+
+                <!-- Main Action Buttons - Enhanced -->
+                <div class="mr-plot-actions">
+                    <button id="mr_edit_plot" class="mr-action-btn liquid-hover" title="Edit Plot">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </button>
+                    <button id="mr_skip_plot" class="mr-action-btn liquid-hover" title="Skip Plot">
+                        <i class="fa-solid fa-forward"></i> Skip
+                    </button>
+                </div>
+
+                <!-- Quick Direction Input -->
+                <div class="mr-direction-input">
+                    <div class="mr-intel-label">Direction</div>
+                    <input type="text" id="mr_plot_direction" placeholder="Make it more romantic, add conflict..."
+                        autocomplete="off">
                 </div>
             </div>
-            
-            <!-- Template Gallery - Compact -->
-            <div class="mr-section-header">
-                <h4><i class="fa-solid fa-palette"></i> Quick Templates</h4>
-            </div>
-            <div class="mr-template-gallery-compact" id="mr_template_gallery">
-                <div class="mr-templates-grid">
-                    <button class="mr-template-btn liquid-hover" data-template="meet_cute">
-                        <span class="mr-template-emoji">💕</span>
-                        <span class="mr-template-label">Romance</span>
+
+            <!-- Advanced Options Section - Seamless Integration -->
+            <div class="mr-advanced-section">
+                <div class="mr-decorative-corner top-left"></div>
+                <div class="mr-decorative-corner top-right"></div>
+                <div class="mr-decorative-corner bottom-left"></div>
+                <div class="mr-decorative-corner bottom-right"></div>
+
+                <!-- Story Intelligence Panel -->
+                <div class="mr-section-header">
+                    <h4><i class="fa-solid fa-chart-line"></i> Story Intelligence</h4>
+                </div>
+                <div class="mr-story-intel-compact" id="mr_story_intel">
+                    <div class="mr-intel-item">
+                        <div class="mr-intel-label">Tone</div>
+                        <div class="mr-intel-value" id="mr_tone_analysis">Neutral</div>
+                    </div>
+                    <div class="mr-intel-item">
+                        <div class="mr-intel-label">Pacing</div>
+                        <div class="mr-intel-value" id="mr_pacing_guidance">Standard</div>
+                    </div>
+                    <!-- Hidden but kept for compatibility if needed -->
+                    <div class="mr-intel-item" style="display:none">
+                        <div class="mr-intel-label">Characters</div>
+                        <div class="mr-intel-value" id="mr_character_count">Single character</div>
+                    </div>
+                </div>
+
+                <!-- Template Gallery - Compact -->
+                <div class="mr-section-header">
+                    <h4><i class="fa-solid fa-palette"></i> Quick Templates</h4>
+                </div>
+                <div class="mr-template-gallery-compact" id="mr_template_gallery">
+                    <div class="mr-templates-grid">
+                        <button class="mr-template-btn liquid-hover" data-template="meet_cute">
+                            <span class="mr-template-emoji">🌹</span>
+                            <span class="mr-template-label">Romance</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="adventure_begins">
+                            <span class="mr-template-emoji">⚔️</span>
+                            <span class="mr-template-label">Adventure</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="mystery_hook">
+                            <span class="mr-template-emoji">🔮</span>
+                            <span class="mr-template-label">Mystery</span>
+                        </button>
+                        <button class="mr-template-btn liquid-hover" data-template="conflict_rises">
+                            <span class="mr-template-emoji">⚡</span>
+                            <span class="mr-template-label">Conflict</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="mr-section-header">
+                    <h4><i class="fa-solid fa-tools"></i> Actions</h4>
+                </div>
+                <div class="mr-quick-actions">
+                    <button id="mr_regenerate_next" class="mr-action-btn small liquid-hover">
+                        <i class="fa-solid fa-arrows-rotate"></i> Regenerate
                     </button>
-                    <button class="mr-template-btn liquid-hover" data-template="adventure_begins">
-                        <span class="mr-template-emoji">🗺️</span>
-                        <span class="mr-template-label">Adventure</span>
-                    </button>
-                    <button class="mr-template-btn liquid-hover" data-template="mystery_hook">
-                        <span class="mr-template-emoji">🔍</span>
-                        <span class="mr-template-label">Mystery</span>
-                    </button>
-                    <button class="mr-template-btn liquid-hover" data-template="conflict_rises">
-                        <span class="mr-template-emoji">⚡</span>
-                        <span class="mr-template-label">Conflict</span>
+                    <button id="mr_manual_plot_btn" class="mr-action-btn small liquid-hover">
+                        <i class="fa-solid fa-keyboard"></i> Custom Plot
                     </button>
                 </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="mr-section-header">
-                <h4><i class="fa-solid fa-tools"></i> Actions</h4>
-            </div>
-            <div class="mr-quick-actions">
-                <button id="mr_regenerate_next" class="mr-action-btn small liquid-hover">
-                    <i class="fa-solid fa-arrows-rotate"></i> Regenerate
-                </button>
-                <button id="mr_manual_plot_btn" class="mr-action-btn small liquid-hover">
-                    <i class="fa-solid fa-keyboard"></i> Custom Plot
-                </button>
-            </div>
-            
-            <!-- Plot History - Minimal -->
-            <div class="mr-section-header">
-                <h4><i class="fa-solid fa-history"></i> Recent Plots</h4>
-            </div>
-            <div class="mr-history-compact">
-                <div class="mr-history-header" id="mr_history_toggle">
-                    <span>View History</span>
-                    <i class="fa-solid fa-chevron-down"></i>
+
+                <!-- Plot History - Minimal -->
+                <div class="mr-section-header">
+                    <h4><i class="fa-solid fa-history"></i> Recent Plots</h4>
                 </div>
-                <div class="mr-history-content collapsed" id="mr_history_content">
-                    <div id="mr_history_list"></div>
+                <div class="mr-history-compact">
+                    <div class="mr-history-header" id="mr_history_toggle">
+                        <span>View History</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="mr-history-content collapsed" id="mr_history_content" aria-hidden="true">
+                        <div id="mr_history_list"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -126,7 +154,8 @@
 </div>
 
 <!-- Mobile Floating Toggle Button -->
-<button id="mr_mobile_toggle" class="mr-mobile-toggle" title="Toggle Plot Preview" aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
+<button id="mr_mobile_toggle" class="mr-mobile-toggle mr-mobile-only" title="Toggle Plot Preview"
+    aria-controls="mr_plot_sidebar" aria-expanded="false" aria-label="Toggle Plot Preview sidebar">
     <i class="fa-solid fa-book-open"></i>
 </button>
 
@@ -138,9 +167,7 @@
             <button id="mr_close_modal" class="mr-close-btn">&times;</button>
         </div>
         <div class="mr-modal-body">
-            <textarea id="mr_plot_editor_text" 
-                      placeholder="Enter your plot context here..."
-                      rows="8"></textarea>
+            <textarea id="mr_plot_editor_text" placeholder="Enter your plot context here..." rows="8"></textarea>
         </div>
         <div class="mr-modal-footer">
             <button id="mr_save_plot" class="mr-btn-primary">Save</button>

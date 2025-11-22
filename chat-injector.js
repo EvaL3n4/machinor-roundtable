@@ -183,13 +183,22 @@ export class ChatInjector {
                 this.isGeneratingPlot = true;
                 try {
                     plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
-                    isNewGeneration = true;
+
+                    // Handle object return from PlotEngine
+                    if (plotContext && typeof plotContext === 'object') {
+                        plotContext = plotContext.text;
+                    }
                 } finally {
                     // ALWAYS CLEAR FLAG
                     this.isGeneratingPlot = false;
                 }
             }
 
+            if (!plotContext) {
+                console.log('[machinor-roundtable] No plot context generated, skipping injection');
+                this.isGeneratingPlot = false;
+                return;
+            }
             if (plotContext) {
                 console.log('[Machinor Roundtable] Plot context ready:', plotContext);
                 // Inject into the prompt

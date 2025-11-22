@@ -657,28 +657,31 @@ export class PlotPreviewManager {
     }
 
     /**
-     * Update story intelligence with restored data
-     * @param {Object} storyData - Restored story intelligence data
+    /**
+     * Update story intelligence with new insights
+     * @param {Object} insights - The insights object from plot generation
      */
-    updateStoryIntelligenceWithData(storyData) {
+    updateInsightsDisplay(insights) {
         try {
-            // Update character analysis display
-            if (storyData.characterAnalysis && this.elements.characterAnalysis) {
-                this.elements.characterAnalysis.textContent = storyData.characterAnalysis;
+            if (!insights) return;
+
+            // Update Tone
+            const toneEl = document.getElementById('mr_tone_analysis');
+            if (toneEl && insights.tone) {
+                toneEl.textContent = insights.tone;
+                // Add tooltip or color coding based on tone if desired
             }
 
-            // Update world context display
-            if (storyData.worldContext && this.elements.worldContext) {
-                this.elements.worldContext.textContent = storyData.worldContext;
+            // Update Pacing
+            const pacingEl = document.getElementById('mr_pacing_guidance');
+            if (pacingEl && insights.pacing) {
+                pacingEl.textContent = insights.pacing;
             }
 
-            // Update character count
-            if (storyData.characterCount && this.elements.characterCount) {
-                this.elements.characterCount.textContent = storyData.characterCount;
-            }
+            console.log('[machinor-roundtable] Updated insights display:', insights);
 
         } catch (error) {
-            console.error('[machinor-roundtable] Error updating story intelligence with restored data:', error);
+            console.error('[machinor-roundtable] Error updating insights display:', error);
         }
     }
 
@@ -2070,10 +2073,15 @@ export class PlotPreviewManager {
             const chatHistory = this.getRecentChatHistory();
 
             // Generate plot using the plot engine
-            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory);
+            const plotResult = await this.plotEngine.generatePlotContext(character, chatHistory);
 
-            if (plotContext) {
-                this.displayCurrentPlot(plotContext, 'ready');
+            if (plotResult) {
+                const text = typeof plotResult === 'object' ? plotResult.text : plotResult;
+                this.displayCurrentPlot(text, 'generated');
+
+                if (typeof plotResult === 'object' && plotResult.tone) {
+                    this.updateInsightsDisplay(plotResult);
+                }
                 // @ts-ignore - toastr is a global library
                 toastr.success('New plot generated', 'Machinor Roundtable');
             } else {
@@ -2121,10 +2129,19 @@ export class PlotPreviewManager {
             };
 
             // Generate plot using the plot engine with options
-            const plotContext = await this.plotEngine.generatePlotContext(character, chatHistory, plotOptions);
+            const plotResult = await this.plotEngine.generatePlotContext(character, chatHistory, {
+                template: template,
+                guidance: guidance
+            });
 
-            if (plotContext) {
-                this.displayCurrentPlot(plotContext, 'ready');
+            if (plotResult) {
+                const text = typeof plotResult === 'object' ? plotResult.text : plotResult;
+                this.displayCurrentPlot(text, 'generated');
+
+                // Show insights if available
+                if (typeof plotResult === 'object' && plotResult.tone) {
+                    this.updateInsightsDisplay(plotResult);
+                }
                 // @ts-ignore - toastr is a global library
                 toastr.success('New plot generated with style: ' + plotStyle, 'Machinor Roundtable');
             } else {

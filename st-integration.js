@@ -108,10 +108,6 @@ export class STIntegrationManager {
      * Check if chat is fully ready and loaded
      * @param {string} source - Optional source identifier for debugging
      */
-    /**
-     * Check if chat is fully ready and loaded
-     * @param {string} source - Optional source identifier for debugging
-     */
     checkChatReadiness(source = 'Check') {
         // Use a microtask to allow current stack to finish
         queueMicrotask(() => {
@@ -135,7 +131,6 @@ export class STIntegrationManager {
 
             if (isCoreReady && context && context.chatId && context.characterId !== undefined) {
                 if (!this.isChatReady) {
-                    // Don't set isChatReady to true yet, wait for stability
                     console.log(`[Machinor Roundtable] ✅ Core ready (${source}). ID:`, context.chatId);
                     this.onChatReady(context);
                 }
@@ -148,72 +143,11 @@ export class STIntegrationManager {
 
     /**
      * Called when chat is confirmed ready
-     * Uses stability checking instead of fixed timeout
      */
     onChatReady(context) {
-        // Start stability checking instead of fixed timeout
-        this.waitForChatStability();
-    }
-
-    /**
-     * Wait for chat to be fully loaded and stable before initializing
-     * Polls context.chat and waits for message count to stabilize
-     */
-    waitForChatStability() {
-        let lastMessageCount = -1;
-        let stableCount = 0;
-        const STABLE_CHECKS_REQUIRED = 3; // Messages must be stable for 3 checks
-        const CHECK_INTERVAL = 300; // Check every 300ms
-
-        const stabilityCheck = setInterval(() => {
-            // Use direct chat array access for more reliability
-            const currentMessageCount = Array.isArray(chat) ? chat.length : 0;
-
-            // Empty chat means ST is still in preload phase
-            if (currentMessageCount === 0) {
-                console.log('[Machinor Roundtable] ⏳ Chat empty, waiting for messages to load...');
-                lastMessageCount = 0;
-                stableCount = 0;
-                return;
-            }
-
-            // Check if message count is stable (hasn't changed)
-            if (currentMessageCount === lastMessageCount) {
-                stableCount++;
-                console.log(`[Machinor Roundtable] 📊 Chat stable: ${currentMessageCount} messages (check ${stableCount}/${STABLE_CHECKS_REQUIRED})`);
-
-                // If stable for required number of checks, we're good to go
-                if (stableCount >= STABLE_CHECKS_REQUIRED) {
-                    clearInterval(stabilityCheck);
-                    console.log('[Machinor Roundtable] ✅ Chat fully loaded and stable with', currentMessageCount, 'messages');
-
-                    // Small buffer to ensure any final saves complete
-                    setTimeout(() => {
-                        this.isChatReady = true;
-                        this.emit('chat_ready', getContext());
-                    }, 200);
-                }
-            } else {
-                // Count changed, chat is still loading
-                console.log(`[Machinor Roundtable] 📈 Chat loading: ${currentMessageCount} messages (was ${lastMessageCount})`);
-                lastMessageCount = currentMessageCount;
-                stableCount = 0;
-            }
-        }, CHECK_INTERVAL);
-
-        // Absolute safety timeout after 10 seconds
-        setTimeout(() => {
-            const context = getContext();
-            const messageCount = context?.chat?.length || 0;
-
-            // Only initialize if we haven't already
-            if (!this.isChatReady) {
-                clearInterval(stabilityCheck);
-                console.warn(`[Machinor Roundtable] ⚠️ Stability timeout reached after 10s with ${messageCount} messages - initializing anyway`);
-                this.isChatReady = true;
-                this.emit('chat_ready', context);
-            }
-        }, 10000);
+        // Simplified: No complex polling, trust the core flags
+        this.isChatReady = true;
+        this.emit('chat_ready', context);
     }
 
     /**
@@ -331,16 +265,8 @@ export class STIntegrationManager {
      * These methods performed expensive text analysis that didn't significantly
      * improve plot quality. The LLM can intuit character traits from the
      * {{description}} and {{personality}} macros provided in the prompt.
-     * 
-     * Removed methods:
-     * - analyzeCharacterProfile()
-     * - extractPersonalityTraits()
-     * - extractBackstory()
-     * - extractMotivations()
-     * - extractFears()
-     * - analyzeSpeechPattern()
-     * - getCharacterRelationships()
-     * - assessArcPotential()
-     * - analyzeActiveCharacters()
      */
+    analyzeActiveCharacters() {
+        // Placeholder for compatibility if needed, but logic is removed
+    }
 }
