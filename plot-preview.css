@@ -439,30 +439,33 @@ body #mr_toggle_sidebar.mr-toggle-btn:hover {
         display: flex !important;
     }
 
-    /* Mobile Close Button */
-    .mr-mobile-close-btn {
-        display: block !important;
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid var(--mr-ff-accent-primary);
-        color: var(--mr-ff-text-primary);
-        font-size: 1.2rem;
-        cursor: pointer;
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
+    /* Mobile Close Button - High Specificity Override */
+    body #mr_plot_sidebar .mr-mobile-close-btn {
+        display: flex !important;
+        position: absolute !important;
+        top: 15px !important;
+        right: 15px !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 50% !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid var(--mr-ff-accent-primary) !important;
+        color: var(--mr-ff-text-primary) !important;
+        font-size: 1.2rem !important;
+        cursor: pointer !important;
+        z-index: 10000 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
     }
 
-    .mr-mobile-close-btn:hover {
-        background: var(--mr-ff-accent-primary);
-        color: var(--mr-ff-bg-primary);
+    body #mr_plot_sidebar .mr-mobile-close-btn:hover {
+        background: var(--mr-ff-accent-primary) !important;
+        color: var(--mr-ff-bg-primary) !important;
+        transform: scale(1.1) !important;
     }
 
     /* Hide Desktop Toggle */
