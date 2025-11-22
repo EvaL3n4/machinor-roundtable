@@ -1,2952 +1,668 @@
-/* Machinor Roundtable - iOS Liquid Glass UI Pink Purple Theme */
+/* Machinor Roundtable - True Fantasy Forest Theme (V2.1 - Specificity Hardened) */
 
-/* Import iOS Font Stack */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ==========================================================================
+   1. CORE RESET & ISOLATION
+   ========================================================================== */
 
-/* iOS Liquid Glass Design System - Pink Purple Theme */
-:root {
-    /* Core Pink Purple Palette */
-    --mr-bg-primary: #0a0a0a;
-    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
-    --mr-bg-glass: rgba(255, 192, 203, 0.08);
-    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
-    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
-    
-    /* Pink Purple Accent System */
-    --mr-accent-primary: #ff69b4;      /* Hot Pink */
-    --mr-accent-secondary: #da70d6;    /* Orchid */
-    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
-    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
-    
-    /* Liquid Glass Gradients */
-    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
-    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
-    --mr-header-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    
-    /* iOS Typography System */
-    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    --mr-text-primary: #f8f9fa;
-    --mr-text-secondary: #e9ecef;
-    --mr-text-tertiary: #dee2e6;
-    --mr-text-muted: #adb5bd;
-    --mr-text-accent: #ff69b4;
-    
-    /* iOS Liquid Glass Borders */
-    --mr-border-glass: rgba(255, 255, 255, 0.12);
-    --mr-border-pink: rgba(255, 105, 180, 0.2);
-    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
-    --mr-border-accent: rgba(218, 112, 214, 0.25);
-    
-    /* iOS Liquid Glass Shadows */
-    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
-    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
-    --mr-shadow-glass-elevated: 0 20px 60px rgba(255, 105, 180, 0.2);
-    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
-    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
-    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
-    
-    /* iOS Radius Scale */
-    --mr-radius-lg: 20px;
-    --mr-radius-md: 16px;
-    --mr-radius-sm: 12px;
-    --mr-radius-xs: 8px;
-    --mr-radius-full: 50px;
-    
-    /* iOS Animation System */
-    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-mobile-drawer-transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
-}
+/* High Specificity Root to Override SillyTavern Themes */
+body #mr_plot_sidebar.mr-plot-sidebar {
+    /* Reset Box Model */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 
-/* Premium iOS Liquid Glass Sidebar Container */
-.mr-plot-sidebar {
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translate3d(0, -50%, 0);
-    width: 380px;
-    max-height: 85vh;
-    max-height: 85dvh;
-    /* Premium iOS Liquid Glass Background */
-    background: linear-gradient(135deg,
-        rgba(255, 192, 203, 0.12) 0%,
-        rgba(255, 192, 203, 0.08) 100%);
-    backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-    -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-    border: none;
-    border-left: none;
-    border-radius: 0 var(--mr-radius-lg) var(--mr-radius-lg) 0;
-    color: var(--mr-text-primary);
-    font-family: var(--mr-font-family);
-    z-index: 1000;
-    transition: var(--mr-transition);
-    display: flex;
-    flex-direction: column;
-    box-shadow:
-        0 25px 50px -12px rgba(255, 105, 180, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-    pointer-events: auto;
-    contain: layout paint;
-    will-change: transform;
-    position: relative;
-}
+    /* Reset Typography */
+    font-family: var(--mr-ff-font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--mr-ff-text-primary);
 
-.mr-plot-sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg,
-        rgba(255, 105, 180, 0.08) 0%,
-        rgba(218, 112, 214, 0.05) 25%,
-        rgba(186, 85, 211, 0.05) 50%,
-        rgba(25, 25, 35, 0.8) 100%);
-    border-radius: 0 var(--mr-radius-lg) var(--mr-radius-lg) 0;
-    pointer-events: none;
-    z-index: -1;
-}
-
-.mr-plot-sidebar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* Collapsed State */
-.mr-plot-sidebar.collapsed {
-    width: 60px;
-    background: var(--mr-bg-secondary);
-    backdrop-filter: blur(15px);
-}
-
-/* iOS Liquid Glass Header - Seamless Integration */
-.mr-sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
+    /* Reset Backgrounds & Borders */
     background: none;
     border: none;
-    position: relative;
-    overflow: visible;
+    box-shadow: none;
+
+    /* Positioning & Dimensions */
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translate3d(0, -50%, 0);
+    width: 420px;
+    height: 85vh;
+    max-height: 900px;
+    z-index: 2000;
+
+    /* Transition */
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), width 0.4s ease;
 }
 
-.mr-sidebar-header::before {
+/* ==========================================================================
+   2. THE TOME (Sidebar Container)
+   ========================================================================== */
+
+/* The Main "Book" Body */
+body #mr_plot_sidebar.mr-plot-sidebar::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    border-radius: var(--mr-radius-md) var(--mr-radius-md) 0 0;
-}
-
-.mr-sidebar-header::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.02) 0%,
-        rgba(255, 255, 255, 0.05) 100%);
-    pointer-events: none;
-    border-radius: var(--mr-radius-md) var(--mr-radius-md) 0 0;
-}
-
-.mr-sidebar-header:hover::before {
-    opacity: 0.3;
-}
-
-.mr-sidebar-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--mr-text-primary);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 1;
-    letter-spacing: -0.02em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.mr-sidebar-header h3::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    background: var(--mr-accent-primary);
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
-    flex-shrink: 0;
-}
-
-/* Premium iOS Liquid Glass Toggle Button */
-.mr-toggle-btn {
-    background:
-        linear-gradient(135deg,
-            rgba(255, 105, 180, 0.15) 0%,
-            rgba(218, 112, 214, 0.15) 100%);
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--mr-text-primary);
-    cursor: pointer;
-    padding: 12px;
-    border-radius: var(--mr-radius-md);
-    transition: var(--mr-transition-spring);
-    position: relative;
-    z-index: 1;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: var(--mr-ff-bg-primary);
+    /* Noise Texture */
+    background-image:
+        linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.2) 5%, rgba(0, 0, 0, 0.2) 95%, rgba(0, 0, 0, 0.8)),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+    border-radius: 0 16px 16px 0;
     box-shadow:
-        0 8px 25px rgba(255, 105, 180, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-}
-
-.mr-toggle-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    transition: left 0.5s ease;
+        10px 0 30px rgba(0, 0, 0, 0.8),
+        inset 2px 0 5px rgba(255, 255, 255, 0.05);
     z-index: -1;
 }
 
-.mr-toggle-btn:hover::before {
-    left: 0;
+/* The "Spine" Detail */
+body #mr_plot_sidebar .mr-sidebar-spine {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    right: 6px;
+    width: 4px;
+    border-left: 2px dashed rgba(197, 160, 89, 0.3);
+    border-right: 2px solid rgba(197, 160, 89, 0.6);
+    pointer-events: none;
 }
 
-.mr-toggle-btn:hover {
-    background: transparent;
-    border-color: transparent;
-    transform: scale(1.05) translateY(-2px);
-    box-shadow:
-        0 12px 35px rgba(255, 105, 180, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    color: white;
+/* Collapsed State (Desktop) */
+body #mr_plot_sidebar.mr-plot-sidebar.collapsed {
+    width: 60px;
+    transform: translate3d(0, -50%, 0);
 }
 
-.mr-toggle-btn:active {
-    transform: scale(0.95) translateY(0px);
-    transition: var(--mr-transition-fast);
-}
-
-.mr-plot-sidebar.collapsed .mr-sidebar-header h3 {
-    display: none;
-}
-
-/* Sidebar Content Area */
-.mr-sidebar-content {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 20px;
-    opacity: 1;
-    transition: opacity 0.3s ease;
-    display: block;
-    min-height: 0;
-    max-height: none;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-.mr-plot-sidebar.collapsed .mr-sidebar-content {
+body #mr_plot_sidebar.mr-plot-sidebar.collapsed .mr-sidebar-inner {
     opacity: 0;
     pointer-events: none;
 }
 
-/* Custom Scrollbar - iOS Pink Theme */
-.mr-sidebar-content::-webkit-scrollbar {
-    width: 6px;
-}
+/* ==========================================================================
+   3. CONTENT LAYOUT
+   ========================================================================== */
 
-.mr-sidebar-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-}
-
-.mr-sidebar-content::-webkit-scrollbar-thumb {
-    background: var(--mr-accent-gradient);
-    border-radius: 3px;
-}
-
-/* iOS Liquid Glass Cards */
-.mr-current-plot {
-    margin-bottom: 24px;
-    padding: 20px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-md);
-    box-shadow: var(--mr-shadow-glass);
-    transition: var(--mr-transition-spring);
-    position: relative;
-    overflow: hidden;
-}
-
-.mr-current-plot::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.mr-current-plot:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: var(--mr-shadow-glass-strong);
-    border-color: var(--mr-border-pink);
-}
-
-.mr-current-plot:hover::before {
-    opacity: 1;
-}
-
-/* iOS Status Indicators with Glow */
-.mr-plot-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.mr-status-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-    position: relative;
-    animation: mr-pulse-enhanced 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
-    will-change: transform, box-shadow;
-}
-
-@keyframes mr-pulse-enhanced {
-    0% {
-        box-shadow: 0 0 0 0 currentColor;
-        transform: scale(1);
-        opacity: 1;
-    }
-    25% {
-        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.15);
-        transform: scale(1.15);
-        opacity: 0.9;
-    }
-    50% {
-        box-shadow: 0 0 0 16px rgba(255, 255, 255, 0.05);
-        transform: scale(1.25);
-        opacity: 0.8;
-    }
-    70% {
-        box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
-        transform: scale(1.3);
-        opacity: 0.7;
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* Enhanced status-specific animations */
-.mr-status-indicator.ready {
-    animation: mr-pulse-enhanced 2.5s infinite, mr-ready-glow 3s ease-in-out infinite;
-}
-
-@keyframes mr-ready-glow {
-    0%, 100% {
-        box-shadow: 0 0 20px rgba(0, 255, 136, 0.4),
-                    0 0 40px rgba(0, 255, 136, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 30px rgba(0, 255, 136, 0.6),
-                    0 0 60px rgba(0, 255, 136, 0.3);
-    }
-}
-
-.mr-status-indicator.pending {
-    animation: mr-pulse-enhanced 1.8s infinite, mr-pending-shimmer 2s ease-in-out infinite;
-}
-
-@keyframes mr-pending-shimmer {
-    0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 25px rgba(255, 149, 0, 0.7),
-                    0 0 35px rgba(255, 149, 0, 0.3);
-    }
-}
-
-.mr-status-indicator.paused {
-    animation: mr-paused-breathe 3s ease-in-out infinite;
-}
-
-@keyframes mr-paused-breathe {
-    0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 59, 48, 0.4);
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 0 0 30px rgba(255, 59, 48, 0.6);
-        transform: scale(1.05);
-    }
-}
-
-.mr-status-indicator.injected {
-    animation: mr-injected-success 0.8s ease-out, mr-pulse-enhanced 3s infinite 0.8s;
-}
-
-@keyframes mr-injected-success {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-        box-shadow: 0 0 0 0 rgba(255, 105, 180, 0);
-    }
-    50% {
-        transform: scale(1.3);
-        opacity: 1;
-        box-shadow: 0 0 40px rgba(255, 105, 180, 0.8);
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-        box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
-    }
-}
-
-.mr-status-indicator.ready {
-    background: #00ff88;
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
-}
-
-.mr-status-indicator.pending {
-    background: #ff9500;
-    box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
-    animation: mr-pulse 1.5s infinite;
-}
-
-.mr-status-indicator.paused {
-    background: #ff3b30;
-    box-shadow: 0 0 20px rgba(255, 59, 48, 0.4);
-}
-
-.mr-status-indicator.injected {
-    background: var(--mr-accent-primary);
-    box-shadow: 0 0 20px rgba(255, 105, 180, 0.4);
-}
-
-.mr-status-text {
-    font-weight: 600;
-    flex: 1;
-    color: var(--mr-text-primary);
-}
-
-.mr-timer {
-    font-size: 12px;
-    color: var(--mr-accent-primary);
-    font-weight: 600;
-    background: var(--mr-accent-soft);
-    padding: 4px 8px;
-    border-radius: var(--mr-radius-xs);
-    border: 1px solid var(--mr-border-pink);
-}
-
-/* iOS Liquid Arc Progress */
-.mr-arc-progress {
-    margin-bottom: 20px;
-    padding: 16px;
-    background: var(--mr-accent-soft);
-    border: 1px solid var(--mr-border-pink);
-    border-radius: var(--mr-radius-md);
-    transition: var(--mr-transition);
-    position: relative;
-    overflow: hidden;
-}
-
-.mr-arc-progress::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.1), transparent);
-    transition: left 0.8s ease;
-}
-
-.mr-arc-progress:hover {
-    background: linear-gradient(135deg, rgba(255, 105, 180, 0.12), rgba(218, 112, 214, 0.12));
-    border-color: rgba(255, 105, 180, 0.4);
-    transform: translateY(-2px);
-    box-shadow: var(--mr-shadow-glass);
-}
-
-.mr-arc-progress:hover::before {
-    left: 100%;
-}
-
-.mr-arc-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.mr-arc-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--mr-text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mr-font-family);
-}
-
-.mr-arc-header h4::before {
-    content: '📖';
-    font-size: 16px;
-}
-
-.mr-arc-type {
-    font-size: 12px;
-    color: var(--mr-accent-primary);
-    font-weight: 500;
-    background: rgba(255, 105, 180, 0.15);
-    padding: 4px 10px;
-    border-radius: var(--mr-radius-xs);
-    border: 1px solid var(--mr-border-pink);
-    font-family: var(--mr-font-family);
-}
-
-.mr-arc-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-    border: 1px solid var(--mr-border-glass);
-}
-
-.mr-arc-fill {
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    border-radius: 4px;
-    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
-}
-
-.mr-arc-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.4) 50%, 
-        transparent 100%);
-    animation: mr-shimmer-progress 2.5s infinite;
-}
-
-@keyframes mr-shimmer-progress {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-.mr-arc-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-}
-
-.mr-arc-phase {
-    color: var(--mr-text-secondary);
-    font-weight: 500;
-}
-
-.mr-arc-percentage {
-    color: var(--mr-accent-primary);
-    font-weight: 600;
-    background: rgba(255, 105, 180, 0.15);
-    padding: 4px 8px;
-    border-radius: var(--mr-radius-xs);
-    font-family: var(--mr-font-family);
-}
-
-/* iOS Liquid Glass Story Intelligence */
-.mr-story-intel {
-    margin-bottom: 20px;
-    border-radius: var(--mr-radius-md);
-    border: 1px solid var(--mr-border-glass);
-    background: var(--mr-bg-glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    overflow: hidden;
-    transition: var(--mr-transition);
-    position: relative;
-}
-
-.mr-story-intel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.mr-story-intel:hover {
-    border-color: var(--mr-border-pink);
-    box-shadow: var(--mr-shadow-glass);
-    transform: translateY(-1px);
-}
-
-.mr-story-intel:hover::before {
-    opacity: 0.5;
-}
-
-.mr-intel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    cursor: pointer;
-    transition: var(--mr-transition);
-    background: rgba(255, 255, 255, 0.02);
-    position: relative;
-    z-index: 1;
-}
-
-.mr-intel-header:hover {
-    background: rgba(255, 105, 180, 0.08);
-}
-
-.mr-intel-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--mr-text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mr-font-family);
-}
-
-.mr-intel-header h4::before {
-    content: '🧠';
-    font-size: 16px;
-}
-
-.mr-intel-toggle {
-    color: var(--mr-text-muted);
-    transition: var(--mr-transition);
-    font-size: 12px;
-}
-
-.mr-intel-toggle:hover {
-    color: var(--mr-accent-primary);
-}
-
-.mr-intel-content {
-    max-height: 200px;
-    overflow-y: auto;
-    transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.mr-intel-content.collapsed {
-    max-height: 0;
-}
-
-.mr-intel-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--mr-border-glass);
+body #mr_plot_sidebar .mr-sidebar-inner {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    overflow: hidden;
+    padding-left: 10px;
+    /* Spacing from spine */
 }
 
-.mr-intel-item:last-child {
-    border-bottom: none;
-}
-
-.mr-intel-item label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--mr-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.mr-intel-value {
-    font-size: 13px;
-    color: var(--mr-text-secondary);
-    line-height: 1.4;
-}
-
-/* Plot Text - iOS Style */
-.mr-plot-text {
-    font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 16px;
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: var(--mr-radius-sm);
-    border-left: 4px solid var(--mr-accent-primary);
-    font-family: var(--mr-font-family);
-    color: var(--mr-text-secondary);
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-/* iOS Liquid Glass Action Buttons - Enhanced with Better Feedback */
-.mr-plot-actions {
+/* Header */
+body #mr_plot_sidebar .mr-sidebar-header {
+    padding: 20px 24px;
+    /* Balanced padding */
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
+    justify-content: center;
+    /* Center align header */
+    align-items: center;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+    margin-bottom: 10px;
+    text-align: center;
 }
 
-.mr-action-btn {
-    flex: 1 1 auto;
-    min-width: 80px;
-    max-width: 140px;
-    padding: 10px 12px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    color: var(--mr-text-primary);
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition-spring);
+body #mr_plot_sidebar .mr-sidebar-header h3 {
+    margin: 0;
+    font-family: var(--mr-ff-font-heading);
+    font-size: 22px;
+    color: var(--mr-ff-accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--mr-shadow-sm);
+    gap: 10px;
+}
+
+/* Scrollable Content */
+body #mr_plot_sidebar .mr-sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--mr-ff-accent-primary) var(--mr-ff-bg-primary);
     text-align: center;
-    white-space: nowrap;
+    /* Center text by default */
 }
 
-.mr-action-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: -1;
+/* Section Headers */
+body #mr_plot_sidebar .mr-section-header {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+    padding-bottom: 5px;
+    text-align: left;
+    /* Align section headers left for hierarchy */
 }
 
-.mr-action-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.4s ease, height 0.4s ease;
-    z-index: 1;
-}
-
-.mr-action-btn:hover::before {
-    left: 0;
-}
-
-.mr-action-btn:hover {
-    background: transparent;
-    border-color: var(--mr-border-pink);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: var(--mr-shadow-glass-strong);
-    color: white;
-}
-
-.mr-action-btn:active {
-    transform: translateY(-1px) scale(1.01);
-    transition: var(--mr-transition-fast);
-}
-
-.mr-action-btn:active::after {
-    width: 100px;
-    height: 100px;
-}
-
-.mr-action-btn.small {
-    flex: none;
-    padding: 8px 12px;
+body #mr_plot_sidebar .mr-section-header h4 {
+    margin: 0;
+    font-family: var(--mr-ff-font-heading);
+    color: var(--mr-ff-accent-secondary);
     font-size: 12px;
-}
-
-.mr-action-btn.full-width {
-    width: 100%;
-    margin-top: 12px;
-}
-
-/* Enhanced Liquid Hover Class */
-.liquid-hover {
-    transition: var(--mr-transition-spring);
-    position: relative;
-    overflow: hidden;
-}
-
-.liquid-hover::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: -1;
-}
-
-.liquid-hover:hover::before {
-    left: 0;
-}
-
-.liquid-hover:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: var(--mr-shadow-glass-strong);
-    color: white !important;
-}
-
-.liquid-hover:active {
-    transform: translateY(-1px) scale(1.01);
-    transition: var(--mr-transition-fast);
-}
-
-/* iOS Form Elements */
-.mr-direction-input {
-    margin-top: 16px;
-}
-
-.mr-direction-input label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--mr-text-muted);
+    /* Smaller label size */
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.mr-direction-input input {
-    width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    color: var(--mr-text-primary);
-    font-size: 14px;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition);
-}
-
-.mr-direction-input input:focus {
-    outline: none;
-    border-color: var(--mr-accent-primary);
-    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
-}
-
-.mr-recent-directions {
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--mr-text-muted);
-    font-style: italic;
-}
-
-/* Next Plot Section */
-.mr-next-plot {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: rgba(20, 20, 30, 0.3);
-    border-radius: var(--mr-radius-md);
-    border: 1px dashed var(--mr-border-glass);
+    letter-spacing: 1px;
     opacity: 0.8;
 }
 
-.mr-next-plot h4 {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    color: var(--mr-accent-secondary);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+/* ==========================================================================
+   4. COMPONENTS: CARDS & MINUTIAE
+   ========================================================================== */
 
-.mr-next-plot h4::before {
-    content: '🔮';
-    font-size: 16px;
-}
-
-/* Plot History */
-.mr-plot-history {
-    margin-bottom: 20px;
-}
-
-.mr-history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: var(--mr-bg-secondary);
-    border-radius: var(--mr-radius-sm);
-    cursor: pointer;
-    transition: var(--mr-transition);
-    border: 1px solid var(--mr-border-glass);
-}
-
-.mr-history-header:hover {
-    background: rgba(255, 105, 180, 0.1);
-    border-color: var(--mr-accent-primary);
-}
-
-.mr-history-header h4 {
-    margin: 0;
-    font-size: 14px;
-    color: var(--mr-text-primary);
-    font-weight: 600;
-}
-
-.mr-history-content {
-    max-height: 250px;
-    overflow-y: auto;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 0 0 var(--mr-radius-sm) var(--mr-radius-sm);
-    border: 1px solid var(--mr-border-glass);
-    border-top: none;
-}
-
-.mr-history-content.collapsed {
-    max-height: 0;
-    border: none;
-}
-
-.mr-history-item {
-    padding: 12px 16px;
-    margin: 0;
-    border-bottom: 1px solid var(--mr-border-glass);
-    font-size: 13px;
-    cursor: pointer;
-    transition: var(--mr-transition);
-    color: var(--mr-text-secondary);
+body #mr_plot_sidebar .mr-current-plot,
+body #mr_plot_sidebar .mr-advanced-section {
+    background: rgba(26, 47, 26, 0.6) !important;
+    border: 1px solid rgba(197, 160, 89, 0.3) !important;
+    padding: 20px;
+    margin-bottom: 24px;
     position: relative;
-}
-
-.mr-history-item:hover {
-    background: rgba(255, 105, 180, 0.1);
-    color: var(--mr-text-primary);
-    padding-left: 20px;
-}
-
-.mr-history-item::before {
-    content: '•';
-    position: absolute;
-    left: 8px;
-    color: var(--mr-accent-primary);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.mr-history-item:hover::before {
-    opacity: 1;
-}
-
-.mr-history-settings {
-    padding: 12px 16px;
-    border-top: 1px solid var(--mr-border-glass);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--mr-text-muted);
-}
-
-.mr-history-settings input {
-    width: 50px;
-    padding: 4px 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--mr-border-glass);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
     border-radius: 4px;
-    color: var(--mr-text-primary);
-    text-align: center;
+    text-align: left;
+    /* Keep plot text left-aligned for readability */
 }
 
-/* iOS Liquid Glass Modal */
-.mr-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 4000;
-    animation: mr-fadeIn 0.3s ease;
-}
-
-@keyframes mr-fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.mr-modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.95);
-    width: 90%;
-    max-width: 700px;
-    background: var(--mr-bg-glass);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-lg);
-    box-shadow: var(--mr-shadow-lg);
-    animation: mr-modalAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes mr-modalAppear {
-    to {
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-.mr-modal-header {
+/* Visual Hierarchy for Story Intelligence */
+body #mr_plot_sidebar .mr-intel-item {
+    margin-bottom: 10px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px;
-    border-bottom: 1px solid var(--mr-border-glass);
-    background: var(--mr-accent-gradient);
-    border-radius: var(--mr-radius-lg) var(--mr-radius-lg) 0 0;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.mr-modal-header h3 {
-    margin: 0;
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.mr-close-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--mr-radius-sm);
-    transition: var(--mr-transition);
-}
-
-.mr-close-btn:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: rotate(90deg);
-}
-
-.mr-modal-body {
-    padding: 24px;
-}
-
-.mr-modal-body textarea {
-    width: 100%;
-    min-height: 250px;
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    color: var(--mr-text-primary);
-    font-family: var(--mr-font-family);
-    font-size: 14px;
-    line-height: 1.6;
-    resize: vertical;
-    transition: var(--mr-transition);
-}
-
-.mr-modal-body textarea:focus {
-    outline: none;
-    border-color: var(--mr-accent-primary);
-    box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
-}
-
-.mr-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid var(--mr-border-glass);
+/* Plot Status Container */
+body #mr_plot_sidebar .mr-plot-status {
+    margin-bottom: 15px;
+    padding: 10px 15px;
     background: rgba(0, 0, 0, 0.2);
-    border-radius: 0 0 var(--mr-radius-lg) var(--mr-radius-lg);
+    border-radius: 4px;
+    border-left: 3px solid var(--mr-ff-accent-primary);
 }
 
-/* iOS Liquid Glass Buttons */
-.mr-btn-primary, .mr-btn-secondary {
-    padding: 12px 24px;
-    border: none;
-    border-radius: var(--mr-radius-sm);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
+/* Plot Text Container */
+body #mr_plot_sidebar .mr-plot-text-container {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    border-left: 3px solid var(--mr-ff-accent-primary);
 }
 
-.mr-btn-primary::before, .mr-btn-secondary::before {
-    content: '';
+/* Direction Input Spacing */
+body #mr_plot_sidebar .mr-direction-input {
+    margin-top: 20px;
+}
+
+body #mr_plot_sidebar .mr-intel-label {
+    font-family: var(--mr-ff-font-heading);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--mr-ff-text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+body #mr_plot_sidebar .mr-intel-value {
+    font-family: var(--mr-ff-font-body);
+    font-size: 15px;
+    color: var(--mr-ff-accent-primary);
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(197, 160, 89, 0.2);
+}
+
+/* Decorative Corners */
+body #mr_plot_sidebar .mr-decorative-corner {
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.mr-btn-primary:hover::before, .mr-btn-secondary:hover::before {
-    left: 100%;
-}
-
-.mr-btn-primary {
-    background: var(--mr-accent-gradient);
-    color: white;
-}
-
-.mr-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(255, 105, 180, 0.3);
-}
-
-.mr-btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--mr-text-primary);
-    border: 1px solid var(--mr-border-glass);
-}
-
-.mr-btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: var(--mr-accent-primary);
-}
-
-.mr-btn-primary.full-width, .mr-btn-secondary.full-width {
-    width: 100%;
-    margin-top: 12px;
-}
-
-/* iOS Liquid Glass Template Gallery */
-.mr-template-gallery {
-    margin-bottom: 20px;
-    border-radius: var(--mr-radius-md);
-    border: 1px solid var(--mr-border-glass);
-    background: var(--mr-bg-glass);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    overflow: hidden;
-    transition: var(--mr-transition);
-    position: relative;
-}
-
-.mr-template-gallery::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.mr-template-gallery:hover {
-    border-color: var(--mr-border-pink);
-    box-shadow: var(--mr-shadow-glass);
-    transform: translateY(-2px);
-}
-
-.mr-template-gallery:hover::before {
-    opacity: 0.3;
-}
-
-.mr-template-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    cursor: pointer;
-    transition: var(--mr-transition);
-    background: rgba(255, 255, 255, 0.02);
-    position: relative;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--mr-ff-accent-primary);
+    transition: all 0.3s ease;
+    opacity: 0.7;
     z-index: 1;
 }
 
-.mr-template-header:hover {
-    background: rgba(255, 105, 180, 0.08);
+body #mr_plot_sidebar .mr-decorative-corner.top-left {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
 }
 
-.mr-template-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--mr-text-primary);
+body #mr_plot_sidebar .mr-decorative-corner.top-right {
+    top: -1px;
+    right: -1px;
+    border-left: none;
+    border-bottom: none;
+}
+
+body #mr_plot_sidebar .mr-decorative-corner.bottom-left {
+    bottom: -1px;
+    left: -1px;
+    border-right: none;
+    border-top: none;
+}
+
+body #mr_plot_sidebar .mr-decorative-corner.bottom-right {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+}
+
+/* ==========================================================================
+   5. INTERACTIVE ELEMENTS (Buttons, Inputs) - HARDENED SPECIFICITY
+   ========================================================================== */
+
+/* Action Button Container */
+body #mr_plot_sidebar .mr-actions {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mr-font-family);
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.mr-template-header h4::before {
-    content: '📚';
-    font-size: 16px;
-}
-
-.mr-template-toggle {
-    color: var(--mr-text-muted);
-    transition: var(--mr-transition);
-    font-size: 12px;
-}
-
-.mr-template-toggle:hover {
-    color: var(--mr-accent-secondary);
-}
-
-.mr-template-content {
-    max-height: 400px;
-    overflow-y: auto;
-    transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.mr-template-content.collapsed {
-    max-height: 0;
-}
-
-/* iOS Liquid Category Tabs */
-.mr-category-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 20px;
-    border-bottom: 1px solid var(--mr-border-glass);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    background: rgba(255, 255, 255, 0.02);
-}
-
-.mr-category-tabs::-webkit-scrollbar {
-    display: none;
-}
-
-.mr-tab-btn {
-    flex-shrink: 0;
-    padding: 10px 18px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-full);
-    color: var(--mr-text-secondary);
-    font-size: 12px;
-    font-weight: 500;
-    font-family: var(--mr-font-family);
+/* Runestone Buttons */
+body #mr_plot_sidebar button.mr-action-btn {
+    background: #2a3b2a !important;
+    border: 1px solid #4a6b4a !important;
+    color: var(--mr-ff-accent-primary) !important;
+    font-family: var(--mr-ff-font-heading) !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+    padding: 10px 20px !important;
     cursor: pointer;
-    transition: var(--mr-transition-spring);
-    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #1a2f1a !important;
     position: relative;
-    overflow: hidden;
-}
-
-.mr-tab-btn::before {
-    content: '';
-    position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-gradient);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
-}
-
-.mr-tab-btn:hover {
-    background: rgba(255, 105, 180, 0.1);
-    border-color: rgba(255, 105, 180, 0.3);
-    color: var(--mr-text-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.2);
-}
-
-.mr-tab-btn.active::before {
-    opacity: 1;
-}
-
-.mr-tab-btn.active {
-    background: transparent;
-    border-color: transparent;
-    color: white;
-    box-shadow: 0 6px 20px rgba(255, 105, 180, 0.3);
-}
-
-.mr-templates-list {
-    padding: 20px;
-}
-
-/* iOS Liquid Template Items */
-.mr-template-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    margin-bottom: 8px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    transition: var(--mr-transition-spring);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.mr-template-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+    border-radius: 4px !important;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 105, 180, 0.08), 
-        transparent);
-    transition: left 0.6s ease;
-}
-
-.mr-template-item:hover {
-    background: rgba(255, 105, 180, 0.1);
-    border-color: rgba(255, 105, 180, 0.3);
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: var(--mr-shadow-glass);
-}
-
-.mr-template-item:hover::before {
-    left: 100%;
-}
-
-.mr-template-icon {
-    font-size: 28px;
-    width: 48px;
-    height: 48px;
+    /* Full width */
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--mr-accent-soft);
-    border-radius: var(--mr-radius-sm);
-    border: 1px solid var(--mr-border-pink);
-    transition: var(--mr-transition);
+    gap: 8px;
 }
 
-.mr-template-info {
-    flex: 1;
+body #mr_plot_sidebar button.mr-action-btn:hover {
+    background: #3a4f3a !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    color: #fff !important;
+    text-shadow: 0 0 8px var(--mr-ff-accent-glow) !important;
+    transform: translateY(-2px);
+}
+
+body #mr_plot_sidebar button.mr-action-btn:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a2f1a !important;
+    transform: translateY(0);
+}
+
+/* Template Buttons (Grid) */
+body #mr_plot_sidebar button.mr-template-btn {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(197, 160, 89, 0.2) !important;
+    color: var(--mr-ff-text-muted) !important;
+    padding: 12px !important;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border-radius: 4px !important;
 }
 
-.mr-template-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--mr-text-primary);
-    font-family: var(--mr-font-family);
+body #mr_plot_sidebar button.mr-template-btn:hover {
+    background: rgba(197, 160, 89, 0.1) !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    transform: translateY(-2px);
 }
 
-.mr-template-desc {
-    font-size: 11px;
-    color: var(--mr-text-muted);
-    line-height: 1.3;
-}
-
-.mr-template-select {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    background: var(--mr-accent-gradient);
-    border: none;
-    border-radius: var(--mr-radius-xs);
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    font-family: var(--mr-font-family);
-    cursor: pointer;
-    transition: var(--mr-transition-spring);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.mr-template-select::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+/* Inputs */
+body #mr_plot_sidebar input[type="text"] {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid #4a6b4a !important;
+    color: var(--mr-ff-text-primary) !important;
+    padding: 10px !important;
+    font-family: var(--mr-ff-font-body) !important;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.2), 
-        transparent);
-    transition: left 0.5s ease;
+    box-sizing: border-box;
+    border-radius: 4px !important;
 }
 
-.mr-template-select:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 24px rgba(255, 105, 180, 0.4);
+body #mr_plot_sidebar input[type="text"]:focus {
+    outline: none;
+    border-color: var(--mr-ff-accent-primary) !important;
+    box-shadow: 0 0 10px rgba(197, 160, 89, 0.2) !important;
 }
 
-.mr-template-select:hover::before {
-    left: 100%;
+/* Toggle Button (Desktop) - Fixed Positioning */
+body #mr_toggle_sidebar.mr-toggle-btn {
+    position: absolute;
+    right: -12px;
+    /* Pulled in slightly to sit ON the spine */
+    top: 24px;
+    background: var(--mr-ff-bg-secondary) !important;
+    border: 1px solid var(--mr-ff-accent-primary) !important;
+    color: var(--mr-ff-accent-primary) !important;
+    width: 36px;
+    height: 36px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+    z-index: 2002;
+    /* Above everything */
 }
 
-/* Loading Animation - iOS Style */
-.mr-loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top: 3px solid var(--mr-accent-primary);
-    border-radius: 50%;
-    animation: mr-spin 1s linear infinite;
+body #mr_toggle_sidebar.mr-toggle-btn:hover {
+    background: var(--mr-ff-accent-primary) !important;
+    color: var(--mr-ff-bg-primary) !important;
+    box-shadow: 0 0 15px var(--mr-ff-accent-primary) !important;
 }
 
-@keyframes mr-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+/* ==========================================================================
+   6. MOBILE HANDLERS
+   ========================================================================== */
 
-/* Mobile Responsive - Complete iOS Liquid Glass Redesign */
-@media (max-width: 600px) {
-    /* iOS Liquid Glass Mobile Modal Container */
-    .mr-plot-sidebar {
+/* ==========================================================================
+   6. MOBILE HANDLERS (MODAL VIEW)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* Full Screen Modal - Copy Backdrop Positioning */
+    body #mr_plot_sidebar.mr-plot-sidebar {
+        /* Match backdrop default positioning */
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
         bottom: 0 !important;
-        transform: none !important;
         width: 100vw !important;
         height: 100vh !important;
-        max-height: 100vh !important;
-        border: none !important;
-        border-radius: 0 !important;
-        
-        /* Center the modal content properly */
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-start !important;
-        align-items: stretch !important;
-        
-        /* Authentic iOS Liquid Glass Background */
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.05) 0%,
-                rgba(218, 112, 214, 0.05) 20%,
-                rgba(186, 85, 211, 0.05) 40%,
-                rgba(25, 25, 35, 0.9) 100%);
-        backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-        -webkit-backdrop-filter: blur(40px) saturate(250%) brightness(1.1);
-        
-        /* iOS Shadows and Elevation */
-        box-shadow:
-            0 25px 50px -12px rgba(255, 105, 180, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        
-        overscroll-behavior: contain;
-        z-index: 3602;
-        
-        /* iOS Modal Animation States */
-        opacity: 0 !important;
-        transform: translateY(100vh) scale(0.95);
-        pointer-events: none;
-        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        
-        /* iOS Safe Area Support */
-        padding-top: max(env(safe-area-inset-top), 20px);
-        padding-right: max(env(safe-area-inset-right), 16px);
-        padding-bottom: max(env(safe-area-inset-bottom), 20px);
-        padding-left: max(env(safe-area-inset-left), 16px);
-    }
 
-    /* Mobile Edit Modal - Higher z-index and proper positioning */
-    .mr-modal {
-        z-index: 5000 !important;
-        padding: 20px;
-        box-sizing: border-box;
-        background: rgba(0, 0, 0, 0.8) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-    }
-    
-    .mr-modal-content {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        transform: none !important;
-        width: 100% !important;
+        /* No max constraints */
         max-width: none !important;
-        margin: 0 !important;
-        border-radius: 20px;
-        max-height: calc(100vh - 40px) !important;
-        overflow-y: auto !important;
-        
-        /* iOS Liquid Glass for mobile modal */
-        background: linear-gradient(135deg,
-            rgba(255, 192, 203, 0.15) 0%,
-            rgba(255, 192, 203, 0.08) 100%);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow:
-            0 20px 60px rgba(255, 105, 180, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    
-    .mr-modal-body {
-        padding: 20px !important;
-        max-height: calc(100vh - 200px) !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .mr-modal-body textarea {
-        min-height: 200px !important;
-        max-height: calc(100vh - 300px) !important;
-        font-size: 16px !important; /* Prevents zoom on iOS */
-        padding: 16px !important;
-    }
+        max-height: none !important;
 
-    /* iOS Modal Visible State */
-    .mr-plot-sidebar.mobile-visible {
-        opacity: 1 !important;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
-        animation: iosModalAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        
-        /* Subtle hardware acceleration that doesn't interfere with animations */
-        will-change: opacity, transform;
-    }
+        /* Animation State: Visible (Slide Up) */
+        transform: translateY(0) !important;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
 
-    /* iOS Modal Hidden State */
-    .mr-plot-sidebar.mobile-hidden {
-        opacity: 0 !important;
-        transform: translateY(100vh) scale(0.95);
-        pointer-events: none;
-        animation: iosModalDisappear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
+        /* Remove rounded corners */
+        border-radius: 0 !important;
+        border: none !important;
 
-    /* iOS Modal Content Container */
-    .mr-plot-sidebar.mobile-visible .mr-sidebar-content {
+        /* Z-index - Match Leit's Lab */
+        z-index: 9999 !important;
+
+        /* Visibility when active */
         opacity: 1 !important;
         pointer-events: auto !important;
-        visibility: visible !important;
         display: flex !important;
         flex-direction: column !important;
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        height: auto !important;
+
+        /* Ensure background is opaque */
+        background-color: var(--mr-ff-bg-primary) !important;
+    }
+
+    /* Scrollable Content in Modal */
+    body #mr_plot_sidebar .mr-sidebar-content {
         overflow-y: auto !important;
-        overflow-x: hidden !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 16px 16px 40px 16px !important;
-        gap: 16px;
-        align-items: stretch;
-        width: 100% !important;
-        box-sizing: border-box;
-        
-        /* Fix ghosting during transitions */
-        backface-visibility: hidden !important;
-        -webkit-backface-visibility: hidden !important;
-        transform: translateZ(0) !important;
-        will-change: opacity, transform !important;
+        flex: 1 !important;
     }
 
-    /* iOS Action Button Layout */
-    .mr-plot-actions {
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 20px;
+    /* Collapsed/Hidden State on Mobile - Slide Down */
+    body #mr_plot_sidebar.mr-plot-sidebar.collapsed,
+    body #mr_plot_sidebar.mr-plot-sidebar.mobile-hidden {
+        transform: translateY(100%) !important;
+        pointer-events: none !important;
+        /* Keep display flex so it can animate, just move it off screen */
+        display: flex !important;
     }
 
-    .mr-action-btn {
-        min-height: 44px;
-        min-width: 80px;
-        max-width: 120px;
-        flex: 1 1 auto;
-        padding: 12px 14px;
-        font-size: 12px;
+    /* Mobile Close Button */
+    .mr-mobile-close-btn {
+        display: block !important;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--mr-ff-accent);
+        color: var(--mr-ff-text-primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
     }
 
-    /* Hide Desktop Toggle Button */
-    .mr-plot-sidebar .mr-toggle-btn {
+    .mr-mobile-close-btn:hover {
+        background: var(--mr-ff-accent);
+        color: var(--mr-ff-bg-primary);
+    }
+
+    /* Hide Desktop Toggle */
+    body #mr_toggle_sidebar {
         display: none !important;
     }
 
-    /* iOS Liquid Glass Header */
-    .mr-sidebar-header {
-        padding: 24px 20px 20px 20px !important;
-        padding-right: 60px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.15) 0%,
-                rgba(218, 112, 214, 0.15) 50%,
-                rgba(186, 85, 211, 0.15) 100%);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-radius: 20px 20px 0 0;
-        margin: -16px -20px 20px -20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-    }
-
-    .mr-sidebar-header::before {
-        content: '';
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 36px;
-        height: 5px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2.5px;
-    }
-
-    /* iOS Liquid Glass Close Button */
-    .mr-mobile-close-btn {
+    /* Mobile Floating Toggle */
+    #mr_mobile_toggle {
         display: flex !important;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 28px;
-        right: 20px;
-        width: 44px !important;
-        height: 44px !important;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        color: white;
-        font-size: 18px;
-        font-weight: 300;
-        cursor: pointer;
-        z-index: 10;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        box-shadow: 0 4px 16px rgba(255, 105, 180, 0.2);
-    }
-
-    .mr-mobile-close-btn:active {
-        transform: scale(0.95);
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
-    }
-
-    /* iOS Enhanced Advanced Section */
-    .mr-advanced-section {
-        flex-shrink: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border-radius: 16px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 255, 255, 0.08) 0%,
-                rgba(255, 255, 255, 0.05) 100%);
-        backdrop-filter: blur(25px) saturate(200%);
-        -webkit-backdrop-filter: blur(25px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow:
-            0 8px 32px rgba(255, 105, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        width: 100% !important;
-        max-width: none !important;
-        position: relative;
-    }
-
-    /* iOS Advanced Header Touch Target */
-    .mr-advanced-header {
-        min-height: 44px !important;
-        padding: 16px 20px !important;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0.02) 0%,
-            rgba(255, 255, 255, 0.05) 100%);
-        position: relative;
-    }
-
-    .mr-advanced-header:active {
-        background: rgba(255, 105, 180, 0.1);
-        transform: scale(0.98);
-    }
-
-    /* iOS Advanced Toggle Button */
-    .mr-advanced-toggle {
-        min-width: 44px !important;
-        min-height: 44px !important;
-        width: 44px !important;
-        height: 44px !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        cursor: pointer;
-    }
-
-    .mr-advanced-toggle:active {
-        transform: scale(0.92);
-        background: rgba(255, 105, 180, 0.2);
-        border-color: rgba(255, 105, 180, 0.3);
-    }
-
-    .mr-advanced-toggle i {
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        font-size: 14px;
-        font-weight: 600;
-    }
-
-    /* iOS Enhanced Advanced Section - Simple Box Layout */
-    .mr-advanced-section {
-        flex-shrink: 0 !important;
-        margin: 16px 0 !important;
-        padding: 16px !important;
-        border-radius: 16px !important;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 192, 203, 0.12) 0%,
-                rgba(255, 192, 203, 0.08) 100%);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow:
-            0 8px 25px rgba(255, 105, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        width: 100% !important;
-        max-width: none !important;
-        box-sizing: border-box;
-        position: relative;
-    }
-    
-    /* iOS Section Header */
-    .mr-section-header {
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .mr-section-header h4 {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--mr-text-primary);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: var(--mr-font-family);
-    }
-    
-    .mr-section-header h4::before {
-        font-size: 16px;
-    }
-    
-    .mr-section-header h4 i {
-        color: var(--mr-accent-primary);
-    }
-}
-
-/* iOS Modal Animations */
-@keyframes iosModalAppear {
-    0% {
-        opacity: 0;
-        transform: translateY(100vh) scale(0.95);
-    }
-    60% {
-        opacity: 1;
-        transform: translateY(-10px) scale(1.02);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes iosModalDisappear {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    40% {
-        opacity: 0.8;
-        transform: translateY(-5px) scale(0.98);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(100vh) scale(0.95);
-    }
-}
-
-/* Desktop Responsive */
-@media (min-width: 769px) {
-    .mr-sidebar-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        opacity: 1;
-        transition: opacity 0.3s ease;
-        display: block;
-        min-height: auto;
-        max-height: none;
-        flex-direction: column;
-        box-sizing: border-box;
-        width: 100%;
-    }
-
-    .mr-plot-sidebar.collapsed .mr-sidebar-content {
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .mr-current-plot,
-    .mr-next-plot,
-    .mr-plot-history {
-        flex-shrink: 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .mr-plot-text {
-        display: block;
-        visibility: visible;
-        opacity: 1;
-    }
-
-    .mr-mobile-close-btn {
-        display: none !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .mr-sidebar-content {
-        padding: 16px;
-        overflow-y: auto;
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        display: flex !important;
-        flex-direction: column !important;
-        box-sizing: border-box;
-        width: 100%;
-    }
-
-    .mr-current-plot,
-    .mr-next-plot,
-    .mr-plot-history {
-        flex-shrink: 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .mr-plot-text {
-        display: block;
-        visibility: visible;
-        opacity: 1;
-    }
-
-    .mr-sidebar-header {
-        flex-shrink: 0;
-    }
-}
-
-/* Mobile Floating Toggle Button */
-.mr-mobile-toggle {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    #leftSendForm .mr-mobile-toggle {
-        display: flex;
-        position: relative;
-        bottom: auto;
-        left: auto;
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-        margin-right: 8px;
-        flex-shrink: 0;
-        background: var(--mr-bg-glass);
-        backdrop-filter: blur(10px) saturate(180%);
-        -webkit-backdrop-filter: blur(10px) saturate(180%);
-        border: 1px solid var(--mr-border-glass);
-        border-radius: var(--mr-radius-sm);
-        color: var(--mr-text-primary);
-        box-shadow: var(--mr-shadow-md);
-        transition: var(--mr-transition);
-        align-items: center;
-        justify-content: center;
-    }
-
-    #leftSendForm .mr-mobile-toggle:hover {
-        background: var(--mr-accent-gradient);
-        border-color: transparent;
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(255, 105, 180, 0.4);
-    }
-
-    #leftSendForm .mr-mobile-toggle.is-active {
-        background: var(--mr-accent-gradient);
-        border-color: transparent;
-        box-shadow: 0 6px 18px rgba(255, 105, 180, 0.5);
-    }
-
-    .mr-mobile-toggle.is-active {
-        box-shadow: 0 6px 18px rgba(255, 105, 180, 0.5);
-    }
-
-    /* iOS Liquid Glass Modal Overlay */
-    .mr-mobile-overlay {
         position: fixed;
-        inset: 0;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.15) 0%,
-                rgba(218, 112, 214, 0.15) 25%,
-                rgba(186, 85, 211, 0.15) 50%,
-                rgba(25, 25, 35, 0.6) 100%);
-        backdrop-filter: blur(50px) saturate(200%) brightness(1.1);
-        -webkit-backdrop-filter: blur(50px) saturate(200%) brightness(1.1);
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        z-index: 3601;
-        
-        /* iOS-style animation states */
-        transform: scale(1.1);
-    }
-
-    .mr-mobile-overlay.mobile-visible {
-        opacity: 1;
-        pointer-events: auto;
-        transform: scale(1);
-        animation: iosOverlayAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    .mr-mobile-overlay.mobile-hidden {
-        opacity: 0;
-        pointer-events: none;
-        transform: scale(1.1);
-        animation: iosOverlayDisappear 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    /* iOS Liquid Glass Mobile Toggle Button Enhancement */
-    .mr-mobile-toggle {
-        min-width: 44px !important;
-        min-height: 44px !important;
-        width: 44px !important;
-        height: 44px !important;
-        display: flex !important;
+        bottom: 50px !important;
+        left: 0 !important;
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 0 8px 8px 0 !important;
+        background: var(--mr-ff-bg-secondary) !important;
+        border: 1px solid var(--mr-ff-accent-primary) !important;
+        border-left: none !important;
+        color: var(--mr-ff-accent-primary) !important;
+        z-index: 2001;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5) !important;
         align-items: center;
         justify-content: center;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.15) 0%,
-                rgba(218, 112, 214, 0.15) 50%,
-                rgba(186, 85, 211, 0.15) 100%);
-        backdrop-filter: blur(25px) saturate(200%);
-        -webkit-backdrop-filter: blur(25px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        color: var(--mr-text-primary);
-        box-shadow:
-            0 8px 25px rgba(255, 105, 180, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .mr-mobile-toggle::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: var(--mr-accent-gradient);
-        transition: left 0.5s ease;
-        z-index: -1;
-    }
-
-    .mr-mobile-toggle:hover::before,
-    .mr-mobile-toggle.is-active::before {
-        left: 0;
-    }
-
-    .mr-mobile-toggle:hover,
-    .mr-mobile-toggle.is-active {
-        background: transparent;
-        border-color: transparent;
-        transform: scale(1.05) translateY(-2px);
-        box-shadow:
-            0 12px 35px rgba(255, 105, 180, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        color: white;
-    }
-
-    .mr-mobile-toggle:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
-    }
-
-    /* iOS Enhanced Current Plot Section */
-    .mr-current-plot {
-        flex-shrink: 0 !important;
-        margin: 0 0 16px 0;
-        padding: 16px;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 192, 203, 0.12) 0%,
-                rgba(255, 192, 203, 0.08) 100%);
-        backdrop-filter: blur(30px) saturate(200%);
-        -webkit-backdrop-filter: blur(30px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 16px;
-        box-shadow:
-            0 8px 25px rgba(255, 105, 180, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        max-height: 200px !important;
-        overflow: hidden;
-    }
-
-    .mr-current-plot:active {
-        transform: scale(0.98);
-        box-shadow:
-            0 6px 20px rgba(255, 105, 180, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    }
-
-    .mr-current-plot .mr-plot-text {
-        max-height: 80px !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        font-size: 13px !important;
-        line-height: 1.4 !important;
-    }
-
-    /* iOS Enhanced Template Buttons */
-    .mr-template-btn {
-        min-height: 60px !important;
-        min-width: 60px !important;
-        padding: 16px 12px;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.1) 0%,
-                rgba(218, 112, 214, 0.1) 100%);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 16px;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .mr-template-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: var(--mr-accent-gradient);
-        transition: left 0.5s ease;
-        z-index: -1;
-    }
-
-    .mr-template-btn:hover::before,
-    .mr-template-btn:active::before {
-        left: 0;
-    }
-
-    .mr-template-btn:hover,
-    .mr-template-btn:active {
-        background: transparent;
-        border-color: rgba(255, 105, 180, 0.3);
-        transform: translateY(-2px) scale(1.02);
-        box-shadow:
-            0 8px 25px rgba(255, 105, 180, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        color: white;
-    }
-
-    /* iOS Enhanced Quick Actions */
-    .mr-quick-actions {
-        display: flex;
-        gap: 12px;
-        padding: 20px;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 255, 255, 0.05) 0%,
-                rgba(255, 255, 255, 0.02) 100%);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border-radius: 16px;
-        margin: 0 -20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .mr-quick-actions .mr-action-btn {
-        min-height: 44px;
-        padding: 12px 16px;
-        background:
-            linear-gradient(135deg,
-                rgba(255, 105, 180, 0.12) 0%,
-                rgba(218, 112, 214, 0.12) 100%);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .mr-quick-actions .mr-action-btn:active {
-        transform: scale(0.95);
-        background: rgba(255, 105, 180, 0.2);
+        font-size: 18px !important;
     }
 }
 
-/* iOS Overlay Animations */
-@keyframes iosOverlayAppear {
-    0% {
-        opacity: 0;
-        transform: scale(1.1);
-    }
-    60% {
-        opacity: 0.8;
-        transform: scale(1.02);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
+/* Nuclear Option: Hide any unknown buttons in the header (The "X" button) */
+body #mr_plot_sidebar .mr-sidebar-header button:not(#mr_toggle_sidebar) {
+    display: none !important;
 }
 
-@keyframes iosOverlayDisappear {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    40% {
-        opacity: 0.7;
-        transform: scale(1.05);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(1.1);
-    }
+/* ==========================================================================
+   7. TEMPLATE GRID & EDIT MODAL
+   ========================================================================== */
+
+/* Template Grid (2x2) */
+body #mr_plot_sidebar .mr-templates-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
 }
 
-.mr-mobile-portal {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3600;
-    transform: none !important;
+body #mr_plot_sidebar button.mr-template-btn {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 80px !important;
+    justify-content: center !important;
 }
 
-.mr-mobile-portal > * {
-    pointer-events: auto;
-    transform: none !important;
-}
-
-/* Mobile Responsive Template Gallery */
-@media (max-width: 600px) {
-    .mr-template-item {
-        flex-direction: column;
-        text-align: center;
-        gap: 8px;
-    }
-
-    .mr-template-info {
-        order: 2;
-    }
-
-    .mr-template-select {
-        order: 3;
-        width: 100%;
-    }
-
-    .mr-category-tabs {
-        padding: 12px;
-        gap: 4px;
-    }
-
-    .mr-tab-btn {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-}
-/* Seamless Advanced Section - Matches Plot Preview Container */
-.mr-advanced-section {
-    margin-bottom: 24px;
-    padding: 20px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-md);
-    box-shadow: var(--mr-shadow-glass);
-    transition: var(--mr-transition-spring);
-    position: relative;
+/* History Dropdown Styles */
+body #mr_plot_sidebar .mr-history-content {
     overflow: hidden;
-}
-
-.mr-advanced-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.mr-advanced-section:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: var(--mr-shadow-glass-strong);
-    border-color: var(--mr-border-pink);
-}
-
-.mr-advanced-section:hover::before {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 500px;
+    /* Arbitrary large height for expansion */
     opacity: 1;
 }
 
-/* Seamless Section Headers - Integrated Typography */
-.mr-section-header {
-    margin: 0 0 16px 0;
-    padding: 0;
-    background: none;
-    border: none;
-    position: relative;
-    overflow: visible;
+body #mr_plot_sidebar .mr-history-content.collapsed {
+    max-height: 0 !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
 }
 
-.mr-section-header h4 {
-    margin: 0 0 16px 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--mr-text-primary);
+body #mr_plot_sidebar .mr-history-header {
+    cursor: pointer;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
-    font-family: var(--mr-font-family);
-    letter-spacing: -0.01em;
-    position: relative;
-}
-
-.mr-section-header h4::before {
-    content: '';
-    width: 4px;
-    height: 4px;
-    background: var(--mr-accent-primary);
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
-    flex-shrink: 0;
-}
-
-.mr-section-header h4 i {
-    color: var(--mr-accent-primary);
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin-bottom: 5px;
+    color: var(--mr-ff-text-muted);
     font-size: 14px;
 }
 
-/* Advanced Header - Integrated without Hard Borders */
-.mr-advanced-header {
-    display: none; /* Hide the old advanced header completely */
+body #mr_plot_sidebar .mr-history-header:hover {
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--mr-ff-accent-primary);
 }
 
-.mr-advanced-toggle {
-    color: var(--mr-text-muted);
-    transition: var(--mr-transition-spring);
-    font-size: 12px;
-    display: flex;
+/* Edit Modal - Hidden by Default & Styled */
+#mr_plot_editor_modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 3000;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: var(--mr-radius-xs);
-    cursor: pointer;
+}
+
+#mr_plot_editor_modal .mr-modal-content {
+    background: var(--mr-ff-bg-primary);
+    border: 1px solid var(--mr-ff-accent-primary);
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
     position: relative;
-    overflow: hidden;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.mr-advanced-toggle::before {
-    content: '';
-    position: absolute;
+#mr_plot_editor_modal .mr-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+    padding-bottom: 10px;
+}
+
+#mr_plot_editor_modal h3 {
+    margin: 0;
+    font-family: var(--mr-ff-font-heading);
+    color: var(--mr-ff-accent-primary);
+}
+
+#mr_plot_editor_modal textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #4a6b4a;
+    color: var(--mr-ff-text-primary);
+    padding: 10px;
+    font-family: var(--mr-ff-font-body);
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 200px;
+}
+
+#mr_plot_editor_modal .mr-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+#mr_plot_editor_modal button {
+    padding: 10px 20px !important;
+    cursor: pointer;
+    border-radius: 4px !important;
+    font-family: var(--mr-ff-font-heading) !important;
+    text-transform: uppercase !important;
+    font-weight: bold !important;
+    font-size: 13px !important;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #1a2f1a !important;
+    position: relative;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-gradient);
-    opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    z-index: -1;
-    border-radius: var(--mr-radius-xs);
 }
 
-.mr-advanced-toggle:hover {
-    color: var(--mr-accent-primary);
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+#mr_plot_editor_modal .mr-btn-primary {
+    background: #2a3b2a !important;
+    border: 1px solid #4a6b4a !important;
+    color: var(--mr-ff-accent-primary) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
-.mr-advanced-toggle:hover::before {
-    opacity: 0.1;
+#mr_plot_editor_modal .mr-btn-primary:hover {
+    background: #3a4f3a !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    color: #fff !important;
+    text-shadow: 0 0 8px var(--mr-ff-accent-glow) !important;
+    transform: translateY(-2px);
 }
 
-.mr-advanced-toggle:active {
-    transform: scale(0.95);
-    transition: var(--mr-transition-fast);
-}
-
-.mr-advanced-toggle i {
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: transform;
-}
-
-/* Mobile Seamless Advanced Options - Natural Flow */
-@media (max-width: 768px) {
-    /* Mobile Advanced Section - Match plot container */
-    .mr-advanced-section {
-        margin-bottom: 24px;
-        padding: 20px;
-        border-radius: var(--mr-radius-md);
-        background: var(--mr-bg-glass-strong);
-        backdrop-filter: blur(25px) saturate(180%);
-        -webkit-backdrop-filter: blur(25px) saturate(180%);
-        border: 1px solid var(--mr-border-glass);
-        box-shadow: var(--mr-shadow-glass);
-    }
-
-    /* Mobile Template Gallery Grid - Touch Optimized */
-    .mr-templates-grid {
-        gap: 12px;
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .mr-templates-grid .mr-template-btn {
-        min-height: 70px;
-        padding: 16px 12px;
-    }
-
-    /* Mobile Quick Actions - Vertical Stack */
-    .mr-quick-actions {
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .mr-quick-actions .mr-action-btn {
-        width: 100%;
-        min-height: 48px;
-        padding: 14px 18px;
-        font-size: 13px;
-    }
-
-    /* Mobile History Section */
-    .mr-history-compact {
-        padding: 16px 0;
-    }
-
-    .mr-history-compact .mr-history-header {
-        padding: 12px 0;
-        min-height: 44px;
-    }
-
-    /* Mobile Touch Targets - 44px minimum */
-    .mr-action-btn,
-    .mr-template-btn,
-    .mr-history-compact .mr-history-header,
-    .mr-section-header h4 {
-        min-height: 44px;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-    }
-
-    /* iOS-Style Mobile Feedback */
-    .mr-action-btn:active,
-    .mr-template-btn:active,
-    .mr-history-compact .mr-history-header:active {
-        transform: scale(0.96);
-        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    /* Mobile Safe Area Support */
-    .mr-advanced-section {
-        padding-top: max(env(safe-area-inset-top), 20px);
-        padding-left: max(env(safe-area-inset-left), 20px);
-        padding-right: max(env(safe-area-inset-right), 20px);
-        padding-bottom: max(env(safe-area-inset-bottom), 20px);
-    }
-}
-
-.mr-advanced-content {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    will-change: max-height, opacity, transform;
-}
-
-.mr-advanced-content:not(.collapsed) {
-    max-height: 600px;
-    opacity: 1;
+#mr_plot_editor_modal .mr-btn-primary:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a2f1a !important;
     transform: translateY(0);
 }
 
-.mr-advanced-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--mr-accent-soft);
-    opacity: 0;
-    transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    pointer-events: none;
+#mr_plot_editor_modal .mr-btn-secondary {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(197, 160, 89, 0.4) !important;
+    color: var(--mr-ff-text-muted) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
-.mr-advanced-content:not(.collapsed)::before {
-    opacity: 0.05;
+#mr_plot_editor_modal .mr-btn-secondary:hover {
+    background: rgba(197, 160, 89, 0.1) !important;
+    border-color: var(--mr-ff-accent-primary) !important;
+    color: var(--mr-ff-accent-primary) !important;
+    transform: translateY(-2px);
 }
 
-/* Seamless Story Intelligence - Natural Content Flow */
-.mr-story-intel-compact {
-    margin-bottom: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--mr-border-glass);
-}
-
-.mr-story-intel-compact:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.mr-story-intel-compact .mr-intel-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border: none;
-}
-
-.mr-story-intel-compact .mr-intel-item:last-child {
-    border-bottom: none;
-}
-
-.mr-story-intel-compact .mr-intel-item label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--mr-text-muted);
-    text-transform: none;
-    letter-spacing: normal;
-}
-
-.mr-story-intel-compact .mr-intel-value {
-    font-size: 12px;
-    color: var(--mr-text-secondary);
-    font-weight: 500;
-}
-
-/* Seamless Template Gallery - Natural Integration */
-.mr-template-gallery-compact {
-    margin-bottom: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--mr-border-glass);
-}
-
-.mr-template-gallery-compact:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.mr-templates-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.mr-template-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 12px 8px;
-    min-height: 60px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    color: var(--mr-text-primary);
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 500;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition-spring);
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-}
-
-.mr-template-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    transition: left 0.6s ease;
-    z-index: -1;
-}
-
-.mr-template-btn:hover::before {
-    left: 0;
-}
-
-.mr-template-btn:hover {
-    background: transparent;
-    border-color: var(--mr-border-pink);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: var(--mr-shadow-glass);
-    color: white;
-}
-
-.mr-template-btn.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.mr-template-btn.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin: -8px 0 0 -8px;
-    border: 2px solid var(--mr-accent-primary);
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: mr-spin 1s linear infinite;
-}
-
-.mr-template-btn.success {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.4);
-    color: #10b981;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
-.mr-template-btn.success::before {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
-    left: 0;
-}
-
-.mr-template-btn.error {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
-    color: #ef4444;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-    animation: mr-shake 0.5s ease-in-out;
-}
-
-.mr-template-btn.error::before {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.1));
-    left: 0;
-}
-
-.mr-template-emoji {
-    font-size: 24px;
-    line-height: 1;
-    transition: transform 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(255, 105, 180, 0.3));
-}
-
-.mr-template-btn:hover .mr-template-emoji {
-    transform: scale(1.1);
-    filter: drop-shadow(0 3px 6px rgba(255, 105, 180, 0.4));
-}
-
-.mr-template-label {
-    font-size: 11px;
-    text-align: center;
-    line-height: 1.3;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-}
-
-@keyframes mr-shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-}
-
-/* Seamless Quick Actions - Natural Flow */
-.mr-quick-actions {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 0;
-}
-
-.mr-quick-actions .mr-action-btn {
-    flex: 0 1 auto;
-    min-width: 120px;
-    max-width: 160px;
-    padding: 12px 16px;
-    background: var(--mr-bg-glass-strong);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid var(--mr-border-glass);
-    border-radius: var(--mr-radius-sm);
-    color: var(--mr-text-primary);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    font-family: var(--mr-font-family);
-    transition: var(--mr-transition-spring);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--mr-shadow-sm);
-}
-
-.mr-quick-actions .mr-action-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--mr-accent-gradient);
-    transition: left 0.6s ease;
-    z-index: -1;
-}
-
-.mr-quick-actions .mr-action-btn:hover::before {
-    left: 0;
-}
-
-.mr-quick-actions .mr-action-btn:hover {
-    background: transparent;
-    border-color: var(--mr-border-pink);
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: var(--mr-shadow-glass);
-    color: white;
-}
-
-/* Seamless History Section - Natural Integration */
-.mr-history-compact {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--mr-border-glass);
-}
-
-.mr-history-compact:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.mr-history-compact .mr-history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: var(--mr-transition);
-    padding: 8px 0 8px 8px;
-    margin-bottom: 8px;
-}
-
-.mr-history-compact .mr-history-header:hover {
-    color: var(--mr-accent-primary);
-}
-
-.mr-history-compact .mr-history-header h4 {
-    margin: 0;
-    font-size: 13px;
-    color: var(--mr-text-primary);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.mr-history-compact .mr-history-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
-    padding: 0;
-}
-
-.mr-history-compact .mr-history-content:not(.collapsed) {
-    max-height: 200px;
-    padding: 12px 0 0 0;
-}
-
-.mr-history-compact .mr-history-item {
-    padding: 8px 0 8px 8px;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--mr-text-secondary);
-    cursor: pointer;
-    transition: var(--mr-transition);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    position: relative;
-}
-
-.mr-history-compact .mr-history-item:last-child {
-    border-bottom: none;
-}
-
-.mr-history-compact .mr-history-item:hover {
-    color: var(--mr-text-primary);
-    padding-left: 16px;
-}
-
-.mr-history-compact .mr-history-item.synced {
-    border-left: 3px solid var(--mr-accent-primary);
-    background: linear-gradient(135deg, rgba(255, 105, 180, 0.05) 0%, rgba(255, 105, 180, 0.02) 100%);
-}
-
-.mr-history-compact .mr-history-item.synced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 20px 20px 0;
-    border-color: transparent var(--mr-accent-primary) transparent transparent;
-}
-
-/* Additional Button Feedback Enhancements */
-.mr-action-btn .fa-solid {
-    transition: transform 0.2s ease;
-}
-
-.mr-action-btn:hover .fa-solid {
-    transform: scale(1.1);
-}
-
-.mr-template-btn .mr-template-emoji {
-    transition: transform 0.2s ease;
-}
-
-.mr-template-btn:hover .mr-template-emoji {
-    transform: scale(1.2);
-}
-
-/* Loading States */
-.mr-action-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.mr-action-btn:disabled:hover {
-    transform: none !important;
-    box-shadow: var(--mr-shadow-sm);
-}
-
-/* Success/Error State Feedback */
-.mr-action-btn.success {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.4);
-    color: #10b981;
-}
-
-.mr-action-btn.error {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
-    color: #ef4444;
-}
-
-.mr-action-btn.success:hover {
-    background: rgba(16, 185, 129, 0.3);
-}
-
-.mr-action-btn.error:hover {
-    background: rgba(239, 68, 68, 0.3);
-}
-
-/* Cross-Device Synced History Styles */
-.mr-history-item {
-    background: var(--mr-bg-tertiary);
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 8px;
-    border: 1px solid var(--mr-border-subtle);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.mr-history-item:hover {
-    background: var(--mr-bg-hover);
-    border-color: var(--mr-accent-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.mr-history-item.synced {
-    border-left: 3px solid var(--mr-accent-primary);
-    background: linear-gradient(135deg, var(--mr-bg-tertiary) 0%, rgba(var(--mr-accent-rgb), 0.05) 100%);
-}
-
-.mr-history-item.synced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 20px 20px 0;
-    border-color: transparent var(--mr-accent-primary) transparent transparent;
-}
-
-.mr-history-text {
-    font-size: 0.9rem;
-    color: var(--mr-text-primary);
-    margin-bottom: 6px;
-    line-height: 1.4;
-}
-
-.mr-history-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-    color: var(--mr-text-muted);
-}
-
-.mr-history-time {
-    opacity: 0.8;
-}
-
-.mr-history-item.synced .mr-history-time {
-    color: var(--mr-accent-primary);
-    font-weight: 500;
+#mr_plot_editor_modal .mr-btn-secondary:active {
+    top: 4px;
+    box-shadow: 0 0 0 #1a2f1a !important;
+    transform: translateY(0);
 }

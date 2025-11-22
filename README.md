@@ -84,8 +84,8 @@ Upcoming features:
 
 ## Contributing
 
-This extension follows SillyTavern's extension development best practices. For issues or feature requests, please visit the GitHub repository.
+This extension follows SillyTavern's extension development best practices. For issues or feature requests, please open an issue here in the GitHub.
 
 ## License
 
-MIT License - feel free to modify and distribute
+MIT License

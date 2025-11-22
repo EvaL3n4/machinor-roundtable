@@ -4,59 +4,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* iOS Liquid Glass Design System - Premium Settings */
-:root {
-    /* Core Pink Purple Palette */
-    --mr-bg-primary: #0a0a0a;
-    --mr-bg-secondary: rgba(25, 25, 35, 0.8);
-    --mr-bg-glass: rgba(255, 192, 203, 0.08);
-    --mr-bg-glass-strong: rgba(255, 192, 203, 0.12);
-    --mr-bg-glass-elevated: rgba(255, 192, 203, 0.16);
-    
-    /* Pink Purple Accent System */
-    --mr-accent-primary: #ff69b4;      /* Hot Pink */
-    --mr-accent-secondary: #da70d6;    /* Orchid */
-    --mr-accent-tertiary: #ba55d3;     /* Medium Orchid */
-    --mr-accent-quaternary: #ff1493;   /* Deep Pink */
-    
-    /* Liquid Glass Gradients */
-    --mr-accent-gradient: linear-gradient(135deg, #ff69b4 0%, #da70d6 50%, #ba55d3 100%);
-    --mr-accent-soft: linear-gradient(135deg, rgba(255, 105, 180, 0.1), rgba(218, 112, 214, 0.1));
-    --mr-accent-glow: linear-gradient(135deg, rgba(255, 105, 180, 0.2), rgba(218, 112, 214, 0.2));
-    
-    /* iOS Typography System */
-    --mr-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
-    --mr-text-primary: #f8f9fa;
-    --mr-text-secondary: #e9ecef;
-    --mr-text-tertiary: #dee2e6;
-    --mr-text-muted: #adb5bd;
-    --mr-text-accent: #ff69b4;
-    
-    /* iOS Liquid Glass Borders */
-    --mr-border-glass: rgba(255, 255, 255, 0.12);
-    --mr-border-pink: rgba(255, 105, 180, 0.2);
-    --mr-border-pink-strong: rgba(255, 105, 180, 0.3);
-    --mr-border-accent: rgba(218, 112, 214, 0.25);
-    
-    /* iOS Liquid Glass Shadows */
-    --mr-shadow-glass: 0 8px 32px rgba(255, 105, 180, 0.12);
-    --mr-shadow-glass-strong: 0 12px 40px rgba(255, 105, 180, 0.16);
-    --mr-shadow-lg: 0 25px 50px -12px rgba(255, 105, 180, 0.15);
-    --mr-shadow-md: 0 10px 15px -3px rgba(255, 105, 180, 0.1);
-    --mr-shadow-sm: 0 4px 8px rgba(255, 105, 180, 0.08);
-    
-    /* iOS Radius Scale */
-    --mr-radius-lg: 20px;
-    --mr-radius-md: 16px;
-    --mr-radius-sm: 12px;
-    --mr-radius-xs: 8px;
-    --mr-radius-full: 50px;
-    
-    /* iOS Animation System */
-    --mr-transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --mr-transition-spring: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-    --mr-transition-liquid: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    --mr-transition-fast: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
+/* iOS Liquid Glass Design System - Inherits from style.css */
+/* :root variables are defined in style.css to ensure consistency */
 
 /* Main Settings Container - Premium iOS Liquid Glass */
 .machinor-roundtable-settings {
@@ -86,10 +35,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg,
-        rgba(255, 105, 180, 0.03) 0%,
-        rgba(218, 112, 214, 0.03) 50%,
-        rgba(186, 85, 211, 0.03) 100%);
+    background: var(--mr-accent-soft);
     pointer-events: none;
     z-index: -1;
 }
@@ -102,7 +48,7 @@
     right: 0;
     bottom: 0;
     background: radial-gradient(circle at 20% 50%, rgba(255, 105, 180, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 80% 50%, rgba(218, 112, 214, 0.05) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
 }
@@ -141,8 +87,8 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.02) 0%,
-        rgba(255, 255, 255, 0.05) 100%);
+            rgba(255, 255, 255, 0.02) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
     pointer-events: none;
     border-radius: var(--mr-radius-lg) var(--mr-radius-lg) 0 0;
 }
@@ -438,15 +384,16 @@
 
 .mr-toggle-switch {
     position: relative;
-    width: 50px;
-    height: 28px;
+    width: 52px;
+    height: 30px;
     appearance: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
     cursor: pointer;
-    transition: var(--mr-transition);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     outline: none;
     border: 1px solid var(--mr-border-glass);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mr-toggle-switch::before {
@@ -458,19 +405,20 @@
     height: 24px;
     background: white;
     border-radius: 50%;
-    transition: var(--mr-transition-spring);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mr-toggle-switch:checked {
-    background: var(--mr-accent-gradient);
-    border-color: transparent;
-    box-shadow: 0 4px 16px rgba(255, 105, 180, 0.3);
+    background: var(--mr-accent-primary);
+    border-color: var(--mr-accent-primary);
+    box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
 }
 
 .mr-toggle-switch:checked::before {
     transform: translateX(22px);
-    box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+    background: white;
+    box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .mr-toggle-label {
@@ -495,7 +443,8 @@
 }
 
 /* Premium iOS Liquid Glass Buttons */
-.mr-btn-primary, .mr-btn-secondary {
+.mr-btn-primary,
+.mr-btn-secondary {
     padding: 12px 24px;
     border: none;
     border-radius: var(--mr-radius-sm);
@@ -512,7 +461,8 @@
     overflow: hidden;
 }
 
-.mr-btn-primary::before, .mr-btn-secondary::before {
+.mr-btn-primary::before,
+.mr-btn-secondary::before {
     content: '';
     position: absolute;
     top: 0;
@@ -523,7 +473,8 @@
     transition: left 0.5s ease;
 }
 
-.mr-btn-primary:hover::before, .mr-btn-secondary:hover::before {
+.mr-btn-primary:hover::before,
+.mr-btn-secondary:hover::before {
     left: 100%;
 }
 
@@ -640,8 +591,13 @@
 }
 
 @keyframes mr-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* iOS Success/Error States */
@@ -662,33 +618,34 @@
     .mr-settings-content {
         padding: 16px;
     }
-    
+
     .mr-settings-section {
         margin-bottom: 16px;
         padding: 16px;
     }
-    
+
     .mr-section-header {
         margin: 20px 0 10px 0;
     }
-    
+
     .mr-toggle-item {
         padding: 12px;
     }
-    
+
     .mr-form-group {
         margin-bottom: 16px;
     }
-    
+
     .mr-form-group:last-child {
         margin-bottom: 0;
     }
-    
-    .mr-btn-primary, .mr-btn-secondary {
+
+    .mr-btn-primary,
+    .mr-btn-secondary {
         padding: 10px 20px;
         font-size: 13px;
     }
-    
+
     .mr-status-info {
         grid-template-columns: 1fr;
         padding: 16px;

@@ -2,9 +2,9 @@
     <div class="mr-settings-container">
         <div class="mr-settings-header">
             <h3>Machinor Roundtable</h3>
-            <div class="mr-version">v1.0.0</div>
+            <div class="mr-version">v1.1.0</div>
         </div>
-        
+
         <div class="mr-settings-content">
             <!-- Main Controls Section -->
             <div class="mr-settings-section">
@@ -18,7 +18,7 @@
                         <span class="mr-label-desc">Activate AI-powered plot injection</span>
                     </label>
                 </div>
-                
+
                 <div class="mr-toggle-item">
                     <input id="mr_debug" type="checkbox" class="mr-toggle-switch">
                     <label for="mr_debug" class="mr-toggle-label">
@@ -36,19 +36,23 @@
                 <div class="mr-form-group">
                     <label for="mr_frequency">Injection Frequency</label>
                     <div class="mr-input-with-value">
-                        <input type="number" id="mr_frequency" class="mr-input" min="1" max="50" value="7">
-                        <span class="mr-input-suffix">exchanges</span>
+                        <input type="number" id="mr_frequency" class="mr-input" min="1" max="20" value="3">
+                        <span class="mr-input-suffix">turns</span>
                     </div>
-                    <span class="mr-help-text">How often to inject plot context (lower = more frequent)</span>
-                </div>
+                    <span class="mr-help-text">Generate new plot every N turns (1 = every turn)</span>
 
-                <div class="mr-form-group">
-                    <label for="mr_approval_timeout">Auto-Approve Timeout</label>
-                    <div class="mr-input-with-value">
-                        <input type="number" id="mr_approval_timeout" class="mr-input" min="1" max="30" value="5">
-                        <span class="mr-input-suffix">seconds</span>
+                    <!-- Frequency Counter UI -->
+                    <div class="mr-frequency-counter-container"
+                        style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="mr-counter-info">
+                            <span style="font-size: 0.9em; opacity: 0.8;">Progress:</span>
+                            <span id="mr_turn_progress" style="font-weight: bold; margin-left: 5px;">0 / 3</span>
+                        </div>
+                        <button id="mr_reset_counter" class="mr-btn-icon" title="Reset Counter"
+                            style="padding: 4px 8px; font-size: 0.9em;">
+                            <i class="fa-solid fa-rotate-right"></i> Reset
+                        </button>
                     </div>
-                    <span class="mr-help-text">Time before auto-injecting generated plots</span>
                 </div>
 
                 <div class="mr-form-group">
@@ -107,13 +111,6 @@
                     </label>
                 </div>
 
-                <div class="mr-toggle-item">
-                    <input id="mr_cache_plots" type="checkbox" class="mr-toggle-switch" checked>
-                    <label for="mr_cache_plots" class="mr-toggle-label">
-                        <span class="mr-label-text">Cache Generated Plots</span>
-                        <span class="mr-label-desc">Reuse similar plots to save API calls</span>
-                    </label>
-                </div>
             </div>
 
             <!-- Quick Actions Section -->
@@ -123,9 +120,6 @@
                 </div>
                 <button id="mr_manual_trigger" class="mr-btn-primary">
                     <i class="fa-solid fa-magic"></i> Generate Plot Now
-                </button>
-                <button id="mr_clear_cache" class="mr-btn-secondary">
-                    <i class="fa-solid fa-broom"></i> Clear Plot Cache
                 </button>
                 <button id="mr_reset_settings" class="mr-btn-secondary">
                     <i class="fa-solid fa-rotate-left"></i> Reset to Defaults
@@ -141,10 +135,6 @@
                 <div class="mr-status-item">
                     <span class="mr-status-label">Plots Generated:</span>
                     <span class="mr-status-value" id="mr_plot_count">0</span>
-                </div>
-                <div class="mr-status-item">
-                    <span class="mr-status-label">Cache Size:</span>
-                    <span class="mr-status-value" id="mr_cache_size">0</span>
                 </div>
             </div>
         </div>
