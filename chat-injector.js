@@ -217,8 +217,23 @@ export class ChatInjector {
             }
             if (plotContext) {
                 logger.log('Plot context ready:', plotContext);
+                
+                // Gather insights from DOM if not passed (for reused plots)
+                const insights = {};
+                if (this.plotPreview && this.plotPreview.elements) {
+                    const toneEl = document.getElementById('mr_tone_analysis');
+                    const pacingEl = document.getElementById('mr_pacing_guidance');
+                    
+                    if (toneEl && toneEl.textContent && toneEl.textContent !== 'Neutral') {
+                        insights.tone = toneEl.textContent;
+                    }
+                    if (pacingEl && pacingEl.textContent && pacingEl.textContent !== 'Standard') {
+                        insights.pacing = pacingEl.textContent;
+                    }
+                }
+
                 // Inject into the prompt
-                this.injectPlotContext(data, plotContext);
+                this.injectPlotContext(data, plotContext, insights);
 
                 // Update preview
                 if (this.plotPreview) {
@@ -322,8 +337,19 @@ export class ChatInjector {
     /**
      * Inject the plot context into the generation data
      */
-    injectPlotContext(data, plotContext) {
-        const injectionText = `\n[Plot Guidance: ${plotContext}]\n`;
+    injectPlotContext(data, plotContext, insights = {}) {
+        let injectionText = `\n[Plot Guidance: ${plotContext}`;
+        
+        // Merge Tone and Pacing if available
+        if (insights.tone) {
+            injectionText += ` | Tone: ${insights.tone}`;
+        }
+        if (insights.pacing) {
+            injectionText += ` | Pacing: ${insights.pacing}`;
+        }
+        
+        injectionText += `]\n`;
+
         logger.log('Attempting injection with text length:', injectionText.length);
 
         // Handle OpenAI / Chat Completion (prompt is array of messages)
@@ -335,7 +361,7 @@ export class ChatInjector {
 
             data.prompt.push({
                 role: 'system',
-                content: `[Plot Guidance: ${plotContext}]`
+                content: injectionText.trim()
             });
             logger.log('Injected into messages array (OpenAI/Chat). New length:', data.prompt.length);
         }
