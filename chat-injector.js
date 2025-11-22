@@ -1,5 +1,6 @@
 import { getContext } from "../../../extensions.js";
 import { event_types, eventSource } from "../../../../script.js";
+import { logger } from "./logger.js";
 
 /**
  * ChatInjector - Handles injection of plot context into SillyTavern prompts
@@ -12,7 +13,7 @@ export class ChatInjector {
         this.isInitialized = false;
         this.isGeneratingPlot = false;
 
-        console.log('[Machinor Roundtable] ChatInjector created');
+        logger.log('ChatInjector created');
     }
 
     /**
@@ -21,21 +22,21 @@ export class ChatInjector {
      */
     initialize() {
         if (this.isInitialized) {
-            console.log('[Machinor Roundtable] ChatInjector already initialized');
+            logger.log('ChatInjector already initialized');
             return;
         }
 
-        console.log('[Machinor Roundtable] ChatInjector initializing...');
+        logger.log('ChatInjector initializing...');
 
         // Bind to the prompt generation event
         // GENERATE_AFTER_DATA fires after the prompt is constructed for all APIs (including OpenAI)
         if (typeof event_types !== 'undefined' && event_types.GENERATE_AFTER_DATA) {
-            console.log('[Machinor Roundtable] Registering GENERATE_AFTER_DATA listener');
+            logger.log('Registering GENERATE_AFTER_DATA listener');
             eventSource.on(event_types.GENERATE_AFTER_DATA, (data, dryRun) => this.handleGenerationEvent(data, dryRun));
-            console.log('[Machinor Roundtable] ChatInjector initialized and listening for generation events');
+            logger.log('ChatInjector initialized and listening for generation events');
             this.isInitialized = true;
         } else {
-            console.error('[Machinor Roundtable] GENERATE_AFTER_DATA event type not found', {
+            logger.error('GENERATE_AFTER_DATA event type not found', {
                 event_types_defined: typeof event_types !== 'undefined',
                 event_name: event_types?.GENERATE_AFTER_DATA
             });
@@ -53,7 +54,7 @@ export class ChatInjector {
             return;
         }
 
-        console.log('[Machinor Roundtable] handleGenerationEvent triggered', {
+        logger.log('handleGenerationEvent triggered', {
             dryRun: dryRun,
             isChatReady: this.stIntegration.isChatReady,
             hasPrompt: !!data.prompt,
@@ -65,19 +66,19 @@ export class ChatInjector {
         if (!this.isExtensionEnabled()) {
             // Only log if we are in a state where we might expect it to work, to avoid spam
             // But for debugging, we log.
-            console.log('[Machinor Roundtable] Extension disabled in settings, skipping injection');
+            logger.log('Extension disabled in settings, skipping injection');
             return;
         }
 
         // Basic validation
         if (!this.stIntegration.isChatReady) {
-            console.log('[Machinor Roundtable] Chat not ready, skipping injection');
+            logger.log('Chat not ready, skipping injection');
             return;
         }
 
         // Skip dry runs (e.g. initial load, test messages)
         if (dryRun) {
-            console.log('[Machinor Roundtable] Skipping injection due to dry run');
+            logger.log('Skipping injection due to dry run');
             return;
         }
 
@@ -88,11 +89,11 @@ export class ChatInjector {
         );
 
         if (!isRealUserGeneration) {
-            console.log('[Machinor Roundtable] Not a real user generation (no prompt/input), skipping injection', data);
+            logger.log('Not a real user generation (no prompt/input), skipping injection', data);
             return;
         }
 
-        console.log('[Machinor Roundtable] 🎯 Processing generation event');
+        logger.log('🎯 Processing generation event');
 
         try {
             // Update preview status
@@ -103,7 +104,7 @@ export class ChatInjector {
             // Get active character
             const characters = this.stIntegration.getActiveCharacters();
             if (!characters || characters.length === 0) {
-                console.log('[Machinor Roundtable] No active characters found');
+                logger.log('No active characters found');
                 return;
             }
             const character = characters[0]; // Use primary character
@@ -136,27 +137,27 @@ export class ChatInjector {
             }
 
             if (hasSystemPrompt) {
-                console.log('[Machinor Roundtable] Skipping generation - system prompt detected');
+                logger.log('Skipping generation - system prompt detected');
                 return;
             }
 
             // Check if we should generate a new plot
             const shouldGenerate = await this.shouldGenerateForTurn(data);
 
-            console.log('[Machinor Roundtable] Generation check:', { shouldRefresh: shouldGenerate });
+            logger.log('Generation check:', { shouldRefresh: shouldGenerate });
 
             // CRITICAL FIX: Check preview FIRST, before any generation decision
             let previewPlot = null;
             if (this.plotPreview && typeof this.plotPreview.getCurrentPlot === 'function') {
                 previewPlot = this.plotPreview.getCurrentPlot();
-                console.log('[Machinor Roundtable] 🔍 Preview check:', {
+                logger.log('🔍 Preview check:', {
                     hasPreview: !!previewPlot,
                     hasText: !!previewPlot?.text,
                     status: previewPlot?.status,
                     textPreview: previewPlot?.text?.substring(0, 50) + '...'
                 });
             } else {
-                console.log('[Machinor Roundtable] ⚠️ Preview not available or getCurrentPlot not defined');
+                logger.log('⚠️ Preview not available or getCurrentPlot not defined');
             }
 
             if (previewPlot && previewPlot.text) {
@@ -165,26 +166,26 @@ export class ChatInjector {
 
                 if (isReadyOrRestored) {
                     // Manual override or restored from storage - always use
-                    console.log('[Machinor Roundtable] ♻️ Using pending previewed plot (Manual/Restored)');
+                    logger.log('♻️ Using pending previewed plot (Manual/Restored)');
                     plotContext = previewPlot.text;
                     isNewGeneration = false;
                 } else if (shouldGenerate) {
                     // Frequency trigger - generate new even if we have old plot
-                    console.log('[Machinor Roundtable] 🔄 Frequency trigger hit, ignoring old plot');
+                    logger.log('🔄 Frequency trigger hit, ignoring old plot');
                     // plotContext remains null, forcing generation below
                 } else {
                     // No trigger, just reuse existing plot
-                    console.log('[Machinor Roundtable] ♻️ Reusing previous plot (Frequency skip)');
+                    logger.log('♻️ Reusing previous plot (Frequency skip)');
                     plotContext = previewPlot.text;
                     isNewGeneration = false;
                 }
             } else {
                 // No plot in preview - check if we should generate
                 if (shouldGenerate || !previewPlot) {
-                    console.log('[Machinor Roundtable] 📝 No preview plot available, will generate');
+                    logger.log('📝 No preview plot available, will generate');
                     // plotContext remains null, forcing generation below
                 } else {
-                    console.log('[Machinor Roundtable] ⚠️ Preview exists but no text, skipping injection');
+                    logger.log('⚠️ Preview exists but no text, skipping injection');
                     // Don't generate, don't inject
                     return;
                 }
@@ -192,7 +193,7 @@ export class ChatInjector {
 
             // If no suitable existing plot, generate a new one
             if (!plotContext) {
-                console.log('[Machinor Roundtable] 🎲 Generating new plot (Triggered or Fallback)');
+                logger.log('🎲 Generating new plot (Triggered or Fallback)');
 
                 // SET FLAG TO PREVENT RECURSION
                 this.isGeneratingPlot = true;
@@ -210,12 +211,12 @@ export class ChatInjector {
             }
 
             if (!plotContext) {
-                console.log('[machinor-roundtable] No plot context generated, skipping injection');
+                logger.log('No plot context generated, skipping injection');
                 this.isGeneratingPlot = false;
                 return;
             }
             if (plotContext) {
-                console.log('[Machinor Roundtable] Plot context ready:', plotContext);
+                logger.log('Plot context ready:', plotContext);
                 // Inject into the prompt
                 this.injectPlotContext(data, plotContext);
 
@@ -243,12 +244,12 @@ export class ChatInjector {
                         // Reset counter on generation
                         settings.turnsSinceLastGeneration = 0;
                         settings.plotCount = (settings.plotCount || 0) + 1;
-                        console.log('[Machinor Roundtable] Generation complete, counter reset to 0');
+                        logger.log('Generation complete, counter reset to 0');
                     } else {
                         // Increment counter if we didn't generate
                         // Note: We increment even if we injected an existing plot
                         settings.turnsSinceLastGeneration = (settings.turnsSinceLastGeneration || 0) + 1;
-                        console.log(`[Machinor Roundtable] Turn complete, counter incremented to ${settings.turnsSinceLastGeneration}`);
+                        logger.log(`Turn complete, counter incremented to ${settings.turnsSinceLastGeneration}`);
                     }
 
                     if (window.machinorRoundtable && window.machinorRoundtable.saveSettings) {
@@ -256,11 +257,11 @@ export class ChatInjector {
                     }
                 }
             } else {
-                console.warn('[Machinor Roundtable] Failed to get plot context');
+                logger.warn('Failed to get plot context');
             }
 
         } catch (error) {
-            console.error('[Machinor Roundtable] Injection failed:', error);
+            logger.error('Injection failed:', error);
             if (this.plotPreview) {
                 this.plotPreview.updateStatus('ready');
             }
@@ -280,7 +281,7 @@ export class ChatInjector {
         }
 
         if (!settings) {
-            console.log('[Machinor Roundtable] Settings not found in extension_settings or global instance');
+            logger.log('Settings not found in extension_settings or global instance');
             return false;
         }
 
@@ -302,7 +303,7 @@ export class ChatInjector {
         }
 
         if (!settings) {
-            console.warn('[Machinor Roundtable] Settings completely missing in shouldGenerateForTurn, defaulting to FALSE');
+            logger.warn('Settings completely missing in shouldGenerateForTurn, defaulting to FALSE');
             return false; // Safer default to prevent unwanted overwrites
         }
 
@@ -312,7 +313,7 @@ export class ChatInjector {
         // Use dedicated counter instead of chat length
         const currentTurns = settings.turnsSinceLastGeneration || 0;
 
-        console.log(`[Machinor Roundtable] Frequency check: ${currentTurns}/${frequency} turns (Settings found: ${!!settings})`);
+        logger.log(`Frequency check: ${currentTurns}/${frequency} turns (Settings found: ${!!settings})`);
 
         // Generate if we've reached or exceeded the frequency target
         return currentTurns >= frequency;
@@ -323,7 +324,7 @@ export class ChatInjector {
      */
     injectPlotContext(data, plotContext) {
         const injectionText = `\n[Plot Guidance: ${plotContext}]\n`;
-        console.log('[Machinor Roundtable] Attempting injection with text length:', injectionText.length);
+        logger.log('Attempting injection with text length:', injectionText.length);
 
         // Handle OpenAI / Chat Completion (prompt is array of messages)
         if (Array.isArray(data.prompt)) {
@@ -336,22 +337,22 @@ export class ChatInjector {
                 role: 'system',
                 content: `[Plot Guidance: ${plotContext}]`
             });
-            console.log('[Machinor Roundtable] Injected into messages array (OpenAI/Chat). New length:', data.prompt.length);
+            logger.log('Injected into messages array (OpenAI/Chat). New length:', data.prompt.length);
         }
         // Handle Text Completion (prompt is string)
         else if (typeof data.prompt === 'string') {
             const originalLength = data.prompt.length;
             data.prompt += injectionText;
-            console.log(`[Machinor Roundtable] Injected into prompt string (Text Completion). Length: ${originalLength} -> ${data.prompt.length}`);
+            logger.log(`Injected into prompt string (Text Completion). Length: ${originalLength} -> ${data.prompt.length}`);
         }
         // Handle NovelAI (uses 'input' instead of 'prompt' sometimes?)
         else if (typeof data.input === 'string') {
             const originalLength = data.input.length;
             data.input += injectionText;
-            console.log(`[Machinor Roundtable] Injected into input string (NovelAI). Length: ${originalLength} -> ${data.input.length}`);
+            logger.log(`Injected into input string (NovelAI). Length: ${originalLength} -> ${data.input.length}`);
         }
         else {
-            console.warn('[Machinor Roundtable] Could not find suitable injection point in data', Object.keys(data));
+            logger.warn('Could not find suitable injection point in data', Object.keys(data));
         }
     }
 

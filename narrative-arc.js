@@ -1,6 +1,7 @@
 // Machinor Roundtable - Narrative Arc System
 import { getContext } from "../../../extensions.js";
 import { generateQuietPrompt } from "../../../../script.js";
+import { logger } from "./logger.js";
 
 /**
  * Narrative Arc Manager
@@ -20,7 +21,7 @@ export class NarrativeArcManager {
             arcType: 'natural'
         };
 
-        console.log('[Machinor Roundtable] Narrative Arc Manager initialized');
+        logger.log('Narrative Arc Manager initialized');
     }
 
     /**
@@ -107,7 +108,7 @@ export class NarrativeArcManager {
     startArc(arcType = 'natural', character = null) {
         const template = this.arcTemplates[arcType];
         if (!template) {
-            console.warn(`[Machinor Roundtable] Unknown arc type: ${arcType}`);
+            logger.warn(`Unknown arc type: ${arcType}`);
             return false;
         }
 
@@ -130,7 +131,7 @@ export class NarrativeArcManager {
             arcType: arcType
         };
 
-        console.log(`[Machinor Roundtable] Started ${template.name} arc with ${character?.name || 'unknown character'}`);
+        logger.log(`Started ${template.name} arc with ${character?.name || 'unknown character'}`);
         return true;
     }
 
@@ -366,10 +367,10 @@ export class NarrativeArcManager {
         // Handle different choice types
         if (choice.type === 'branching' && choice.choice) {
             this.currentArc.branch = choice.choice;
-            console.log(`[Machinor Roundtable] Arc branch selected: ${choice.choice}`);
+            logger.log(`Arc branch selected: ${choice.choice}`);
         }
 
-        console.log(`[Machinor Roundtable] Arc choice made:`, choice);
+        logger.log(`Arc choice made:`, choice);
         return true;
     }
 
@@ -386,7 +387,7 @@ export class NarrativeArcManager {
         this.currentArc.phaseIndex++;
 
         if (this.currentArc.phaseIndex >= this.currentArc.template.phases.length) {
-            console.log(`[Machinor Roundtable] Arc completed: ${this.currentArc.name}`);
+            logger.log(`Arc completed: ${this.currentArc.name}`);
             this.arcHistory.push({ ...this.currentArc });
             this.currentArc = null;
             return true;
@@ -395,7 +396,7 @@ export class NarrativeArcManager {
         this.currentArc.currentPhase = this.currentArc.template.phases[this.currentArc.phaseIndex];
         this.storyProgress.currentPhase = this.currentArc.currentPhase.name;
 
-        console.log(`[Machinor Roundtable] Advanced to phase: ${this.currentArc.currentPhase.name}`);
+        logger.log(`Advanced to phase: ${this.currentArc.currentPhase.name}`);
         return true;
     }
 
@@ -429,6 +430,6 @@ export class NarrativeArcManager {
             completedPhases: [],
             arcType: 'natural'
         };
-        console.log('[Machinor Roundtable] Narrative arc system reset');
+        logger.log('Narrative arc system reset');
     }
 }

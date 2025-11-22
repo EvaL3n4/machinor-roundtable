@@ -6,6 +6,7 @@ import { ChatInjector } from "./chat-injector.js";
 import { PlotPreviewManager } from "./plot-preview.js";
 import { STIntegrationManager } from "./st-integration.js";
 import { NarrativeArcManager } from "./narrative-arc.js";
+import { logger } from "./logger.js";
 
 const extensionName = "machinor-roundtable";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
@@ -44,7 +45,7 @@ class MachinorCore {
      * Initialize the extension
      */
     async initialize() {
-        console.log(`[${extensionName}] Initializing MachinorCore...`);
+        logger.log(`Initializing MachinorCore...`);
 
         try {
             // 1. Load UI Resources
@@ -62,11 +63,11 @@ class MachinorCore {
             // 5. Start Integration
             await this.components.stIntegration.initialize();
 
-            console.log(`[${extensionName}] MachinorCore initialization complete`);
+            logger.log(`MachinorCore initialization complete`);
             this.isInitializing = false;
 
         } catch (error) {
-            console.error(`[${extensionName}] Initialization failed:`, error);
+            logger.error(`Initialization failed:`, error);
         }
     }
 
@@ -119,7 +120,7 @@ class MachinorCore {
 
         // Subscribe to Chat Readiness
         this.components.stIntegration.on('chat_ready', (context) => {
-            console.log(`[${extensionName}] Core received chat_ready event`);
+            logger.log(`Core received chat_ready event`);
             this.onChatReady(context);
         });
     }
@@ -128,12 +129,12 @@ class MachinorCore {
      * Handle chat ready event
      */
     onChatReady(context) {
-        console.log(`[${extensionName}] onChatReady triggered`);
+        logger.log(`onChatReady triggered`);
         if (this.components.chatInjector) {
-            console.log(`[${extensionName}] Calling chatInjector.initialize()`);
+            logger.log(`Calling chatInjector.initialize()`);
             this.components.chatInjector.initialize();
         } else {
-            console.error(`[${extensionName}] chatInjector component missing!`);
+            logger.error(`chatInjector component missing!`);
         }
         if (this.components.plotPreview) {
             this.components.plotPreview.deferredInit();
@@ -144,14 +145,18 @@ class MachinorCore {
      * Load settings from SillyTavern storage
      */
     loadSettings() {
-        console.log(`[${extensionName}] Loading settings...`);
+        logger.log(`Loading settings...`);
         extension_settings[extensionName] = extension_settings[extensionName] || {};
         if (Object.keys(extension_settings[extensionName]).length === 0) {
-            console.log(`[${extensionName}] Initializing default settings`);
+            logger.log(`Initializing default settings`);
             Object.assign(extension_settings[extensionName], defaultSettings);
         }
         this.settings = extension_settings[extensionName];
-        console.log(`[${extensionName}] Settings loaded:`, this.settings);
+        
+        // Initialize logger debug mode from settings
+        logger.setDebugMode(this.settings.debugMode);
+        
+        logger.log(`Settings loaded:`, this.settings);
         this.updateSettingsUI();
     }
 
@@ -193,6 +198,7 @@ class MachinorCore {
 
         $("#mr_debug").on("input", (e) => {
             this.settings.debugMode = $(e.target).prop("checked");
+            logger.setDebugMode(this.settings.debugMode);
             this.saveSettings();
         });
 
@@ -271,7 +277,7 @@ class MachinorCore {
             // Note: Plot is displayed as current. User can approve/inject to add to history.
 
         } catch (error) {
-            console.error(`[${extensionName}] Manual trigger failed:`, error);
+            logger.error(`Manual trigger failed:`, error);
             this.components.plotPreview.updateStatus('ready');
             toastr.error("Failed to generate plot", "Machinor Roundtable");
         } finally {

@@ -2,6 +2,7 @@
 import { getContext } from "../../../extensions.js";
 import { generateQuietPrompt } from "../../../../script.js";
 import { STIntegrationManager } from "./st-integration.js";
+import { logger } from "./logger.js";
 
 const PLOT_GENERATION_PROMPT = `You are a Narrative Architect.Your goal is to analyze the story context and generate a plot hook for the next scene.
 [System Note: Output valid JSON only.Do not output any introductory text or markdown formatting outside the JSON block.]
@@ -49,19 +50,23 @@ export class PlotEngine {
      * @returns {Promise<String>} Generated plot context
      */
     async generatePlotContext(character, chatHistory, options = {}) {
-        console.log('[machinor-roundtable] ===== PLOT GENERATION START (JSON) =====');
+        logger.log('===== PLOT GENERATION START (JSON) =====');
 
         const promptData = this.buildBestPrompt(character, chatHistory, options);
 
         try {
-            console.log('[Machinor Roundtable] 🎯 Making LLM call');
+            logger.log('🎯 Making LLM call');
 
-            const response = await generateQuietPrompt({
-                quietPrompt: promptData.prompt,
-                skipWIAN: true,
-                removeReasoning: true,
-                trimToSentence: false
-            });
+            // Wrap LLM call with timeout to prevent hanging
+            const response = await Promise.race([
+                generateQuietPrompt({
+                    quietPrompt: promptData.prompt,
+                    skipWIAN: true,
+                    removeReasoning: true,
+                    trimToSentence: false
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('LLM call timed out after 45s')), 45000))
+            ]);
 
             const parsed = this.parseResponse(response);
 
@@ -69,8 +74,8 @@ export class PlotEngine {
                 throw new Error("Failed to parse valid plot hook from response");
             }
 
-            console.log('[Machinor Roundtable] Final result:', parsed.plot_hook);
-            console.log('[Machinor Roundtable] ===== PLOT GENERATION END =====');
+            logger.log('Final result:', parsed.plot_hook);
+            logger.log('===== PLOT GENERATION END =====');
 
             // Return full object for UI insights, consumers must handle it
             return {
@@ -80,7 +85,7 @@ export class PlotEngine {
             };
 
         } catch (error) {
-            console.error('[Machinor Roundtable] LLM call failed:', error);
+            logger.error('LLM call failed:', error);
             toastr.error("Plot generation failed. Please try again.", "Machinor Roundtable");
             return null;
         }
@@ -94,7 +99,7 @@ export class PlotEngine {
             // First try direct parse
             return JSON.parse(response);
         } catch (e) {
-            console.log('[Machinor Roundtable] Direct JSON parse failed, trying extraction');
+            logger.log('Direct JSON parse failed, trying extraction');
             // Try to extract JSON object if wrapped in text or markdown
             const firstBrace = response.indexOf('{');
             const lastBrace = response.lastIndexOf('}');
@@ -104,7 +109,7 @@ export class PlotEngine {
                 try {
                     return JSON.parse(jsonString);
                 } catch (e2) {
-                    console.error('[Machinor Roundtable] Extracted JSON parse failed');
+                    logger.error('Extracted JSON parse failed');
                 }
             }
             return null;

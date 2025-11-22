@@ -1,6 +1,7 @@
 // Machinor Roundtable - SillyTavern Deep Integration Module
 import { getContext } from "../../../extensions.js";
 import { eventSource, event_types, this_chid, characters, chat, isChatSaving, chat_metadata } from "../../../../script.js";
+import { logger } from "./logger.js";
 
 /**
  * SillyTavern Integration Manager
@@ -18,7 +19,7 @@ export class STIntegrationManager {
         // Event emitters for internal extension communication
         this.eventListeners = new Map();
 
-        console.log('[Machinor Roundtable] ST Integration Manager initialized');
+        logger.log('ST Integration Manager initialized');
     }
 
     /**
@@ -27,7 +28,7 @@ export class STIntegrationManager {
      */
     async initialize() {
         this.setupEventListeners();
-        console.log('[Machinor Roundtable] ST Integration initialized');
+        logger.log('ST Integration initialized');
 
         // Check initial state
         this.checkChatReadiness('Initial Load');
@@ -64,14 +65,14 @@ export class STIntegrationManager {
         if (typeof eventSource !== 'undefined') {
             // Listen for character changes
             eventSource.on('character_selected', (data) => {
-                console.log('[Machinor Roundtable] Character changed, refreshing data...');
+                logger.log('Character changed, refreshing data...');
                 this.loadWorldInfo();
                 this.analyzeActiveCharacters();
             });
 
             // Listen for chat changes
             eventSource.on('chat_changed', (data) => {
-                console.log('[Machinor Roundtable] Chat changed, updating context...');
+                logger.log('Chat changed, updating context...');
                 this.loadWorldInfo();
 
                 // If we weren't ready (e.g. ignored empty chat), check again now that content might be here
@@ -82,7 +83,7 @@ export class STIntegrationManager {
 
             // Listen for world changes
             eventSource.on('world_changed', (data) => {
-                console.log('[Machinor Roundtable] World changed, reloading world info...');
+                logger.log('World changed, reloading world info...');
                 this.worldInfo = null;
                 this.currentWorldId = null;
                 this.loadWorldInfo();
@@ -90,14 +91,14 @@ export class STIntegrationManager {
 
             // Listen for chat load events
             eventSource.on('chat_id_changed', (chatId) => {
-                console.log('[Machinor Roundtable] Chat ID changed:', chatId);
+                logger.log('Chat ID changed:', chatId);
                 this.isChatReady = false; // Reset ready state
                 this.checkChatReadiness('Chat ID Changed');
             });
 
             if (typeof event_types !== 'undefined' && event_types.CHAT_LOADED) {
                 eventSource.on(event_types.CHAT_LOADED, () => {
-                    console.log('[Machinor Roundtable] Chat loaded event received');
+                    logger.log('Chat loaded event received');
                     this.checkChatReadiness('Chat Loaded Event');
                 });
             }
@@ -115,7 +116,7 @@ export class STIntegrationManager {
 
             // Ignore empty chats (initial load dummy chat)
             if (context && context.chat && context.chat.length === 0) {
-                console.log(`[Machinor Roundtable] ⏳ Ignoring empty chat (${source})`);
+                logger.log(`⏳ Ignoring empty chat (${source})`);
                 this.isChatReady = false;
                 return;
             }
@@ -131,11 +132,11 @@ export class STIntegrationManager {
 
             if (isCoreReady && context && context.chatId && context.characterId !== undefined) {
                 if (!this.isChatReady) {
-                    console.log(`[Machinor Roundtable] ✅ Core ready (${source}). ID:`, context.chatId);
+                    logger.log(`✅ Core ready (${source}). ID:`, context.chatId);
                     this.onChatReady(context);
                 }
             } else {
-                console.log(`[Machinor Roundtable] ⏳ Chat not ready (${source})`);
+                logger.log(`⏳ Chat not ready (${source})`);
                 this.isChatReady = false;
             }
         });
@@ -167,7 +168,7 @@ export class STIntegrationManager {
 
             return this.worldInfo;
         } catch (error) {
-            console.error('[Machinor Roundtable] Error loading world info:', error);
+            logger.error('Error loading world info:', error);
             return null;
         }
     }
@@ -201,7 +202,7 @@ export class STIntegrationManager {
                     });
                 }
             } catch (err) {
-                console.warn('[Machinor Roundtable] Error processing world info entry:', key, err);
+                logger.warn('Error processing world info entry:', key, err);
             }
         });
 
