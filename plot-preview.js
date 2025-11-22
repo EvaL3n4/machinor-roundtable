@@ -1014,15 +1014,18 @@ export class PlotPreviewManager {
         }
         this.mobileOverlay = /** @type {HTMLElement} */ (overlay);
 
-        const closeBtn = this.createMobileCloseButton();
-        this.elements.sidebar.querySelector('.mr-sidebar-header')?.appendChild(closeBtn);
+        // Connect the close button in HTML instead of creating one dynamically
+        const closeBtn = document.getElementById('mr_mobile_close');
 
         const toggleHandler = () => this.toggleMobileSidebar();
         const closeHandler = () => this.hideMobileSidebar();
 
         mobileToggle.addEventListener('click', toggleHandler);
         overlay.addEventListener('click', closeHandler);
-        closeBtn.addEventListener('click', closeHandler);
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeHandler);
+        }
 
         mobileToggle.dataset.mrInitialized = 'true';
         this.ensurePortalPlaceholders();
