@@ -470,7 +470,7 @@ class MachinorCore {
 
             this.settings.previewHistories = Object.fromEntries(keptEntries);
             
-            logger.log(`[Machinor Roundtable] Trimmed ${evictedCount} old chat histories from settings`);
+            logger.log(`Trimmed ${evictedCount} old chat histories from settings`);
         } catch (error) {
             logger.error('Error trimming preview histories:', error);
         }
@@ -491,7 +491,7 @@ class MachinorCore {
             // Warn if we're using > 2MB ourselves
             // STORAGE HEALTH: Monitor extension storage usage. Warn if > 2MB and trigger aggressive cleanup to prevent localStorage exhaustion.
             if (sizeMB > 2) {
-                logger.warn(`[Machinor Roundtable] High storage usage: ${sizeMB.toFixed(2)}MB`);
+                logger.warn(`High storage usage: ${sizeMB.toFixed(2)}MB`);
                 // Trigger aggressive cleanup
                 this.trimPreviewHistories();
             }
@@ -505,7 +505,7 @@ class MachinorCore {
      * @returns {void}
      */
     destroy() {
-        logger.log('[Machinor Roundtable] Destroying MachinorCore...');
+        logger.log('Destroying MachinorCore...');
 
         // 1. Destroy components
         // Optional chaining for safe destruction
@@ -531,7 +531,7 @@ class MachinorCore {
             delete window.machinorRoundtable;
         }
 
-        logger.log('[Machinor Roundtable] MachinorCore destroyed');
+        logger.log('MachinorCore destroyed');
     }
 }
 

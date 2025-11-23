@@ -64,14 +64,14 @@ export class STIntegrationManager {
         if (this.isDestroyed) return;
         this.isDestroyed = true;
 
-        logger.log('[Machinor Roundtable] Destroying STIntegrationManager...');
+        logger.log('Destroying STIntegrationManager...');
 
         // 1. Remove EventSource Listeners
         if (typeof eventSource !== 'undefined' && eventSource.off) {
             for (const [key, handler] of this.eventListenerRefs.entries()) {
                 // The key is the event name
                 eventSource.off(key, handler);
-                logger.log(`[Machinor Roundtable] Removed eventSource listener: ${key}`);
+                logger.log(`Removed eventSource listener: ${key}`);
             }
         }
         this.eventListenerRefs.clear();
@@ -85,7 +85,7 @@ export class STIntegrationManager {
         this.contextData = null;
         this.characterRelationships.clear();
 
-        logger.log('[Machinor Roundtable] STIntegrationManager destroyed');
+        logger.log('STIntegrationManager destroyed');
     }
 
     /**

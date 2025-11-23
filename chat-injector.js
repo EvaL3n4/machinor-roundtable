@@ -76,7 +76,7 @@ export class ChatInjector {
         if (this.isDestroyed) return;
         this.isDestroyed = true;
 
-        logger.log('[Machinor Roundtable] Destroying ChatInjector...');
+        logger.log('Destroying ChatInjector...');
 
         // Cleanup event listener
         // Optional chaining
@@ -88,7 +88,7 @@ export class ChatInjector {
         this.isInitialized = false;
         this.isGeneratingPlot = false;
         
-        logger.log('[Machinor Roundtable] ChatInjector destroyed');
+        logger.log('ChatInjector destroyed');
     }
 
     /**
