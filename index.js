@@ -147,6 +147,15 @@ class MachinorCore {
             logger.log(`Core received chat_ready event`);
             this.onChatReady(context);
         });
+
+        // Listen for chat ID changes to reset state
+        this.components.stIntegration?.on('manager:chat_id_changed', (chatId) => {
+            logger.log(`Core received manager:chat_id_changed event: ${chatId}`);
+            if (this.components.narrativeArc) {
+                logger.log('Resetting Narrative Arc state due to chat switch');
+                this.components.narrativeArc.reset();
+            }
+        });
     }
 
     /**
@@ -347,9 +356,33 @@ class MachinorCore {
             );
 
             // Optional chaining
-            this.components.plotPreview?.displayCurrentPlot(plotContext, 'ready');
+            if (this.components.plotPreview) {
+                const text = typeof plotContext === 'object' ? plotContext.text : plotContext;
 
+                // Update insights first (to ensure they are saved with the profile)
+                if (typeof plotContext === 'object' && plotContext.tone) {
+                    this.components.plotPreview.updateInsightsDisplay(plotContext);
+                }
+
+                this.components.plotPreview.displayCurrentPlot(text, 'ready');
+                this.components.plotPreview.addToHistory(text);
+            }
+
+            // Manual triggers don't necessarily consume a 'turn' in the same way,
+            // but we should probably increment the global plot count if it's a new plot.
+            // However, usually plotCount tracks *injected* plots or *generated* plots.
+            // Let's treat manual generation as a generation event.
             this.settings.plotCount = (this.settings.plotCount || 0) + 1;
+            
+            // Also reset the turn counter since we just generated fresh content
+            this.settings.turnsSinceLastGeneration = 0;
+            
+            // CRITICAL: Update narrative arc state if available
+            // This aligns behavior with "Skip" functionality in PlotPreviewManager
+            if (this.components.narrativeArc) {
+                this.components.narrativeArc.advancePhase();
+            }
+            
             this.saveSettings();
             this.updateSettingsUI();
 
