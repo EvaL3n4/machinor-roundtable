@@ -1,98 +1,37 @@
 # Machinor Roundtable
 
-A SillyTavern extension that seamlessly injects AI-customized plot context into your roleplay chats, guiding the model to generate responses with deeper context and ulterior plans.
+A SillyTavern extension that acts as your **Narrative Coordinator**.
 
-## Features
+The Machinor Roundtable extension silently analyzes your roleplay sessions and injects intelligent, context-aware guidance into the chat stream. It helps maintain narrative consistency, manages story pacing, and provides creative plot hooks—all without breaking character or interrupting your immersion.
 
-- **Real-time AI Customization**: Uses your current LLM to generate plot context tailored to your characters and scenario
-- **Customizable Frequency**: Control how often plot injections occur (in number of exchanges)
-- **Universal Templates**: Works with any roleplay genre or tone - the AI adapts to your style
-- **Manual Control**: Trigger plot injection on-demand with a single click
-- **Debug Mode**: See exactly what's being injected for development and fine-tuning
-- **Seamless Integration**: Invisible during normal roleplay, maintains immersion
+## Key Features
+
+* **Intelligent Plot Engine**: Analyzes chat history, character personalities, and world info to generate coherent narrative suggestions.
+* **Seamless Context Injection**: Injects guidance directly into the LLM's prompt stream, influencing the AI's response without visible clutter.
+* **Dynamic Pacing Control**: Monitors story beats and suggests pacing adjustments (e.g., "slow down for emotional impact" or "introduce conflict").
+* **Narrative Arc Management**: Tracks long-term story phases (Introduction, Rising Action, Climax, Resolution) to ensure satisfying story structures.
+* **Customizable Styles**: Choose from various narrative styles (Dramatic, Natural, Mysterious, etc.) to match your roleplay tone.
 
 ## Installation
 
-1. Copy the `machinor-roundtable` folder to `public/scripts/extensions/third-party/`
-2. Restart SillyTavern
-3. Go to Extensions settings (right panel)
-4. Look for "Machinor Roundtable" and configure your preferences
+1. Open **SillyTavern** and navigate to the **Extensions** menu.
+2. Click on "**Install extension**".
+3. In the "Enter the Git URL of the extension to install" field, paste the following URL:
+    `https://github.com/EvaL3n4/machinor-roundtable`
+4. Click the "**Install for all users**" button.
+5. Voila!
 
 ## Usage
 
-### Basic Setup
+1. **Enable**: Once installed, ensure the extension is enabled in the Extensions menu.
+2. **Configure**: Open the Machinor Roundtable settings panel (usually a custom icon in the top bar or extensions list).
+    * **Frequency**: Set how often the narrative coordinator should run (e.g., every 3 turns).
+    * **Style**: Select your preferred narrative tone.
+3. **Play**: Continue your roleplay as normal. The extension will silently guide the AI characters based on your settings.
+4. **Manual Trigger**: You can manually trigger a plot analysis at any time by clicking the "Generate Plot" button in the settings panel if you feel the story needs a nudge.
 
-1. **Enable the extension** using the toggle switch
-2. **Set injection frequency** - how many exchanges between plot injections (default: 7)
-3. **Start roleplaying** - the extension works automatically in the background
+## Disclaimer
 
-### Manual Control
+Please be aware that using external extensions can have unintended side effects and may pose security risks. Always make sure you trust the source before importing an extension. We are not responsible for any damage caused by third-party extensions.
 
-- Click **"Inject Plot Now"** to manually trigger a plot injection
-- Use **Debug Mode** to see injected messages (visible only to you)
-
-### Customization
-
-- Adjust **injection frequency** based on your pacing preferences
-- Lower numbers = more frequent plot injections
-- Higher numbers = more subtle, less frequent intervention
-
-## How It Works
-
-The extension analyzes your character's personality, description, and scenario, then uses your current LLM to generate plot context that guides the model toward deeper, more engaging responses. This happens invisibly before your latest message, so the model has additional context without breaking immersion.
-
-## Settings
-
-- **Enable Plot Progression**: Master on/off switch for the extension
-- **Injection Frequency**: Number of exchanges between plot injections (1-50)
-- **Debug Mode**: Show injected messages for development/testing
-- **Inject Plot Now**: Manual trigger for immediate plot injection
-
-## Technical Details
-
-- **Local Processing**: All generation happens locally using your configured LLM
-- **Caching**: Generated plot contexts are cached to minimize latency
-- **Smart Timing**: Injects during conversational lulls, not intense moments
-- **Character Focus**: Prioritizes personality, description, and scenario fields
-
-## Development Status
-
-This is Stage 1 (Foundation) of the extension. Current features:
-
-- ✅ Basic extension structure
-- ✅ UI panel with frequency control
-- ✅ Settings persistence
-- ✅ Manual trigger button
-- ✅ Debug mode toggle
-
-Upcoming features:
-
-- AI customization engine
-- Automatic injection based on frequency
-- Character field analysis
-- Chat history monitoring
-- Template system
-- World info integration
-
-## Troubleshooting
-
-**Extension doesn't appear in settings:**
-
-- Check that the folder is in `public/scripts/extensions/third-party/machinor-roundtable`
-- Verify all files are present (manifest.json, index.js, settings.html, style.css)
-- Check browser console (F12) for errors
-- Ensure the folder name matches exactly: "machinor-roundtable"
-
-**Settings not saving:**
-
-- Check browser console for errors
-- Verify `saveSettingsDebounced()` is available
-- Ensure extension name matches folder name exactly
-
-## Contributing
-
-This extension follows SillyTavern's extension development best practices. For issues or feature requests, please open an issue here in the GitHub.
-
-## License
-
-MIT License
+This extension processes chat data locally or via your configured LLM backend. Ensure you are comfortable with your data privacy settings regarding your LLM provider.
