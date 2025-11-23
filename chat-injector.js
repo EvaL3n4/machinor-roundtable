@@ -333,7 +333,8 @@ export class ChatInjector {
                         } else {
                             // Increment counter if we didn't generate
                             // Note: We increment even if we injected an existing plot
-                            settings.turnsSinceLastGeneration = (settings.turnsSinceLastGeneration || 0) + 1;
+                            const current = settings.turnsSinceLastGeneration || 0;
+                            settings.turnsSinceLastGeneration = current + 1;
                             logger.log(`Turn complete, counter incremented to ${settings.turnsSinceLastGeneration}`);
                         }
 

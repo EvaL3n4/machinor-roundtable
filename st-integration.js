@@ -168,6 +168,7 @@ export class STIntegrationManager {
                 try {
                     logger.log('Chat ID changed:', chatId);
                     this.isChatReady = false; // Reset ready state
+                    this.emit('chat_id_changed', chatId);
                     this.checkChatReadiness('Chat ID Changed');
                 } catch (error) {
                     errorHandler(error);
