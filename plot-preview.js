@@ -2,6 +2,8 @@
 import { getContext } from "../../../extensions.js";
 import { saveSettingsDebounced } from "../../../../script.js";
 import { logger } from "./logger.js";
+import { escapeHtml, sanitizePlotText, sanitizeDirection, createErrorHandler } from './security-utils.js';
+
 // @ts-ignore - eventSource is a global
 const eventSource = window.eventSource;
 // @ts-ignore - event_types is a global
@@ -69,13 +71,13 @@ function getCurrentCharacter() {
 
 export class PlotPreviewManager {
     /**
-     * @param {Object} plotEngine - The plot generation engine
-     * @param {Object} chatInjector - The chat injection system
+     * @param {PlotEngine} plotEngine - The plot generation engine
+     * @param {ChatInjector|null} chatInjector - The chat injection system
      */
     constructor(plotEngine, chatInjector) {
-        /** @type {Object} */
+        /** @type {PlotEngine} */
         this.plotEngine = plotEngine;
-        /** @type {Object|null} */
+        /** @type {ChatInjector|null} */
         this.chatInjector = chatInjector;
         /** @type {boolean} */
         this.isCollapsed = true;
@@ -83,7 +85,7 @@ export class PlotPreviewManager {
         this.currentPlot = null;
         /** @type {string|null} */
         this.nextPlot = null;
-        /** @type {PlotEntry[]} */
+        /** @type {Array<PlotEntry>} */
         this.plotHistory = [];
         /** @type {number} */
         this.historyLimit = 5;
@@ -107,6 +109,13 @@ export class PlotPreviewManager {
         this.contextLoadedOnce = false;
         /** @type {number|null} */
         this.contextCheckInterval = null;
+        /** @type {boolean} */
+        this.isDestroyed = false;
+
+        /** @type {Map<string, Function>} */
+        this.eventListenerRefs = new Map();
+        /** @type {WeakMap<Element, Function>} */
+        this.domListenerRefs = new WeakMap();
 
         // Story intelligence data
         /** @type {Object|null} */
@@ -175,19 +184,32 @@ export class PlotPreviewManager {
         this.setButtonsEnabled(false);
 
         if (this.elements.currentPlotText) {
-            this.elements.currentPlotText.innerHTML = `
-                <div class="mr-skeleton-container" style="padding: 0;">
-                    <div class="mr-skeleton-content">
-                        <div class="mr-skeleton-text"></div>
-                        <div class="mr-skeleton-text"></div>
-                        <div class="mr-skeleton-text short"></div>
-                        <div class="mr-skeleton-text"></div>
-                    </div>
-                </div>
-            `;
+            // Use safe DOM creation instead of innerHTML
+            this.elements.currentPlotText.textContent = '';
+            
+            const container = document.createElement('div');
+            container.className = 'mr-skeleton-container';
+            container.style.padding = '0';
+            
+            const content = document.createElement('div');
+            content.className = 'mr-skeleton-content';
+            
+            // Create 4 skeleton lines
+            for (let i = 0; i < 4; i++) {
+                const line = document.createElement('div');
+                line.className = i === 2 ? 'mr-skeleton-text short' : 'mr-skeleton-text';
+                content.appendChild(line);
+            }
+            
+            container.appendChild(content);
+            this.elements.currentPlotText.appendChild(container);
         }
+        
         if (this.elements.statusText) {
-            this.elements.statusText.innerHTML = 'Initializing... <i class="fa-solid fa-spinner fa-spin"></i>';
+            this.elements.statusText.textContent = 'Initializing... ';
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-spinner fa-spin';
+            this.elements.statusText.appendChild(icon);
         }
     }
 
@@ -217,49 +239,51 @@ export class PlotPreviewManager {
     showHistorySkeleton() {
         if (!this.elements.historyList) return;
 
-        this.elements.historyList.innerHTML = `
-            <div class="mr-history-skeleton" style="padding: 8px 0;">
-                <div class="mr-skeleton-history-item" style="
-                    width: 100%;
-                    height: 60px;
-                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
-                    background-size: 200% 100%;
-                    animation: shimmer 2s infinite;
-                    border-radius: 8px;
-                    margin-bottom: 8px;
-                "></div>
-                <div class="mr-skeleton-history-item" style="
-                    width: 100%;
-                    height: 60px;
-                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
-                    background-size: 200% 100%;
-                    animation: shimmer 2s infinite 0.15s;
-                    border-radius: 8px;
-                    margin-bottom: 8px;
-                "></div>
-                <div class="mr-skeleton-history-item" style="
-                    width: 100%;
-                    height: 60px;
-                    background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
-                    background-size: 200% 100%;
-                    animation: shimmer 2s infinite 0.3s;
-                    border-radius: 8px;
-                "></div>
-            </div>
-            <style>
-                @keyframes shimmer {
-                    0% { background-position: -200% 0; }
-                    100% { background-position: 200% 0; }
-                }
-            </style>
+        // Clear existing content
+        this.elements.historyList.textContent = '';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mr-history-skeleton';
+        wrapper.style.padding = '8px 0';
+        
+        const createSkeletonItem = (delay) => {
+            const item = document.createElement('div');
+            item.className = 'mr-skeleton-history-item';
+            item.style.cssText = `
+                width: 100%;
+                height: 60px;
+                background: linear-gradient(90deg, rgba(255,105,180,0.06) 0%, rgba(218,112,214,0.10) 50%, rgba(255,105,180,0.06) 100%);
+                background-size: 200% 100%;
+                animation: shimmer 2s infinite ${delay};
+                border-radius: 8px;
+                margin-bottom: 8px;
+            `;
+            return item;
+        };
+
+        wrapper.appendChild(createSkeletonItem('0s'));
+        wrapper.appendChild(createSkeletonItem('0.15s'));
+        wrapper.appendChild(createSkeletonItem('0.3s'));
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
         `;
+        
+        wrapper.appendChild(style);
+        this.elements.historyList.appendChild(wrapper);
     }
 
     /**
      * Deferred initialization - called by ST integration after grace period
      * This prevents extension activity during SillyTavern's startup sequence
+     * @returns {void}
      */
     deferredInit() {
+        // Defer initialization until chat is ready to avoid premature DOM access
         if (this.isInitialized) {
             logger.log('[Machinor Roundtable] Plot Preview already initialized, reloading for new chat...');
             // Even though we're initialized, we should reload the profile for the new chat
@@ -276,46 +300,71 @@ export class PlotPreviewManager {
 
     /**
      * Setup listeners for chat and character changes
+     * @returns {void}
      */
     setupContextChangeListeners() {
+        if (this.isDestroyed) return;
+
         // CRITICAL FIX: Listen to MESSAGE_SENT/RECEIVED instead of CHAT_CHANGED
         // This ensures we only load AFTER SillyTavern has saved the chat
 
         // ROBUST APPROACH: Multiple event listeners + polling fallback
         // CRITICAL: Event listeners are only activated AFTER initial load to prevent race conditions
         const activateEventListeners = () => {
-            if (typeof eventSource !== 'undefined') {
-                // Listen for message sent (user sends a message)
-                eventSource.on(event_types.MESSAGE_SENT, () => {
-                    logger.log('[Machinor Roundtable] 📨 Message sent event detected');
-                    this.delayedContextLoad(300, 'message_sent');
-                });
+            if (this.isDestroyed) return;
+            
+            try {
+                if (typeof eventSource !== 'undefined') {
+                    // Define handlers
+                    const onMessageSent = () => {
+                        logger.log('[Machinor Roundtable] 📨 Message sent event detected');
+                        this.delayedContextLoad(300, 'message_sent');
+                    };
 
-                // Listen for message received (AI responds)
-                eventSource.on(event_types.MESSAGE_RECEIVED, () => {
-                    logger.log('[Machinor Roundtable] 📬 Message received event detected');
-                    this.delayedContextLoad(300, 'message_received');
-                });
+                    const onMessageReceived = () => {
+                        logger.log('[Machinor Roundtable] 📬 Message received event detected');
+                        this.delayedContextLoad(300, 'message_received');
+                    };
 
-                // Listen for chat changes (covers chat switching)
-                eventSource.on(event_types.CHAT_CHANGED, () => {
-                    logger.log('[Machinor Roundtable] 🔄 Chat changed event detected');
-                    this.delayedContextLoad(200, 'chat_changed');
-                });
+                    const onChatChanged = () => {
+                        logger.log('[Machinor Roundtable] 🔄 Chat changed event detected');
+                        this.delayedContextLoad(200, 'chat_changed');
+                    };
 
-                // Listen for character changes
-                eventSource.on(event_types.CHARACTER_SELECTED, () => {
-                    logger.log('[Machinor Roundtable] 👤 Character selected event detected');
-                    this.delayedContextLoad(150, 'character_selected');
-                });
+                    const onCharacterSelected = () => {
+                        logger.log('[Machinor Roundtable] 👤 Character selected event detected');
+                        this.delayedContextLoad(150, 'character_selected');
+                    };
 
-                logger.log('[Machinor Roundtable] ✅ Event listeners activated');
+                    // Register and store references for cleanup
+                    eventSource.on(event_types.MESSAGE_SENT, onMessageSent);
+                    this.eventListenerRefs.set('eventSource_MESSAGE_SENT', onMessageSent);
+
+                    eventSource.on(event_types.MESSAGE_RECEIVED, onMessageReceived);
+                    this.eventListenerRefs.set('eventSource_MESSAGE_RECEIVED', onMessageReceived);
+
+                    eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
+                    this.eventListenerRefs.set('eventSource_CHAT_CHANGED', onChatChanged);
+
+                    eventSource.on(event_types.CHARACTER_SELECTED, onCharacterSelected);
+                    this.eventListenerRefs.set('eventSource_CHARACTER_SELECTED', onCharacterSelected);
+
+                    logger.log('[Machinor Roundtable] ✅ Event listeners activated');
+                }
+            } catch (error) {
+                logger.error('Error activating context listeners:', error);
             }
         };
 
         // Polling fallback for initial page load
         // Event listeners are NOT active during this phase to prevent conflicts
+        // Poll for context changes every 2 seconds to detect chat/character switches
         this.contextCheckInterval = setInterval(() => {
+            if (this.isDestroyed) {
+                if (this.contextCheckInterval) clearInterval(this.contextCheckInterval);
+                return;
+            }
+
             const context = getContext();
 
             // Wait for character ID and chat ID (chat array can be empty for new chats)
@@ -326,6 +375,8 @@ export class PlotPreviewManager {
 
                     // Give ST time to complete its initial save, then activate event listeners
                     setTimeout(() => {
+                        if (this.isDestroyed) return;
+
                         const loadedPlot = this.loadPlotFromStorage();
 
                         // CRITICAL FIX: Check for plotText (not text) since loadChatProfile returns { plotText, ... }
@@ -333,7 +384,8 @@ export class PlotPreviewManager {
                             logger.log('[Machinor Roundtable] No stored plot found, resetting to ready state');
                             this.updateStatus('ready');
                             if (this.elements.currentPlotText) {
-                                this.elements.currentPlotText.innerHTML = '<div class="mr-placeholder-text">No plot generated yet. Start chatting or use Manual Trigger.</div>';
+                                this.elements.currentPlotText.textContent = 'No plot generated yet. Start chatting or use Skip, or Generate Plot Now.';
+                                this.elements.currentPlotText.className = 'mr-placeholder-text';
                             }
                             // Re-enable buttons for empty state
                             this.setButtonsEnabled(true);
@@ -347,7 +399,7 @@ export class PlotPreviewManager {
                     }, 1500); // Extended delay for initial load
                 }
                 // Stop polling once we've initiated the load
-                clearInterval(this.contextCheckInterval);
+                if (this.contextCheckInterval) clearInterval(this.contextCheckInterval);
             }
         }, 500); // Check every 500ms
 
@@ -358,6 +410,8 @@ export class PlotPreviewManager {
      * Delayed context loading with proper timing and validation
      * @param {number} delay - Delay in milliseconds
      * @param {string} source - Source of the trigger
+     * @returns {void}
+     * @throws {Error} If context loading fails
      */
     delayedContextLoad(delay, source) {
         setTimeout(() => {
@@ -387,13 +441,15 @@ export class PlotPreviewManager {
                 }
 
                 // Load the plot profile for this chat
+                // Try loading from settings first, fall back to localStorage for backward compatibility
                 const loadedProfile = this.loadPlotFromStorage();
 
                 // Explicitly render history (loadChatProfile already does this, but ensure it's called)
                 if (!loadedProfile || !loadedProfile.plotText) {
                     logger.log('No plot for this chat, showing empty state');
                     if (this.elements.currentPlotText) {
-                        this.elements.currentPlotText.innerHTML = '<div class="mr-placeholder-text">No plot generated yet. Start chatting or use Manual Trigger.</div>';
+                        this.elements.currentPlotText.textContent = 'No plot generated yet. Start chatting or use Manual Trigger.';
+                        this.elements.currentPlotText.className = 'mr-placeholder-text';
                     }
                     this.updateStatus('ready');
                     // Re-enable buttons for empty state
@@ -456,16 +512,21 @@ export class PlotPreviewManager {
      * Save comprehensive chat profile to persistent storage
      * @param {string} plotText - The plot text to save
      * @param {string} status - The plot status
+     * @returns {void}
      */
     saveChatProfile(plotText, status) {
+        if (this.isDestroyed) return;
+
         const storageKey = this.getStorageKey();
         if (!storageKey) return;
 
         const context = getContext();
+        // Use optional chaining for safe access
         const character = context?.characters?.[context?.characterId];
 
         // CRITICAL: Load existing profile to preserve fields
         let existingProfile = null;
+        // Add optional chaining for settings access
         if (window.machinorRoundtable?.settings?.previewHistories && context?.chatId) {
             existingProfile = window.machinorRoundtable.settings.previewHistories[context.chatId];
         }
@@ -499,9 +560,10 @@ export class PlotPreviewManager {
             injectedPlots: this.getInjectedPlotsTimeline(),
 
             // Settings (update if available, otherwise preserve)
+            // Use nullish coalescing
             recentDirections: this.recentDirections?.length > 0
                 ? this.recentDirections
-                : (existingProfile?.recentDirections || []),
+                : (existingProfile?.recentDirections ?? []),
             sidebarCollapsed: this.isCollapsed,
 
             // Story intelligence (preserve existing if new values are null/empty)
@@ -510,6 +572,7 @@ export class PlotPreviewManager {
                 const intelligence = { ...(existingProfile?.storyIntelligence || {}) };
 
                 // Only update fields if we have actual DOM content (not fallbacks)
+                // Use optional chaining for DOM access
                 const characterAnalysisEl = this.elements.characterAnalysis?.textContent;
                 if (characterAnalysisEl && characterAnalysisEl !== 'No character data' && characterAnalysisEl !== 'Character data unavailable') {
                     intelligence.characterAnalysis = characterAnalysisEl;
@@ -572,14 +635,64 @@ export class PlotPreviewManager {
             }
 
             // 2. Save to LocalStorage (Fallback/Cache only)
-            localStorage.setItem(storageKey, JSON.stringify(profileData));
-            logger.log('✅ Profile saved to LocalStorage (Fallback)');
-
-            // Update profile index for cross-chat navigation
-            this.updateProfileIndex(storageKey, profileData);
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(profileData));
+                logger.log('✅ Profile saved to LocalStorage (Fallback)');
+                
+                // Update profile index for cross-chat navigation
+                this.updateProfileIndex(storageKey, profileData);
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    logger.warn('LocalStorage quota exceeded. Attempting cleanup...');
+                    // Try to clean up old entries
+                    this.cleanupStorage();
+                    // Retry save once
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(profileData));
+                        logger.log('✅ Profile saved to LocalStorage after cleanup');
+                        this.updateProfileIndex(storageKey, profileData);
+                    } catch (retryError) {
+                        logger.error('Failed to save even after cleanup:', retryError);
+                        // @ts-ignore
+                        if (window.toastr) window.toastr.warning('Browser storage full - some history may not be cached offline', 'Machinor Roundtable');
+                    }
+                } else {
+                    throw e;
+                }
+            }
 
         } catch (error) {
             logger.error('Failed to save chat profile:', error);
+        }
+    }
+
+    /**
+     * Check storage quota and cleanup if needed
+     */
+    cleanupStorage() {
+        try {
+            const indexKey = this.getProfileIndexKey();
+            const storedIndex = localStorage.getItem(indexKey);
+            if (!storedIndex) return;
+
+            const index = JSON.parse(storedIndex);
+            
+            // Sort by last active (oldest first)
+            const sortedEntries = Object.entries(index)
+                .sort(([, a], [, b]) => a.lastActive - b.lastActive);
+                
+            // Remove oldest 20%
+            const toRemove = sortedEntries.slice(0, Math.ceil(sortedEntries.length * 0.2));
+            
+            toRemove.forEach(([key]) => {
+                localStorage.removeItem(key);
+                delete index[key];
+                logger.log('Cleaned up old storage entry:', key);
+            });
+            
+            localStorage.setItem(indexKey, JSON.stringify(index));
+        } catch (error) {
+            logger.error('Storage cleanup failed:', error);
         }
     }
 
@@ -609,13 +722,21 @@ export class PlotPreviewManager {
                 chatLength: profileData.chatLength
             };
 
-            // Keep only the most recent 50 profiles to prevent storage bloat
+            // Keep only the most recent 30 profiles (reduced from 50) to prevent storage bloat
             const sortedEntries = Object.entries(index)
                 .sort(([, a], [, b]) => b.lastActive - a.lastActive)
-                .slice(0, 50);
+                .slice(0, 30);
 
             const trimmedIndex = Object.fromEntries(sortedEntries);
             localStorage.setItem(indexKey, JSON.stringify(trimmedIndex));
+            
+            // Clean up removed keys from storage
+            const currentKeys = new Set(Object.keys(trimmedIndex));
+            Object.keys(index).forEach(key => {
+                if (!currentKeys.has(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
 
         } catch (error) {
             logger.error('Failed to update profile index:', error);
@@ -744,7 +865,13 @@ export class PlotPreviewManager {
                 // Add visual indicator with additional info
                 if (this.elements.statusText) {
                     const historyInfo = profileData.plotHistory?.length > 0 ? ` (${profileData.plotHistory.length} history)` : '';
-                    this.elements.statusText.innerHTML = `Restored${historyInfo} <i class="fa-solid fa-database" title="Loaded from storage"></i>`;
+                    this.elements.statusText.textContent = `Restored${historyInfo} `;
+                    
+                    const icon = document.createElement('i');
+                    icon.className = 'fa-solid fa-database';
+                    icon.title = 'Loaded from storage';
+                    this.elements.statusText.appendChild(icon);
+                    
                     logger.log('✅ Status text updated with history indicator');
                 }
 
@@ -1068,7 +1195,11 @@ export class PlotPreviewManager {
     createMobileCloseButton() {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'mr-mobile-close-btn';
-        closeBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+        
+        const icon = document.createElement('i');
+        icon.className = 'fa-solid fa-times';
+        closeBtn.appendChild(icon);
+        
         closeBtn.setAttribute('aria-label', 'Close Plot Preview');
         return closeBtn;
     }
@@ -1195,9 +1326,29 @@ export class PlotPreviewManager {
     }
 
     bindEvents() {
+        const addListener = (element, type, handler) => {
+            if (element) {
+                element.addEventListener(type, handler);
+                // Store reference if element is a DOM node we track
+                if (this.domListenerRefs) {
+                    // For simplicity in destroy(), we'll remove all listeners from elements we know about
+                    // This weakmap approach is a bit complex for simple cleanup,
+                    // so we'll primarily rely on the destroy method explicitly removing from known elements
+                    // and clearing the main container if possible, but since these are specific elements:
+                    
+                    // We'll store the remove function in a map for the element+type if needed,
+                    // but for now let's just use the explicit removal in destroy() which is cleaner for static elements.
+                    // The eventListenerRefs map will hold the handlers so we can pass them to removeEventListener.
+                    const key = `dom_${element.id || element.className}_${type}`;
+                    this.eventListenerRefs.set(key, { element, type, handler });
+                }
+            }
+        };
+
         // Sidebar toggle
         if (this.elements.toggleBtn) {
-            this.elements.toggleBtn.addEventListener('click', () => this.toggleSidebar());
+            const handler = () => this.toggleSidebar();
+            addListener(this.elements.toggleBtn, 'click', handler);
         }
 
         // Plot actions
@@ -1208,59 +1359,66 @@ export class PlotPreviewManager {
         const saveBtn = document.getElementById('mr_save_plot');
         const cancelBtn = document.getElementById('mr_cancel_edit');
 
-        if (editBtn) editBtn.addEventListener('click', () => this.editPlot());
-        if (skipBtn) skipBtn.addEventListener('click', () => this.skipPlot());
-        if (regenerateBtn) regenerateBtn.addEventListener('click', () => this.regenerateNextPlot());
-        if (manualBtn) manualBtn.addEventListener('click', () => this.manualPlotEntry());
+        if (editBtn) addListener(editBtn, 'click', () => this.editPlot());
+        if (skipBtn) addListener(skipBtn, 'click', () => this.skipPlot());
+        if (regenerateBtn) addListener(regenerateBtn, 'click', () => this.regenerateNextPlot());
+        if (manualBtn) addListener(manualBtn, 'click', () => this.manualPlotEntry());
 
         // Direction input
         if (this.elements.directionInput) {
-            this.elements.directionInput.addEventListener('keypress', (e) => {
+            const keypressHandler = (e) => {
                 if (e.key === 'Enter') {
                     this.saveDirection();
                 }
-            });
+            };
+            addListener(this.elements.directionInput, 'keypress', keypressHandler);
+            
             // Debounce input events to avoid excessive DOM updates
             const debouncedShowDirections = this._debounce(() => this.showRecentDirections(), 300);
-            this.elements.directionInput.addEventListener('input', debouncedShowDirections);
+            addListener(this.elements.directionInput, 'input', debouncedShowDirections);
         }
 
         // History
         if (this.elements.historyToggle) {
-            this.elements.historyToggle.addEventListener('click', () => this.toggleHistory());
+            addListener(this.elements.historyToggle, 'click', () => this.toggleHistory());
         }
         if (this.elements.historyLimitInput) {
-            this.elements.historyLimitInput.addEventListener('change', () => this.updateHistoryLimit());
+            addListener(this.elements.historyLimitInput, 'change', () => this.updateHistoryLimit());
         }
 
         // Template gallery buttons
         const templateButtons = document.querySelectorAll('.mr-template-btn');
-        templateButtons.forEach(button => {
-            button.addEventListener('click', (e) => this.handleTemplateSelection(e));
+        templateButtons.forEach((button, index) => {
+            const handler = (e) => this.handleTemplateSelection(e);
+            // Store with unique key
+            const key = `dom_template_btn_${index}_click`;
+            if (button) {
+                button.addEventListener('click', handler);
+                this.eventListenerRefs.set(key, { element: button, type: 'click', handler });
+            }
         });
 
         // Modal
         if (this.elements.closeModalBtn) {
-            this.elements.closeModalBtn.addEventListener('click', () => this.closeModal());
+            addListener(this.elements.closeModalBtn, 'click', () => this.closeModal());
         }
-        if (saveBtn) saveBtn.addEventListener('click', () => this.saveEditedPlot());
-        if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeModal());
+        if (saveBtn) addListener(saveBtn, 'click', () => this.saveEditedPlot());
+        if (cancelBtn) addListener(cancelBtn, 'click', () => this.closeModal());
 
         // Close modal on outside click
         if (this.elements.modal) {
-            this.elements.modal.addEventListener('click', (e) => {
+            const modalClickHandler = (e) => {
                 if (e.target === this.elements.modal) {
                     this.closeModal();
                 }
-            });
+            };
+            addListener(this.elements.modal, 'click', modalClickHandler);
         }
 
         // Story intelligence toggle
         if (this.elements.intelToggle) {
-            this.elements.intelToggle.addEventListener('click', () => this.toggleStoryIntel());
+            addListener(this.elements.intelToggle, 'click', () => this.toggleStoryIntel());
         }
-
-        // No longer needed - Advanced Options is now a permanent section
 
         logger.log('Plot Preview events bound');
     }
@@ -1754,18 +1912,23 @@ export class PlotPreviewManager {
 
     /**
      * Display current plot with enhanced visual feedback
-     * @param {string} plotText - The plot text to display
-     * @param {string} status - The plot status (ready, pending, injected, restored)
-     * @param {boolean} skipSave - Skip saving to storage (used during restoration)
+     * @param {string|Object} plotText - The plot text to display
+     * @param {string} [status='ready'] - The plot status (ready, pending, injected, restored)
+     * @param {boolean} [skipSave=false] - Skip saving to storage (used during restoration)
+     * @returns {void}
      */
     displayCurrentPlot(plotText, status = 'ready', skipSave = false) {
         // Re-enable buttons when plot is displayed
         this.setButtonsEnabled(true);
-        this.currentPlot = plotText;
+        
+        // Handle object input (e.g. from generatePlotContext)
+        const text = typeof plotText === 'object' ? plotText.text : plotText;
+        this.currentPlot = text;
 
         if (this.elements.currentPlotText) {
-            this.elements.currentPlotText.textContent = plotText;
-            logger.log('[Machinor Roundtable] Plot text set to:', plotText.substring(0, 50) + '...');
+            this.elements.currentPlotText.textContent = text;
+            // Optional chaining for safety
+            logger.log('[Machinor Roundtable] Plot text set to:', text?.substring(0, 50) + '...');
 
             // Force visibility on mobile
             if (this.isMobile && this.mobileSidebarVisible) {
@@ -1779,7 +1942,7 @@ export class PlotPreviewManager {
         this.updateStatus(status);
 
         // Save to persistent storage (skip if this is initial load restoration)
-        this.savePlotToStorage(plotText, status, skipSave);
+        this.savePlotToStorage(text, status, skipSave);
 
         logger.log('[Machinor Roundtable] Current plot displayed:', status);
     }
@@ -1787,6 +1950,7 @@ export class PlotPreviewManager {
     /**
      * Display next plot preview
      * @param {string} plotText - The next plot text
+     * @returns {void}
      */
     displayNextPlot(plotText) {
         this.nextPlot = plotText;
@@ -1801,6 +1965,7 @@ export class PlotPreviewManager {
     /**
      * Update status indicator and text
      * @param {string} status - The status to display
+     * @returns {void}
      */
     updateStatus(status) {
         if (this.elements.statusIndicator) {
@@ -1964,27 +2129,31 @@ export class PlotPreviewManager {
         if (!this.elements.editorText) return;
 
         const editedText = this.elements.editorText.value.trim();
+        const sanitized = sanitizePlotText(editedText);
 
-        if (!editedText) {
+        if (!sanitized) {
             // @ts-ignore - toastr is a global library
-            toastr.warning('Plot cannot be empty', 'Machinor Roundtable');
+            toastr.warning('Plot cannot be empty or invalid', 'Machinor Roundtable');
             return;
         }
+        
+        // Use sanitized text
+        const textToSave = sanitized;
 
         if (this.isManualEntry) {
             // Manual entry - set as current plot
-            this.displayCurrentPlot(editedText, 'ready');
+            this.displayCurrentPlot(textToSave, 'ready');
             // @ts-ignore - toastr is a global library
             toastr.success('Custom plot saved', 'Machinor Roundtable');
         } else {
             // Edit existing plot
-            this.displayCurrentPlot(editedText, 'ready');
+            this.displayCurrentPlot(textToSave, 'ready');
 
             // Update the history entry if we were editing an existing plot
             if (this.isEditingPlot && this.editingPlotId) {
                 const plotIndex = this.plotHistory.findIndex(plot => plot.id === this.editingPlotId);
                 if (plotIndex !== -1) {
-                    this.plotHistory[plotIndex].text = editedText;
+                    this.plotHistory[plotIndex].text = textToSave;
                     this.plotHistory[plotIndex].timestamp = Date.now(); // Update timestamp
                     this.renderHistory();
                     logger.log('[Machinor Roundtable] Updated existing plot in history');
@@ -1999,7 +2168,7 @@ export class PlotPreviewManager {
         this.isEditingPlot = false;
         this.editingPlotId = null;
         this.closeModal();
-        logger.log('[Machinor Roundtable] Plot saved:', editedText);
+        logger.log('[Machinor Roundtable] Plot saved:', textToSave);
     }
 
     /**
@@ -2009,12 +2178,13 @@ export class PlotPreviewManager {
         if (!this.elements.directionInput) return;
 
         const direction = this.elements.directionInput.value.trim();
+        const sanitized = sanitizeDirection(direction);
 
-        if (!direction) return;
+        if (!sanitized) return;
 
         // Add to recent directions (avoid duplicates)
-        this.recentDirections = this.recentDirections.filter(d => d !== direction);
-        this.recentDirections.unshift(direction);
+        this.recentDirections = this.recentDirections.filter(d => d !== sanitized);
+        this.recentDirections.unshift(sanitized);
 
         // Keep only max recent directions
         if (this.recentDirections.length > this.maxRecentDirections) {
@@ -2023,8 +2193,8 @@ export class PlotPreviewManager {
 
         this.saveSettings();
         // @ts-ignore - toastr is a global library
-        toastr.info(`Direction saved: "${direction}"`, 'Machinor Roundtable');
-        logger.log('[Machinor Roundtable] Direction saved:', direction);
+        toastr.info(`Direction saved`, 'Machinor Roundtable');
+        logger.log('[Machinor Roundtable] Direction saved:', sanitized);
     }
 
     /**
@@ -2128,6 +2298,8 @@ export class PlotPreviewManager {
 
     /**
      * Trim history to limit
+     * Trim history to configured limit, keeping most recent entries
+     * @returns {void}
      */
     trimHistory() {
         if (this.plotHistory.length > this.historyLimit) {
@@ -2137,13 +2309,20 @@ export class PlotPreviewManager {
 
     /**
      * Render plot history
+     * @returns {void}
      */
     renderHistory() {
         if (!this.elements.historyList) return;
 
+        // Clear existing content first
+        this.elements.historyList.textContent = '';
+
         // Use ONLY this.plotHistory (loaded from previewHistories)
         if (!this.plotHistory || this.plotHistory.length === 0) {
-            this.elements.historyList.innerHTML = '<div class="mr-history-item">No plot history yet</div>';
+            const emptyItem = document.createElement('div');
+            emptyItem.className = 'mr-history-item';
+            emptyItem.textContent = 'No plot history yet';
+            this.elements.historyList.appendChild(emptyItem);
             return;
         }
 
@@ -2153,28 +2332,38 @@ export class PlotPreviewManager {
         // Limit to history limit
         const limitedHistory = sortedHistory.slice(0, this.historyLimit);
 
-        this.elements.historyList.innerHTML = limitedHistory.map(plot => {
+        limitedHistory.forEach(plot => {
             const timestamp = new Date(plot.timestamp).toLocaleString();
             const character = plot.character ? ` • ${plot.character}` : '';
             const style = plot.style && plot.style !== 'natural' ? ` • ${plot.style}` : '';
-
-            return `
-                <div class="mr-history-item"
-                     data-plot-text="${encodeURIComponent(plot.text)}"
-                     data-plot-id="${plot.id}"
-                     title="${timestamp}${character}${style}">
-                    <div class="mr-history-text">${plot.text.substring(0, 60)}${plot.text.length > 60 ? '...' : ''}</div>
-                    <div class="mr-history-meta">
-                        <span class="mr-history-time">${new Date(plot.timestamp).toLocaleDateString()}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Add click handlers
-        this.elements.historyList.querySelectorAll('.mr-history-item').forEach(item => {
+            
+            const item = document.createElement('div');
+            item.className = 'mr-history-item';
+            // Use optional chaining for safety
+            item.dataset.plotText = encodeURIComponent(plot.text);
+            item.dataset.plotId = plot.id;
+            item.title = `${timestamp}${character}${style}`;
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'mr-history-text';
+            // Use escapeHtml explicitly or textContent implicitly (DOM method is safe)
+            // Add null check before substring
+            textDiv.textContent = (plot.text?.substring(0, 60) || '') + (plot.text?.length > 60 ? '...' : '');
+            
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'mr-history-meta';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'mr-history-time';
+            timeSpan.textContent = new Date(plot.timestamp).toLocaleDateString();
+            
+            metaDiv.appendChild(timeSpan);
+            item.appendChild(textDiv);
+            item.appendChild(metaDiv);
+            
+            // Add click handler directly
             item.addEventListener('click', () => {
-                const plotText = decodeURIComponent(/** @type {HTMLElement} */(item).dataset.plotText);
+                const plotText = decodeURIComponent(item.dataset.plotText);
                 if (plotText) {
                     // Clear editing state
                     this.isEditingPlot = false;
@@ -2185,6 +2374,8 @@ export class PlotPreviewManager {
                     toastr.info('Plot loaded from history', 'Machinor Roundtable');
                 }
             });
+            
+            this.elements.historyList.appendChild(item);
         });
     }
 
@@ -2193,6 +2384,7 @@ export class PlotPreviewManager {
      */
     async generateNewPlot() {
         logger.log('[Machinor Roundtable] Generating new plot...');
+        const errorHandler = createErrorHandler('generateNewPlot');
 
         // CRITICAL FIX: Show "Generating..." status during plot creation
         this.updateStatus('pending');
@@ -2233,10 +2425,8 @@ export class PlotPreviewManager {
                 this.updateStatus('ready'); // Reset status if no plot generated
             }
         } catch (error) {
-            logger.error('[Machinor Roundtable] Failed to generate new plot:', error);
             this.updateStatus('ready'); // Reset status on error
-            // @ts-ignore - toastr is a global library
-            toastr.error('Failed to generate plot', 'Machinor Roundtable');
+            errorHandler(error, 'Failed to generate plot');
         }
     }
 
@@ -2245,6 +2435,7 @@ export class PlotPreviewManager {
      */
     async generateNewPlotWithOptions() {
         logger.log('[Machinor Roundtable] Generating new plot with options...');
+        const errorHandler = createErrorHandler('generateNewPlotWithOptions');
 
         // CRITICAL FIX: Show "Generating..." status during plot creation
         this.updateStatus('pending');
@@ -2296,10 +2487,8 @@ export class PlotPreviewManager {
                 this.updateStatus('ready'); // Reset status if no plot generated
             }
         } catch (error) {
-            logger.error('[Machinor Roundtable] Failed to generate new plot with options:', error);
             this.updateStatus('ready'); // Reset status on error
-            // @ts-ignore - toastr is a global library
-            toastr.error('Failed to generate plot with options', 'Machinor Roundtable');
+            errorHandler(error, 'Failed to generate plot with options');
         }
     }
 
@@ -2341,6 +2530,7 @@ export class PlotPreviewManager {
      */
     async generateNextPlotWithOptions() {
         logger.log('[Machinor Roundtable] Generating next plot with options...');
+        const errorHandler = createErrorHandler('generateNextPlotWithOptions');
 
         try {
             // Use the imported helper functions
@@ -2375,7 +2565,7 @@ export class PlotPreviewManager {
                 this.displayNextPlot('No plot generated');
             }
         } catch (error) {
-            logger.error('[Machinor Roundtable] Failed to generate next plot with options:', error);
+            errorHandler(error);
             this.displayNextPlot('Generation failed: ' + error.message);
         }
     }
@@ -2644,7 +2834,11 @@ export class PlotPreviewManager {
             mobileToggle = document.createElement('div');
             mobileToggle.id = 'mr_mobile_toggle';
             mobileToggle.className = 'mr-mobile-toggle';
-            mobileToggle.innerHTML = '<i class="fa-solid fa-book-atlas"></i>';
+            
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-book-atlas';
+            mobileToggle.appendChild(icon);
+            
             this.initializeMobileToggle();
         }
 
