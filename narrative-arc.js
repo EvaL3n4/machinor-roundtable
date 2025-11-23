@@ -8,12 +8,21 @@ import { logger } from "./logger.js";
  * Handles story structure templates and plot branching
  */
 export class NarrativeArcManager {
+    /**
+     * @param {STIntegrationManager|null} [stIntegration=null]
+     */
     constructor(stIntegration = null) {
+        /** @type {STIntegrationManager|null} */
         this.stIntegration = stIntegration;
+        /** @type {Object|null} */
         this.currentArc = null;
+        /** @type {Array<Object>} */
         this.arcHistory = [];
+        /** @type {Map} */
         this.activeBranches = new Map();
+        /** @type {Object} */
         this.arcTemplates = this.initializeTemplates();
+        /** @type {Object} */
         this.storyProgress = {
             currentPhase: 'introduction',
             milestones: [],
@@ -26,8 +35,10 @@ export class NarrativeArcManager {
 
     /**
      * Initialize story arc templates
+     * @returns {Object} The arc templates object
      */
     initializeTemplates() {
+        // Arc templates define story phases with weights and branching options. Each phase has a name, description, and weight (relative importance).
         return {
             romance: {
                 name: 'Romance Arc',
@@ -104,6 +115,9 @@ export class NarrativeArcManager {
 
     /**
      * Start a new narrative arc
+     * @param {string} [arcType='natural'] - The type of arc to start
+     * @param {Object|null} [character=null] - The character associated with the arc
+     * @returns {boolean} True if arc started successfully
      */
     startArc(arcType = 'natural', character = null) {
         const template = this.arcTemplates[arcType];
@@ -112,10 +126,17 @@ export class NarrativeArcManager {
             return false;
         }
 
+        // Safe access to first phase
+        const firstPhase = template.phases?.[0];
+        if (!firstPhase) {
+            logger.warn(`Template ${arcType} has no phases`);
+            return false;
+        }
+
         this.currentArc = {
             type: arcType,
             name: template.name,
-            currentPhase: template.phases[0],
+            currentPhase: firstPhase,
             phaseIndex: 0,
             template: template,
             character: character,
@@ -137,6 +158,10 @@ export class NarrativeArcManager {
 
     /**
      * Get plot direction suggestions based on current arc state
+     * @param {Object} character - The character object
+     * @param {Array} [chatHistory=[]] - Recent chat history
+     * @param {Object} [context={}] - Additional context
+     * @returns {Array<Object>} List of suggestion objects
      */
     getPlotSuggestions(character, chatHistory = [], context = {}) {
         if (!this.currentArc) {
@@ -145,8 +170,13 @@ export class NarrativeArcManager {
         }
 
         const suggestions = [];
-        const currentPhase = this.currentArc.template.phases[this.currentArc.phaseIndex];
-        const nextPhases = this.currentArc.template.phases.slice(this.currentArc.phaseIndex + 1);
+        // Optional chaining for safety
+        const phases = this.currentArc.template?.phases || [];
+        const currentPhase = phases[this.currentArc.phaseIndex];
+        
+        if (!currentPhase) return [];
+
+        const nextPhases = phases.slice(this.currentArc.phaseIndex + 1);
 
         // Generate suggestions for current phase
         suggestions.push({
@@ -158,7 +188,7 @@ export class NarrativeArcManager {
         });
 
         // Add branch suggestions if available
-        const branches = this.currentArc.template.branching?.filter(b => b.from === currentPhase.name) || [];
+        const branches = this.currentArc.template?.branching?.filter(b => b.from === currentPhase.name) || [];
         branches.forEach(branch => {
             branch.options.forEach(option => {
                 suggestions.push({
@@ -188,6 +218,10 @@ export class NarrativeArcManager {
     /**
      * Suggest appropriate arc type based on character and context
      * Simplified to avoid rigid guessing based on keywords
+     * @param {Object} character - The character object
+     * @param {Array} chatHistory - Recent chat history
+     * @param {Object} context - Additional context
+     * @returns {Array<Object>} List of arc suggestion objects
      */
     suggestArcType(character, chatHistory, context) {
         // Return generic suggestions that allow natural development
@@ -213,9 +247,16 @@ export class NarrativeArcManager {
 
     /**
      * Generate plot text for a specific phase using simplified context
+     * @param {Object} phase - The phase object
+     * @param {Object} character - The character object
+     * @param {Array} chatHistory - Recent chat history
+     * @param {Object} [context={}] - Additional context
+     * @returns {string} The generated plot text
      */
     generatePhasePlot(phase, character, chatHistory, context = {}) {
-        const characterName = character?.name || 'Character';
+        // Generate phase-specific plot text using character name and recent conversation context for dynamic, contextual suggestions
+        // Use nullish coalescing and optional chaining
+        const characterName = character?.name ?? 'Character';
         const phaseName = phase.name.replace('_', ' ');
 
         // Extract recent chat context
@@ -257,21 +298,28 @@ export class NarrativeArcManager {
 
     /**
      * Extract contextual hints from recent conversation
+     * @param {Array} chatHistory - Recent chat history
+     * @param {number} [maxMessages=3] - Maximum messages to analyze
+     * @returns {string} Extracted context string
      */
     extractRecentContext(chatHistory, maxMessages = 3) {
         if (!chatHistory || chatHistory.length === 0) return '';
 
         const recentMessages = chatHistory.slice(-maxMessages);
         return recentMessages.map(msg => {
-            const speaker = msg.is_user ? 'User' : msg.name || 'Character';
+            // Nullish coalescing
+            const speaker = msg.is_user ? 'User' : (msg.name ?? 'Character');
             return `${speaker}: ${msg.mes}`.substring(0, 100);
         }).join(' | ');
     }
 
     /**
      * Get contextual hint based on recent chat
+     * @param {string} recentChat - The extracted recent chat context
+     * @returns {string} A contextual hint string
      */
     getContextualHint(recentChat) {
+        // Extract conversation dynamics from recent chat to enhance plot suggestions with relevant context
         const hints = [];
 
         // Add conversation-based dynamics
@@ -290,9 +338,16 @@ export class NarrativeArcManager {
 
     /**
      * Generate plot for a specific branch option using simplified context
+     * @param {string} branch - The branch key
+     * @param {Object} character - The character object
+     * @param {Array} chatHistory - Recent chat history
+     * @param {Object} [context={}] - Additional context
+     * @returns {string} The generated plot text
      */
     generateBranchPlot(branch, character, chatHistory, context = {}) {
-        const characterName = character?.name || 'Character';
+        // Generate branch-specific plot text that incorporates character traits and conversation dynamics
+        // Nullish coalescing
+        const characterName = character?.name ?? 'Character';
 
         // Extract recent chat context
         const recentChat = this.extractRecentContext(chatHistory);
@@ -334,6 +389,8 @@ export class NarrativeArcManager {
 
     /**
      * Format branch name for display
+     * @param {string} branch - The raw branch name
+     * @returns {string} Formatted display name
      */
     formatBranchName(branch) {
         return branch.split('_').map(word =>
@@ -343,17 +400,22 @@ export class NarrativeArcManager {
 
     /**
      * Calculate current arc progress as percentage
+     * @returns {number} Progress percentage (0-100)
      */
     calculateArcProgress() {
+        // Calculate progress as percentage based on current phase index vs total phases
         if (!this.currentArc) return 0;
 
-        const totalPhases = this.currentArc.template.phases.length;
+        // Optional chaining
+        const totalPhases = this.currentArc.template?.phases?.length || 1;
         const currentProgress = this.currentArc.phaseIndex / totalPhases;
         return Math.round(currentProgress * 100);
     }
 
     /**
      * Make a choice in the current arc
+     * @param {Object} choice - The choice object
+     * @returns {boolean} True if choice was processed
      */
     makeChoice(choice) {
         if (!this.currentArc) return false;
@@ -376,24 +438,29 @@ export class NarrativeArcManager {
 
     /**
      * Advance to next phase in the arc
+     * @returns {boolean} True if phase advanced or arc completed
      */
     advancePhase() {
         if (!this.currentArc) return false;
 
-        const currentPhase = this.currentArc.template.phases[this.currentArc.phaseIndex];
-        this.storyProgress.completedPhases.push(currentPhase.name);
+        const phases = this.currentArc.template?.phases || [];
+        const currentPhase = phases[this.currentArc.phaseIndex];
+        
+        if (currentPhase) {
+            this.storyProgress.completedPhases.push(currentPhase.name);
+        }
 
         // Move to next phase
         this.currentArc.phaseIndex++;
 
-        if (this.currentArc.phaseIndex >= this.currentArc.template.phases.length) {
+        if (this.currentArc.phaseIndex >= phases.length) {
             logger.log(`Arc completed: ${this.currentArc.name}`);
             this.arcHistory.push({ ...this.currentArc });
             this.currentArc = null;
             return true;
         }
 
-        this.currentArc.currentPhase = this.currentArc.template.phases[this.currentArc.phaseIndex];
+        this.currentArc.currentPhase = phases[this.currentArc.phaseIndex];
         this.storyProgress.currentPhase = this.currentArc.currentPhase.name;
 
         logger.log(`Advanced to phase: ${this.currentArc.currentPhase.name}`);
@@ -402,16 +469,18 @@ export class NarrativeArcManager {
 
     /**
      * Get current arc status
+     * @returns {Object} Status object
      */
     getArcStatus() {
         return {
             hasActiveArc: !!this.currentArc,
-            arcType: this.currentArc?.type || null,
-            arcName: this.currentArc?.name || null,
-            currentPhase: this.currentArc?.currentPhase?.name || null,
+            // Optional chaining and nullish coalescing
+            arcType: this.currentArc?.type ?? null,
+            arcName: this.currentArc?.name ?? null,
+            currentPhase: this.currentArc?.currentPhase?.name ?? null,
             progress: this.calculateArcProgress(),
-            totalPhases: this.currentArc?.template?.phases?.length || 0,
-            currentPhaseIndex: this.currentArc?.phaseIndex || 0,
+            totalPhases: this.currentArc?.template?.phases?.length ?? 0,
+            currentPhaseIndex: this.currentArc?.phaseIndex ?? 0,
             storyProgress: this.storyProgress,
             completedArcs: this.arcHistory.length
         };
@@ -419,6 +488,7 @@ export class NarrativeArcManager {
 
     /**
      * Reset arc system
+     * @returns {void}
      */
     reset() {
         this.currentArc = null;

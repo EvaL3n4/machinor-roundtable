@@ -21,15 +21,18 @@ A SillyTavern extension that seamlessly injects AI-customized plot context into 
 ## Usage
 
 ### Basic Setup
+
 1. **Enable the extension** using the toggle switch
 2. **Set injection frequency** - how many exchanges between plot injections (default: 7)
 3. **Start roleplaying** - the extension works automatically in the background
 
 ### Manual Control
+
 - Click **"Inject Plot Now"** to manually trigger a plot injection
 - Use **Debug Mode** to see injected messages (visible only to you)
 
 ### Customization
+
 - Adjust **injection frequency** based on your pacing preferences
 - Lower numbers = more frequent plot injections
 - Higher numbers = more subtle, less frequent intervention
@@ -55,6 +58,7 @@ The extension analyzes your character's personality, description, and scenario, 
 ## Development Status
 
 This is Stage 1 (Foundation) of the extension. Current features:
+
 - ✅ Basic extension structure
 - ✅ UI panel with frequency control
 - ✅ Settings persistence
@@ -62,6 +66,7 @@ This is Stage 1 (Foundation) of the extension. Current features:
 - ✅ Debug mode toggle
 
 Upcoming features:
+
 - AI customization engine
 - Automatic injection based on frequency
 - Character field analysis
@@ -72,12 +77,14 @@ Upcoming features:
 ## Troubleshooting
 
 **Extension doesn't appear in settings:**
+
 - Check that the folder is in `public/scripts/extensions/third-party/machinor-roundtable`
 - Verify all files are present (manifest.json, index.js, settings.html, style.css)
 - Check browser console (F12) for errors
 - Ensure the folder name matches exactly: "machinor-roundtable"
 
 **Settings not saving:**
+
 - Check browser console for errors
 - Verify `saveSettingsDebounced()` is available
 - Ensure extension name matches folder name exactly
