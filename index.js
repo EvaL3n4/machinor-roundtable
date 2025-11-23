@@ -149,8 +149,8 @@ class MachinorCore {
         });
 
         // Listen for chat ID changes to reset state
-        this.components.stIntegration?.on('chat_id_changed', (chatId) => {
-            logger.log(`Core received chat_id_changed event: ${chatId}`);
+        this.components.stIntegration?.on('manager:chat_id_changed', (chatId) => {
+            logger.log(`Core received manager:chat_id_changed event: ${chatId}`);
             if (this.components.narrativeArc) {
                 logger.log('Resetting Narrative Arc state due to chat switch');
                 this.components.narrativeArc.reset();
